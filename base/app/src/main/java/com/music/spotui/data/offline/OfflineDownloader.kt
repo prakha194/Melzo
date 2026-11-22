@@ -336,7 +336,7 @@ object OfflineDownloader {
                 runInterruptible(Dispatchers.IO) { OfflineCrypto.encryptInPlace(Graph.app, out) }
                 val cover = runCatching {
                     val c = File(OfflineStore.coverDir, "${r.trackId}.jpg")
-                    httpGet(meta.coverUrl, c); c.name
+                    httpGet(app.myspoti.host.android.Covers.large(meta.coverUrl), c); c.name
                 }.getOrDefault("")
                 OfflineTrack(
                     trackId = r.trackId, title = meta.title, artist = meta.artist, album = meta.album,
@@ -434,7 +434,19 @@ object OfflineDownloader {
                     DashFlacRemux.download("data:application/dash+xml;base64,${file.manifest}", out, file.headers)
                 }
                 else -> fetchWithProgress(r.trackId, file.url!!, out, file.headers)
-            } && out.length() >= 10_000
+            } && out.length() >= 10_000 && runInterruptible(Dispatchers.IO) {
+                file.transform?.let { spec ->
+                    val staged = File.createTempFile("download-transform-", ".partial", out.parentFile)
+                    try {
+                        out.inputStream().use { input -> staged.outputStream().use { output ->
+                            app.myspoti.extensions.PatternedBlowfish.transform(input, output, spec)
+                        } }
+                        if (Thread.currentThread().isInterrupted) throw java.io.InterruptedIOException("transform cancelled")
+                        java.nio.file.Files.move(staged.toPath(), out.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+                    } finally { staged.delete() }
+                }
+                true
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

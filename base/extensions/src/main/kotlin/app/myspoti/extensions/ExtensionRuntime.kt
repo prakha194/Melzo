@@ -53,7 +53,7 @@ class ExtensionBusy(message: String) : ExtensionException(message)
  *
  * Limits: [Limits.loadMs] to run its top level (compiling it is not counted), a per-call time limit given by the caller (counted in script
  * instructions, so a loop cannot hold the thread), [Limits.requestsPerMinute] network requests,
- * [Limits.storageChars] of storage. A call that runs over is abandoned; the next one waits behind
+ * [Limits.storageChars] of storage, [Limits.spotifyCallsPerMinute] `myspoti.spotify` calls. A call that runs over is abandoned; the next one waits behind
  * it on the extension's thread, never on the app's.
  */
 class ExtensionRuntime(
@@ -81,8 +81,11 @@ class ExtensionRuntime(
         /** Compiling it: the app's work, not the script's, slow only on a busy phone (a cold start). */
         val compileMs: Long = 20_000,
         val requestsPerMinute: Int = 120,
+        val spotifyCallsPerMinute: Int = 60,
         /** How long the user has to answer a confirmation; no answer is a refusal. */
         val confirmMs: Long = 120_000,
+        /** The biggest answer a Spotify call gives the script. */
+        val spotifyResultChars: Int = 2 * 1024 * 1024,
         val storageChars: Int = 512 * 1024,
         /** `myspoti.attest.sign` calls. */
         val attestSignsPerMinute: Int = 120,
@@ -97,6 +100,7 @@ class ExtensionRuntime(
     private var scope: ScriptableObject? = null
     @Volatile private var deadline = Long.MAX_VALUE
     private val requestTimes = ArrayDeque<Long>()
+    private val spotifyTimes = ArrayDeque<Long>()
     private val notifyTimes = ArrayDeque<Long>()
     private val attestSignTimes = ArrayDeque<Long>()
     private val attestEnrollTimes = ArrayDeque<Long>()
@@ -306,7 +310,7 @@ class ExtensionRuntime(
             ScriptableObject.putProperty(o, name, LambdaFunction(s, name, length) { _, _, _, args -> fn(args) ?: Undefined.instance })
         fun str(args: Array<Any?>, i: Int): String = args.getOrNull(i)?.takeUnless { it is Undefined }?.let { Context.toString(it) }.orEmpty()
 
-        def("info", 0) { ExtJson.encodeToString(Info.serializer(), Info(manifest.id, manifest.name, manifest.version, has(Action.ATTEST))) }
+        def("info", 0) { ExtJson.encodeToString(Info.serializer(), Info(manifest.id, manifest.name, manifest.version, has(Action.PLAYBACK_MIRROR), has(Action.ATTEST))) }
         // No action needed; a host that fails or answers nothing gives the JVM's, never "".
         def("locale", 0) { runCatching { host.locale() }.getOrNull()?.takeIf { it.isNotBlank() } ?: java.util.Locale.getDefault().toLanguageTag() }
         def("mayProvide", 1) { a ->
@@ -387,6 +391,8 @@ class ExtensionRuntime(
         def("whenOnline", 0) { need(Action.NETWORK); host.whenOnline(id); null }
         def("log", 1) { a -> host.log(id, str(a, 0).take(2_000)); null }
         def("util", 2) { a -> util(str(a, 0), str(a, 1)) }
+        def("spotifyMethods", 0) { ExtJson.encodeToString(METHOD_NAMES, SpotifyMethods.names()) }
+        def("spotify", 3) { a -> spotify(str(a, 0), str(a, 1), str(a, 2)) }
         return o
     }
 
@@ -436,7 +442,6 @@ class ExtensionRuntime(
         val uri = runCatching { URI(r.url) }.getOrElse { return "http: not a URL: ${r.url}" }
         val hostName = uri.host?.lowercase() ?: return "http: no host in ${r.url}"
         if (isPrivate(hostName)) return "http: $hostName is a local address"
-        if (SpotifyHosts.isSpotify(hostName)) return "http: $hostName is one of Spotify's servers, not open to extensions"
         val listed = manifest.hosts()
         val anyHost = Action.NETWORK_ANY in granted && "*" in listed && Action.NETWORK in declared
         val named = listed.any { it != "*" && hostMatches(it, hostName) }
@@ -567,6 +572,53 @@ class ExtensionRuntime(
 
     private fun remainingMs(): Int = leftMs().coerceAtMost(20_000).toInt()
 
+    /**
+     * `myspoti.spotify.<area>.<method>(...)`: the method must be in [SpotifyMethods] and its right
+     * granted; a destructive one runs only if the user says yes ([Host.confirm]). The script's
+     * thread waits for the host, within the call's time limit.
+     */
+    private fun spotify(area: String, name: String, argsJson: String): String {
+        val method = SpotifyMethods.find(area, name) ?: throw error("spotify.$area.$name: no such method")
+        need(method.action)
+        val args = SpotifyArgs(
+            runCatching { ExtJson.parseToJsonElement(argsJson) as JsonArray }.getOrElse { throw error("spotify.${method.key}: unreadable arguments") },
+            "spotify.${method.key}",
+        )
+        if (argsJson.length > MAX_SPOTIFY_ARGS) throw error("spotify.${method.key}: arguments over ${MAX_SPOTIFY_ARGS / 1024} KB")
+        val destructive = try { method.isDestructive(args, host::spotifyMutation) } catch (e: IllegalArgumentException) { throw error(e.message ?: "bad arguments") }
+        if (destructive && !mayWrite(method, args, argsJson)) throw error("spotify.${method.key}: the user refused")
+        throttle(spotifyTimes, limits.spotifyCallsPerMinute, "Spotify calls")
+        val result = try {
+            runBlocking { withTimeout(leftMs()) { host.spotify(id, SpotifyCall(area, name, argsJson)) } }
+        } catch (e: TimeoutCancellationException) {
+            throw TimeLimit()
+        } catch (e: InterruptedException) {
+            throw e
+        } catch (e: Exception) {
+            val why = e.message ?: e.javaClass.simpleName
+            throw error(if (why.startsWith("spotify.")) why else "spotify.${method.key}: $why")
+        }
+        if (result.length > limits.spotifyResultChars) throw error("spotify.${method.key}: answer over ${limits.spotifyResultChars / 1024 / 1024} MB")
+        return result
+    }
+
+    /**
+     * Whether a destructive call may run: asked each time, apart from a `raw.request` write one of
+     * the user's [RawGrant]s covers; that question offers "always" for this kind of request.
+     */
+    private fun mayWrite(method: SpotifyMethod, args: SpotifyArgs, argsJson: String): Boolean {
+        val text = "${manifest.name} wants to ${method.label}.\n${summary(argsJson)}"
+        if (method.key != RAW_REQUEST) return confirm(text)
+        val verb = RawRequest.check(args.str(0, "method"), args.str(1, "url"))
+        val url = args.str(1, "url")
+        val body = RawRequest.bodyText(args)
+        if (RawRequest.covered(host.rawGrants(id), verb, url, body)) return true
+        // Real operation shown; "always" only per distinct operation (none determinable: asked each time).
+        val shown = RawRequest.operationOf(body)?.let { "$text\nOperation: $it" } ?: text
+        val offer = RawRequest.offerFor(verb, url, body) ?: return confirm(shown)
+        return paused { host.confirmWrite(id, shown, offer) }.let { it == Consent.ONCE || it == Consent.ALWAYS }
+    }
+
     /** Asks the user through the host; the wait is not the script's time. */
     private fun confirm(text: String): Boolean = paused { host.confirm(id, text) } == true
 
@@ -628,7 +680,7 @@ class ExtensionRuntime(
     }
 
     @kotlinx.serialization.Serializable
-    private data class Info(val id: String, val name: String, val version: String, val attest: Boolean = false)
+    private data class Info(val id: String, val name: String, val version: String, val mirror: Boolean = false, val attest: Boolean = false)
 
     /** Thrown inside the script's thread when its time is up; not catchable by the script. */
     private class TimeLimit : Error("time limit")
@@ -656,6 +708,9 @@ class ExtensionRuntime(
             EVENT_ONLINE to Action.NETWORK,
             EVENT_SETTING to Action.SETTINGS_PAGE,
         )
+        private const val RAW_REQUEST = "raw.request"
+        private val METHOD_NAMES = MapSerializer(String.serializer(), ListSerializer(String.serializer()))
+        private const val MAX_SPOTIFY_ARGS = 256 * 1024
         private const val MAX_PAGE_MESSAGE = 64 * 1024
         const val MAX_NOTIFY_PER_HOUR = 5
         /** `http.all`: the most requests sent together. */

@@ -54,10 +54,31 @@ interface Host {
     fun postToPage(extensionId: String, json: String) {}
 
     /**
+     * Runs one `myspoti.spotify` call as the signed-in account and answers its result as JSON.
+     * The method is known and the right granted already; [SpotifyDispatcher] does the work over a
+     * [app.myspoti.api.MyspotiApi]. Suspends: the script's thread waits, within its time limit.
+     */
+    suspend fun spotify(extensionId: String, call: SpotifyCall): String = throw UnsupportedOperationException("this app has no Spotify account for extensions")
+
+    /** Whether the raw GraphQL operation [name] changes something. Unknown to the host: it does. */
+    fun spotifyMutation(name: String): Boolean = true
+
+    /**
      * Asks the user to allow a destructive change an extension is about to make ([text] says what,
      * in plain words). False refuses it, which is also what a host without a screen answers.
      */
     suspend fun confirm(extensionId: String, text: String): Boolean = false
+
+    /** The writes the user allowed [extensionId] for good on `raw.request` ([RawGrant]). */
+    fun rawGrants(extensionId: String): List<RawGrant> = emptyList()
+
+    /**
+     * Like [confirm], for a `raw.request` write, with a third answer: always allow [offer] to this
+     * extension. On [Consent.ALWAYS] the host keeps [offer] and lists it in the extension's rights,
+     * where the user revokes it. A host that cannot keep grants asks a plain [confirm].
+     */
+    suspend fun confirmWrite(extensionId: String, text: String, offer: RawGrant): Consent =
+        if (confirm(extensionId, text)) Consent.ONCE else Consent.REFUSE
 
     /**
      * Opens a sign-in page for [extensionId] ([Action.WEBVIEW_AUTH], [AuthRequest] checked) and
@@ -109,11 +130,11 @@ data class AuthRequest(val url: String, val callback: String, val hidden: Boolea
     fun checked(): AuthRequest {
         val start = runCatching { URI(url) }.getOrNull() ?: throw IllegalArgumentException("auth.open: not a URL: $url")
         require(start.scheme == "https" && !start.host.isNullOrEmpty()) { "auth.open: the url must be https" }
-        require(!SpotifyHosts.isSpotify(start.host.lowercase())) { "auth.open: not on a Spotify address" }
+        require(!RawRequest.isSpotifyHost(start.host.lowercase())) { "auth.open: not on a Spotify address" }
         val end = runCatching { URI(callback) }.getOrNull() ?: throw IllegalArgumentException("auth.open: not a URL: $callback")
         val scheme = end.scheme?.lowercase() ?: throw IllegalArgumentException("auth.open: the callback needs a scheme")
         require(scheme !in UNSAFE_SCHEMES) { "auth.open: a $scheme: callback is not allowed" }
-        if (scheme == "https") require(!end.host.isNullOrEmpty() && !SpotifyHosts.isSpotify(end.host.lowercase())) { "auth.open: the callback must name a host that is not Spotify's" }
+        if (scheme == "https") require(!end.host.isNullOrEmpty() && !RawRequest.isSpotifyHost(end.host.lowercase())) { "auth.open: the callback must name a host that is not Spotify's" }
         else require(scheme.matches(Regex("[a-z][a-z0-9+.-]{1,40}"))) { "auth.open: the callback is https or a custom scheme (myextension://done)" }
         require(url.length <= 8_192 && callback.length <= 1_024) { "auth.open: address too long" }
         return this

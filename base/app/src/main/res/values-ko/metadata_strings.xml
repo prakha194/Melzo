@@ -7,5 +7,6 @@
     <string name="metadata_asked">묻는 중</string>
     <string name="metadata_off">꺼짐: 묻지 않음</string>
     <string name="metadata_reset">기본 순서로 되돌리기</string>
+    <string name="metadata_not_on_spotify">Spotify에서 찾을 수 없음: 이 곡은 아직 재생할 수 없습니다</string>
     <string name="metadata_switch">%1$s에 묻기</string>
 </resources>

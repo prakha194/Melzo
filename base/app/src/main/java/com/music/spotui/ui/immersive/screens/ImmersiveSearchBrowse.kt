@@ -41,7 +41,7 @@ import app.myspoti.host.android.MyspotiRuntime
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.music.spotui.data.api.Features
-import com.music.spotui.ui.components.imageUrlOf
+import com.music.spotui.ui.components.spotifyImageUrl
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.immersive.components.immersiveClickable
 
@@ -103,7 +103,7 @@ internal fun BrowseTileRow(
 @Composable
 internal fun BrowseTileCard(tile: BrowseTile, modifier: Modifier = Modifier) {
     val tone = remember(tile.color) { moodTone(tile.color) }
-    val artwork = imageUrlOf(tile.image)
+    val artwork = spotifyImageUrl(tile.image)
     Box(modifier = modifier.background(tone.stripe)) {
         Box(
             Modifier

@@ -59,7 +59,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.music.spotui.data.entity.AlbumsModel
 import com.music.spotui.data.entity.SongsModel
-import com.music.spotui.ui.components.imageUrlOf
+import com.music.spotui.ui.components.spotifyImageUrl
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.immersive.components.ImmersiveCover
 import com.music.spotui.ui.immersive.components.ImmersiveMoreButton
@@ -107,7 +107,7 @@ internal fun ArtistBackdrop(
     listState: LazyListState,
     modifier: Modifier = Modifier,
 ) {
-    val model = imageUrlOf(imageUrl)
+    val model = spotifyImageUrl(imageUrl)
     val artHeightPx = with(androidx.compose.ui.platform.LocalDensity.current) { artHeight.toPx() }
     val softenFoot = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     Box(modifier.clipToBounds()) {

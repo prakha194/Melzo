@@ -143,13 +143,13 @@ fun RecentlyPlayedScreen(navController: NavController) {
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.lbl_back),
+                contentDescription = stringResource(R.string.accessibility_navigate_back),
                 tint = AppText,
                 modifier = Modifier.wideClickable(horizontal = 8.dp, vertical = 10.dp) { navController.popBackStack() }
                     .size(40.dp).padding(8.dp),
             )
             Text(
-                stringResource(R.string.recent_title),
+                stringResource(R.string.recents_title),
                 fontWeight = FontWeight.Bold, color = AppText, fontSize = 24.sp, maxLines = 1,
                 overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 4.dp),
             )
@@ -330,7 +330,7 @@ private fun RecentCover(context: RecentItem, size: Dp) {
             ) {
                 Icon(
                     Icons.Filled.Favorite,
-                    contentDescription = stringResource(R.string.lbl_liked_songs),
+                    contentDescription = stringResource(R.string.collection_liked_songs_title),
                     tint = AppText,
                     modifier = Modifier.size(13.dp),
                 )

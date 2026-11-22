@@ -20,9 +20,9 @@ import com.music.spotui.data.preferences.LookPref
  * sold): it unlocks cosmetic thank-yous only (accent colour, app icon, badge).
  */
 object SupportReminder {
-    const val URL = "https://ko-fi.com/myspoti"
-    /** GitHub Sponsors, the other way to give (monthly or once). */
-    const val SPONSORS_URL = "https://github.com/sponsors/kota-zo"
+    const val URL = "https://github.com/Kirisos-Guna/myspoti"
+    /** The repository, where a star helps others find the app. */
+    const val SPONSORS_URL = URL
     const val FIRST_AFTER_MS = 24L * 3_600_000
     /**
      * Supporter perks ("I've supported", accent, icon, badge) are off until supports can
@@ -103,7 +103,11 @@ object SupportReminder {
         icon = Accent.entries.firstOrNull { it.key == p.getString("icon", "green") } ?: Accent.GREEN
     }
 
+    /** Donation reminders are off in this build: no pop-up asks for money. */
+    const val REMINDERS_ENABLED = false
+
     fun isDue(context: Context, now: Long = System.currentTimeMillis()): Boolean {
+        if (!REMINDERS_ENABLED) return false
         val p = prefs(context)
         val firstSeen = p.getLong("first_seen", 0L).takeIf { it > 0 } ?: now.also { p.edit().putLong("first_seen", it).apply() }
         return now >= nextAt(firstSeen, p.getLong("last_shown", 0L), level, p.getLong("supported_at", 0L))

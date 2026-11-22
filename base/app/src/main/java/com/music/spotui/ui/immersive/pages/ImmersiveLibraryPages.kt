@@ -86,8 +86,8 @@ fun ImmersiveFolderScreen(navController: NavController, uri: String, initialName
     LaunchedEffect(uri) { LibraryEdits.reloads.collect { generation++ } }
 
     if (menu) ImmersiveSheet(onDismiss = { menu = false }) {
-        ImmersiveSheetRow(Icons.AutoMirrored.Rounded.PlaylistAdd, stringResource(R.string.lbl_new_playlist), onClick = { menu = false; newPlaylist = true })
-        ImmersiveSheetRow(Icons.Rounded.Edit, stringResource(R.string.lbl_folder_rename), onClick = { menu = false; renaming = true })
+        ImmersiveSheetRow(Icons.AutoMirrored.Rounded.PlaylistAdd, stringResource(R.string.add_to_playlist_new_playlist_button_text), onClick = { menu = false; newPlaylist = true })
+        ImmersiveSheetRow(Icons.Rounded.Edit, stringResource(R.string.context_menu_rename_folder), onClick = { menu = false; renaming = true })
         ImmersiveSheetRow(Icons.Rounded.DeleteOutline, stringResource(R.string.folder_delete), destructive = true, onClick = { menu = false; deletingFolder = true })
     }
     itemMenu?.let { LibraryItemSheet(it, onDismiss = { itemMenu = null }, onChanged = { generation++ }) }
@@ -100,24 +100,24 @@ fun ImmersiveFolderScreen(navController: NavController, uri: String, initialName
                 // The folder is gone from the library at once; a refusal brings it back.
                 LibraryFolders.delete(context, uri)
                 navController.navigateUp()
-            }) { Text(stringResource(R.string.lbl_delete), style = Immersive.BodyStrong.copy(color = Immersive.Destructive)) }
+            }) { Text(stringResource(R.string.actions_picker_delete), style = Immersive.BodyStrong.copy(color = Immersive.Destructive)) }
         },
         dismissButton = {
             TextButton(onClick = { deletingFolder = false }) {
-                Text(stringResource(R.string.action_cancel_label), style = Immersive.BodyStrong.copy(color = Immersive.Accent))
+                Text(stringResource(R.string.cancel), style = Immersive.BodyStrong.copy(color = Immersive.Accent))
             }
         },
     )
     // A Spotify playlist created straight inside this folder.
     if (newPlaylist) ImmersiveNameDialog(
-        stringResource(R.string.lbl_playlist_create), context.getString(R.string.my_playlist),
-        stringResource(R.string.lbl_create), onDismiss = { newPlaylist = false },
+        stringResource(R.string.create_playlist_content_description), context.getString(R.string.my_playlist),
+        stringResource(R.string.create_playlist_create_button), onDismiss = { newPlaylist = false },
     ) { playlistName ->
         newPlaylist = false
         SpotifySync.createPlaylistWithTrack(context, playlistName, "", folderUri = uri)
     }
     if (renaming) ImmersiveNameDialog(
-        stringResource(R.string.lbl_folder_rename), name, stringResource(R.string.local_rename),
+        stringResource(R.string.context_menu_rename_folder), name, stringResource(R.string.local_rename),
         onDismiss = { renaming = false },
     ) { newName ->
         renaming = false
@@ -142,7 +142,7 @@ fun ImmersiveFolderScreen(navController: NavController, uri: String, initialName
                 header = {
                     ImmersiveLargeTitle(
                         title = name,
-                        subtitle = entries?.size?.let { pluralStringResource(R.plurals.lbl_n_playlists, it, it.toString()) },
+                        subtitle = entries?.size?.let { pluralStringResource(R.plurals.add_to_playlist_folder_subtitle_playlists_count, it, it.toString()) },
                     )
                 },
                 loading = entries == null,
@@ -157,7 +157,7 @@ fun ImmersiveFolderScreen(navController: NavController, uri: String, initialName
             )
         }
         ImmersiveTopBar(title = name, collapse = rememberTopBarCollapse(listState), onBack = { navController.navigateUp() }) {
-            ImmersiveBarAction(Icons.Rounded.MoreHoriz, stringResource(R.string.lbl_more), onClick = { menu = true })
+            ImmersiveBarAction(Icons.Rounded.MoreHoriz, stringResource(R.string.content_description_context_menu), onClick = { menu = true })
         }
     }
 }
@@ -195,10 +195,10 @@ fun ImmersiveLocalPlaylistScreen(navController: NavController, id: String) {
     ImmersivePage(
         title = playlist.name,
         subtitle = stringResource(R.string.local_playlist_subtitle) + " • " +
-            pluralStringResource(R.plurals.lbl_n_songs_s, playlist.items.size, playlist.items.size.toString()),
+            pluralStringResource(R.plurals.add_to_playlist_subtitle_songs_count, playlist.items.size, playlist.items.size.toString()),
         onBack = { navController.navigateUp() },
         actions = {
-            ImmersiveBarAction(Icons.Rounded.MoreHoriz, stringResource(R.string.lbl_more), onClick = { menu = true })
+            ImmersiveBarAction(Icons.Rounded.MoreHoriz, stringResource(R.string.content_description_context_menu), onClick = { menu = true })
         },
     ) {
         if (playlist.items.isEmpty()) {

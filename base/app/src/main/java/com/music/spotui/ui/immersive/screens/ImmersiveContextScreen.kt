@@ -302,7 +302,7 @@ private fun ImmersiveContextContent(navController: NavController, vm: ContextVie
             }) { Text(stringResource(R.string.playlist_leave_button), color = Immersive.Destructive) }
         },
         dismissButton = {
-            androidx.compose.material3.TextButton(onClick = { leaveAsk = false }) { Text(stringResource(R.string.action_cancel_label), color = Immersive.Text) }
+            androidx.compose.material3.TextButton(onClick = { leaveAsk = false }) { Text(stringResource(R.string.cancel), color = Immersive.Text) }
         },
     )
     // Confirmations (and their Undo) float above the list, not inside a menu that closes.
@@ -349,18 +349,18 @@ private fun ImmersiveContextContent(navController: NavController, vm: ContextVie
     )
     if (askRemoveDownloads) ImmersiveAlertDialog(
         onDismissRequest = { askRemoveDownloads = false },
-        title = { Text(stringResource(R.string.lbl_download_remove_q), style = Immersive.Headline) },
-        text = { Text(stringResource(R.string.lbl_download_remove_note), style = Immersive.Subhead) },
+        title = { Text(stringResource(R.string.playlist_entity_remove_download_dialog_title), style = Immersive.Headline) },
+        text = { Text(stringResource(R.string.playlist_entity_remove_download_dialog_description), style = Immersive.Subhead) },
         confirmButton = {
             TextButton(onClick = {
                 askRemoveDownloads = false
                 OfflineCollections.remove(p.uri)
-                Toast.makeText(context, context.getString(R.string.lbl_download_removed), Toast.LENGTH_SHORT).show()
-            }) { Text(stringResource(R.string.lbl_delete_confirm), style = Immersive.BodyStrong.copy(color = Immersive.Accent)) }
+                Toast.makeText(context, context.getString(R.string.toast_undownload), Toast.LENGTH_SHORT).show()
+            }) { Text(stringResource(R.string.playlist_entity_remove_download_dialog_positive_button), style = Immersive.BodyStrong.copy(color = Immersive.Accent)) }
         },
         dismissButton = {
             TextButton(onClick = { askRemoveDownloads = false }) {
-                Text(stringResource(R.string.lbl_cancel), style = Immersive.BodyStrong)
+                Text(stringResource(R.string.add_to_playlist_button_cancel), style = Immersive.BodyStrong)
             }
         },
     )
@@ -516,13 +516,13 @@ private fun ImmersiveContextContent(navController: NavController, vm: ContextVie
                     onSubmit = {},
                     focusRequester = findFocus,
                     placeholder = stringResource(
-                        if (p.type == "liked") R.string.lbl_find_liked else R.string.lbl_find_playlist,
+                        if (p.type == "liked") R.string.find_in_context_edit_text_liked_songs_hint else R.string.find_in_context_edit_text_playlist_hint,
                     ),
                     modifier = Modifier.padding(horizontal = Immersive.Gutter, vertical = 8.dp),
                 )
             }
             if (rows.isEmpty() && find.isNotBlank()) item(key = "find-empty") {
-                ImmersiveMessageState(stringResource(R.string.lbl_no_results, find.trim()))
+                ImmersiveMessageState(stringResource(R.string.assisted_curation_search_empty_view_no_result_title, find.trim()))
             }
             if (reordering) item(key = "reorder-hint") {
                 Text(
@@ -559,7 +559,7 @@ private fun ImmersiveContextContent(navController: NavController, vm: ContextVie
                                     if (m != null) com.music.spotui.ui.components.ProfileAvatar(m.imageUrl, m.name, 22.dp)
                                     if (reordering) Icon(
                                         Icons.Rounded.DragHandle,
-                                        contentDescription = stringResource(R.string.lbl_move),
+                                        contentDescription = stringResource(R.string.edit_playlist_items_move_chip),
                                         tint = Immersive.TextSecondary,
                                         modifier = Modifier.padding(start = if (m != null) 8.dp else 0.dp).then(drag.handle(song.rowUid)).size(28.dp),
                                     )
@@ -637,7 +637,7 @@ private fun ImmersiveContextContent(navController: NavController, vm: ContextVie
                     if (findable) Box {
                         ImmersiveBarAction(
                             icon = Icons.Rounded.SwapVert,
-                            contentDescription = stringResource(R.string.lbl_sort),
+                            contentDescription = stringResource(R.string.filter_and_sort_sort_section_title),
                             onClick = { sortMenu = true },
                             tint = if (sort.isCustom) Immersive.Text else Immersive.Accent,
                         )
@@ -651,12 +651,14 @@ private fun ImmersiveContextContent(navController: NavController, vm: ContextVie
                     if (!com.music.spotui.data.catalog.CatalogRuntime.isCatalogUri(p.uri) &&
                         (p.type == "playlist" || p.type == "album" || p.type == "liked" || p.type == "liked-artist")) ImmersiveBarAction(
                         icon = Icons.Rounded.MoreHoriz,
-                        contentDescription = stringResource(R.string.lbl_more),
+                        contentDescription = stringResource(R.string.content_description_context_menu),
                         onClick = { if (p.type == "playlist") playlistMenu = true else albumMenu = true },
                     )
                 }
             } else null,
         )
+        // Opened from a collaborative-playlist invitation (…?pt=): the playlist is joined from here.
+        InviteJoinBar(vm, p, Modifier.align(Alignment.BottomCenter).padding(start = Immersive.Gutter, end = Immersive.Gutter, bottom = Immersive.BottomChrome))
         SnackbarHost(
             hostState = snackbar,
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = Immersive.BottomChrome),
@@ -857,7 +859,7 @@ private fun ContextHeader(
                     else DownloadAsk.start(context) { q ->
                         com.music.spotui.di.Haptics.confirm()
                         OfflineCollections.download(p, q)
-                        Toast.makeText(context, context.getString(R.string.lbl_downloading), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.download_notification_downloading), Toast.LENGTH_SHORT).show()
                     }
                 }
                 if (SmartShuffle.canPlay(p.uri)) ImmersiveCircleButton(
@@ -869,7 +871,7 @@ private fun ContextHeader(
                 // "Move": a handle on each song, to put them in another order (again: done).
                 if (moving != null) ImmersiveCircleButton(
                     icon = Icons.Rounded.DragHandle,
-                    contentDescription = stringResource(if (moving) R.string.done else R.string.lbl_move),
+                    contentDescription = stringResource(if (moving) R.string.done else R.string.edit_playlist_items_move_chip),
                     onClick = onMove,
                     tint = if (moving) Immersive.Accent else Immersive.Text,
                 )
@@ -909,7 +911,7 @@ private fun DownloadCircle(downloaded: Int, total: Int, busy: Boolean, kept: Boo
     ) {
         when {
             all -> Icon(
-                Icons.Rounded.DeleteOutline, stringResource(R.string.lbl_download_remove),
+                Icons.Rounded.DeleteOutline, stringResource(R.string.context_menu_undownload),
                 tint = Immersive.Accent, modifier = Modifier.size(22.dp),
             )
             busy -> if (total > 0) CircularProgressIndicator(
@@ -918,7 +920,7 @@ private fun DownloadCircle(downloaded: Int, total: Int, busy: Boolean, kept: Boo
                 strokeWidth = 2.dp, modifier = Modifier.size(22.dp),
             ) else CircularProgressIndicator(color = Immersive.Accent, strokeWidth = 2.dp, modifier = Modifier.size(22.dp))
             else -> Icon(
-                Icons.Rounded.Download, stringResource(R.string.lbl_download),
+                Icons.Rounded.Download, stringResource(R.string.context_menu_download),
                 tint = Immersive.Text, modifier = Modifier.size(22.dp),
             )
         }
@@ -930,7 +932,7 @@ private fun DownloadCircle(downloaded: Int, total: Int, busy: Boolean, kept: Boo
 private fun SortMenu(open: Boolean, sort: TrackOrder, onDismiss: () -> Unit, onSort: (TrackOrder) -> Unit) {
     DropdownMenu(expanded = open, onDismissRequest = onDismiss, containerColor = Immersive.Raised) {
         Text(
-            stringResource(R.string.lbl_sort),
+            stringResource(R.string.filter_and_sort_sort_section_title),
             style = Immersive.Caption,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
         )
@@ -976,7 +978,7 @@ private fun SimilarAlbums(navController: NavController, firstTrackId: String, al
                 title = a.name,
                 subtitle = artists,
                 imageUrl = a.images.maxByOrNull { it.width ?: 0 }?.url,
-                onClick = { navController.navigate(albumRoute(a.name, artists, com.music.spotui.ui.navigation.pageIdOf(a.uri))) },
+                onClick = { navController.navigate(albumRoute(a.name, artists, a.uri.substringAfterLast(':'))) },
             )
         }
     }
@@ -1042,3 +1044,38 @@ private fun androidx.compose.foundation.lazy.LazyListScope.immersiveRecommended(
     }
 }
 
+/** A collaborative-playlist invitation for this page: "Join" over the list, as on the Classic page. */
+@Composable
+private fun InviteJoinBar(vm: ContextViewModel, p: ContextPageModel, modifier: Modifier) {
+    val context = LocalContext.current
+    val invite by com.music.spotui.data.api.InviteLinks.pending.collectAsState()
+    var joining by remember { mutableStateOf(false) }
+    val offered = invite?.takeIf { p.type == "playlist" && it.uri == p.uri && !vm.editableContext.value } ?: return
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            // Floats over the list: glass, not an opaque card.
+            .immersiveGlassSurface(RoundedCornerShape(16.dp))
+            .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+    ) {
+        Text(stringResource(R.string.playlist_invite_banner), style = Immersive.Body, modifier = Modifier.weight(1f).padding(end = 12.dp))
+        androidx.compose.material3.Button(
+            enabled = !joining,
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Immersive.Accent, contentColor = Color.White),
+            onClick = {
+                joining = true
+                com.music.spotui.data.api.InviteLinks.join(context, offered, p) { ok ->
+                    joining = false
+                    if (ok) {
+                        vm.editableContext.value = true
+                        vm.contextSaved.value = true
+                        SongPlayer.library[p.uri] = true
+                        vm.reload()
+                        android.widget.Toast.makeText(context, context.getString(R.string.playlist_invite_joined), android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+        ) { Text(stringResource(R.string.playlist_invite_join), fontWeight = FontWeight.Bold) }
+    }
+}

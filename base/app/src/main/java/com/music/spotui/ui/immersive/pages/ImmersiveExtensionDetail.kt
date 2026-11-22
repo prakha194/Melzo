@@ -295,6 +295,19 @@ fun ImmersiveExtensionScreen(navController: NavController, id: String) {
         immersiveGroup("actions", headerRes = R.string.actions_title) {
             m.asksShown().sortedByDescending { it.critical }.forEach { a -> row { Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) { ActionRow(a) } } }
         }
+        // Writes allowed for good from a confirmation ("Always"): each one revocable here.
+        if (e.rawGrants.isNotEmpty()) immersiveGroup("grants", headerRes = R.string.ext_grants_title, footerRes = R.string.ext_grants_note) {
+            e.rawGrants.forEach { g ->
+                row {
+                    Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(g.toString(), style = Immersive.Caption.copy(color = Immersive.Text, fontFamily = FontFamily.Monospace), modifier = Modifier.weight(1f))
+                        TextButton(onClick = { Extensions.revokeRawGrant(id, g) }) {
+                            Text(stringResource(R.string.ext_grant_revoke), style = Immersive.Subhead.copy(color = Warning))
+                        }
+                    }
+                }
+            }
+        }
         if (m.settings.isNotEmpty()) immersiveGroup("settings", headerRes = R.string.extension_settings) {
             m.settings.forEach { s -> row { Column { com.music.spotui.ui.screens.networkEditors(id, s).forEach { SettingRow(id, it) } } } }
         }

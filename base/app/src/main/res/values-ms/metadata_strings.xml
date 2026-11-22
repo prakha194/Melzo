@@ -7,5 +7,6 @@
     <string name="metadata_asked">Ditanya</string>
     <string name="metadata_off">Mati: tidak pernah ditanya</string>
     <string name="metadata_reset">Kembali ke susunan lalai</string>
+    <string name="metadata_not_on_spotify">Tidak ditemui di Spotify: lagu ini belum boleh dimainkan</string>
     <string name="metadata_switch">Tanya %1$s</string>
 </resources>

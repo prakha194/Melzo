@@ -54,6 +54,23 @@ fun App() {
     // The playlists at the top of the library, fetched ahead on Wi-Fi (see PagePrefetch).
     LaunchedEffect(Unit) { com.music.spotui.data.api.PagePrefetch.start() }
 
+    // A collaborative-playlist invitation was opened (see InviteLinks): its playlist page offers "Join".
+    val invite by com.music.spotui.data.api.InviteLinks.pending.collectAsState()
+    LaunchedEffect(invite) {
+        val i = invite?.takeIf { !it.opened } ?: return@LaunchedEffect
+        app.myspoti.host.android.MyspotiRuntime.api.ready.first { it }
+        i.opened = true
+        navController.navigateSingleTop(com.music.spotui.ui.navigation.playlistRoute(i.playlistId))
+    }
+
+    // A Blend invitation was opened (see InviteLinks): who invites, and "Join", over the app.
+    val blendLink by com.music.spotui.data.api.InviteLinks.blend.collectAsState()
+    blendLink?.let { link ->
+        com.music.spotui.ui.screens.BlendInviteSheet(link, navController) {
+            if (com.music.spotui.data.api.InviteLinks.blend.value === link) com.music.spotui.data.api.InviteLinks.blend.value = null
+        }
+    }
+
     // Genius's explanations of the song playing, read while it starts: ready when the lyrics open.
     val geniusLang = com.music.spotui.ui.components.readerLanguage()
     val playingUri = com.music.spotui.di.SongPlayer.nowPlaying.value.uri
@@ -64,11 +81,11 @@ fun App() {
         com.music.spotui.data.api.GeniusMeaning.prefetch(playingUri.substringAfterLast(':'), st.title.value, st.singer.value, geniusLang)
     }
     // A shared link to a list / artist / podcast: its page, over whatever was open.
-    val pageLink by com.music.spotui.data.api.PageLinks.page.collectAsState()
+    val pageLink by com.music.spotui.data.api.InviteLinks.page.collectAsState()
     LaunchedEffect(pageLink) {
         val uri = pageLink ?: return@LaunchedEffect
-        com.music.spotui.data.api.PageLinks.page.value = null
-        val id = com.music.spotui.ui.navigation.pageIdOf(uri)
+        com.music.spotui.data.api.InviteLinks.page.value = null
+        val id = uri.substringAfterLast(':')
         com.music.spotui.ui.navigation.PlayerSheet.close()
         runCatching {
             navController.navigateSingleTop(when (uri.split(':')[1]) {
@@ -79,13 +96,8 @@ fun App() {
             })
         }
     }
-    val shareTarget by com.music.spotui.ui.components.ShareItem.request.collectAsState()
-    val shareContext = androidx.compose.ui.platform.LocalContext.current
-    LaunchedEffect(shareTarget) {
-        val t = shareTarget ?: return@LaunchedEffect
-        com.music.spotui.ui.components.ShareItem.request.value = null
-        com.music.spotui.ui.components.ShareItem.send(shareContext, t)
-    }
+    val shareTarget by com.music.spotui.ui.components.SpotifyCode.request.collectAsState()
+    shareTarget?.let { t -> com.music.spotui.ui.components.SpotifyCodeSheet(t) { com.music.spotui.ui.components.SpotifyCode.request.value = null } }
 
     // The look (Settings > Display) switches the shell live. The nav host keeps one place in the
     // tree in both looks, so a switch keeps the back stack, the pages' state and the playback.
@@ -135,7 +147,8 @@ fun App() {
         else com.music.spotui.ui.navigation.PlayerOverlay(navController)
         // "Not interested" and its Undo, over the pages and the players.
         com.music.spotui.ui.components.HiddenSongUndo()
-        com.music.spotui.ui.components.NoSourceNotice()
+        // A sponsor read skipped in a podcast (SponsorBlock), and its Undo.
+        com.music.spotui.podcast.SponsorSkipUndo()
     }
     }
 }
@@ -246,7 +259,7 @@ private fun SupportDialog(supporter: Boolean, onSupport: () -> Unit, onSponsor: 
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, fontSize = 16.sp,
                 )
             }
-            com.music.spotui.ui.components.GitHubSponsorButton(Modifier.padding(top = 10.dp), onClick = onSponsor)
+            com.music.spotui.ui.components.StarOnGitHubButton(Modifier.padding(top = 10.dp), onClick = onSponsor)
             androidx.compose.material3.Text(
                 androidx.compose.ui.res.stringResource(app.myspoti.engine.R.string.support_decline),
                 color = AppText, fontFamily = com.music.spotui.ui.theme.AppSans,
@@ -332,7 +345,7 @@ private fun UpdatePrompt() {
             com.music.spotui.data.api.AppUpdater.State.NeedsPermission -> app.myspoti.engine.R.string.update_allow
             is com.music.spotui.data.api.AppUpdater.State.Failed ->
                 if (byHand) app.myspoti.engine.R.string.sys_update_open_page else app.myspoti.engine.R.string.update_retry
-            else -> app.myspoti.engine.R.string.lbl_update
+            else -> app.myspoti.engine.R.string.version_sunsetting_dialog_cta_update
         }),
         onUpdate = {
             when {
@@ -428,7 +441,7 @@ private fun UpdateDialog(
                 )
             }
             androidx.compose.material3.Text(
-                androidx.compose.ui.res.stringResource(app.myspoti.engine.R.string.lbl_later),
+                androidx.compose.ui.res.stringResource(app.myspoti.engine.R.string.age_assurance_intro_cta_not_now),
                 color = AppText, fontFamily = com.music.spotui.ui.theme.AppSans,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, fontSize = 15.sp,
                 modifier = Modifier.padding(top = 8.dp).pressable(0.96f, onClick = onLater).padding(horizontal = 24.dp, vertical = 12.dp),

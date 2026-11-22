@@ -64,8 +64,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import app.myspoti.engine.R
 import com.music.spotui.data.preferences.DownloadQuality
+import com.music.spotui.data.preferences.StreamingQuality
 import com.music.spotui.data.preferences.getDownloadQuality
+import com.music.spotui.data.preferences.getStreamingQuality
 import com.music.spotui.data.preferences.setDownloadQuality
+import com.music.spotui.data.preferences.setStreamingQuality
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.look.rememberReduceMotion
 import com.music.spotui.ui.navigation.Routes
@@ -74,7 +77,16 @@ import com.music.spotui.ui.screens.shareDiagnosticReport
 import kotlinx.coroutines.launch
 
 /** Where the Immersive Settings are: the list of categories, one category, or a choice inside it. */
-private enum class SettingsPage { Root, Playback, Sources, Lyrics, Crossfade, Downloads, DownloadQuality, Storage, Data, Display, Look, Rotation, Language, LyricsLanguage, App, Accounts, Library }
+private enum class SettingsPage { Root, Playback, Sources, Lyrics, StreamingWifi, StreamingCell, Crossfade, Downloads, DownloadQuality, Storage, Data, Display, Look, Rotation, Language, LyricsLanguage, App, Accounts, Library }
+
+private val StreamingChoices = listOf(
+    Triple(StreamingQuality.AUTO, R.string.quality_streaming_auto, R.string.quality_streaming_auto_detail),
+    Triple(StreamingQuality.LOW, R.string.quality_streaming_low, R.string.quality_streaming_low_detail),
+    Triple(StreamingQuality.NORMAL, R.string.quality_streaming_normal, R.string.quality_streaming_normal_detail),
+    Triple(StreamingQuality.HIGH, R.string.quality_streaming_high, R.string.quality_streaming_high_detail),
+    // Offered with a Premium account only (see the page below).
+    Triple(StreamingQuality.VERY_HIGH, R.string.quality_streaming_very_high, R.string.quality_streaming_very_high_detail),
+)
 
 private val DownloadChoices = listOf(
     Triple(DownloadQuality.OFF, R.string.quality_download_off, R.string.quality_download_off_detail),
@@ -127,6 +139,8 @@ fun ImmersiveSettingsScreen(navController: NavController) {
             SettingsPage.Playback -> PlaybackPage(navController, open, back)
             SettingsPage.Sources -> SourcesPage(navController, back)
             SettingsPage.Lyrics -> LyricsPage(open, back)
+            SettingsPage.StreamingWifi -> StreamingPage(cellular = false, back)
+            SettingsPage.StreamingCell -> StreamingPage(cellular = true, back)
             SettingsPage.Crossfade -> CrossfadePage(back)
             SettingsPage.Downloads -> DownloadsPage(navController, open, back)
             SettingsPage.DownloadQuality -> DownloadQualityPage(back)
@@ -158,7 +172,7 @@ private fun SettingsRoot(navController: NavController, open: (SettingsPage) -> U
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val focus = remember { androidx.compose.ui.focus.FocusRequester() }
     ImmersivePage(
-        title = stringResource(R.string.settings_screen_title), onBack = back,
+        title = stringResource(R.string.settings_title), onBack = back,
         actions = {
             com.music.spotui.ui.immersive.shell.ImmersiveBarAction(
                 Icons.Rounded.Search, stringResource(R.string.settings_search), onClick = { query = if (query == null) "" else null },
@@ -194,7 +208,7 @@ private fun SettingsRoot(navController: NavController, open: (SettingsPage) -> U
         immersiveGroup("music") {
             row {
                 ImmersiveGroupRow(
-                    stringResource(R.string.accounts_title), detail = com.music.spotui.ui.components.accountProviderLabel(com.music.spotui.data.preferences.AccountProviderPref.id),
+                    stringResource(R.string.accounts_title), detail = com.music.spotui.ui.components.switchAccountDetail(),
                     icon = Icons.Rounded.Person, chevron = true, onClick = { open(SettingsPage.Accounts) },
                 )
             }
@@ -313,6 +327,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.sourcesLink(action: a
 @Composable
 private fun PlaybackPage(navController: NavController, open: (SettingsPage) -> Unit, back: () -> Unit) {
     val ctx = LocalContext.current
+    val wifi = getStreamingQuality(ctx, false)
+    val cell = getStreamingQuality(ctx, true)
+    val label = { q: StreamingQuality -> StreamingChoices.first { it.first == q }.second }
     var headsetSkip by remember { mutableStateOf(app.myspoti.host.android.PlaybackService.skipsOnEpisodes(ctx)) }
     var keepPlaying by remember { mutableStateOf(app.myspoti.host.android.PlaybackService.keepsPlayingOnClose(ctx)) }
     val crossfade = com.music.spotui.data.preferences.CrossfadePref.seconds
@@ -325,6 +342,10 @@ private fun PlaybackPage(navController: NavController, open: (SettingsPage) -> U
     val extHeader = ext?.let { stringResource(R.string.ext_section_settings, it.name) }
     ImmersivePage(title = stringResource(R.string.settings_section_playback), onBack = back) {
         if (ext != null && extHeader != null) extensionSectionGroup(ext, extHeader)
+        if (ext?.hidesAppQuality != true) immersiveGroup("quality", footerRes = R.string.quality_streaming_detail) {
+            row { ImmersiveGroupRow(stringResource(R.string.quality_streaming_wifi_title), value = stringResource(label(wifi)), chevron = true, onClick = { open(SettingsPage.StreamingWifi) }) }
+            row { ImmersiveGroupRow(stringResource(R.string.quality_streaming_cell_title), value = stringResource(label(cell)), chevron = true, onClick = { open(SettingsPage.StreamingCell) }) }
+        }
         immersiveGroup("playback") {
             row {
                 ImmersiveSwitchRow(
@@ -361,6 +382,14 @@ private fun PlaybackPage(navController: NavController, open: (SettingsPage) -> U
         // What keeps the music going and what the headset buttons do.
         immersiveGroup("controls", headerRes = R.string.settings_section_controls) {
             row {
+                var nativeAudio by remember { mutableStateOf(com.music.spotui.di.NativeAudio.enabled) }
+                ImmersiveSwitchRow(
+                    stringResource(R.string.settings_native_audio_title), checked = nativeAudio,
+                    onChecked = { nativeAudio = it; com.music.spotui.di.NativeAudio.set(ctx, it) },
+                    detail = stringResource(R.string.settings_native_audio_detail),
+                )
+            }
+            row {
                 ImmersiveSwitchRow(
                     stringResource(R.string.settings_keep_playing_title), checked = keepPlaying,
                     onChecked = { keepPlaying = it; app.myspoti.host.android.PlaybackService.setKeepsPlayingOnClose(ctx, it) },
@@ -379,7 +408,7 @@ private fun PlaybackPage(navController: NavController, open: (SettingsPage) -> U
     }
 }
 
-/** The library: what it shows (local files, Live Radio, hidden songs), new releases. */
+/** The library: what it shows (local files, Live Radio, hidden songs), new releases, and podcasts' SponsorBlock. */
 @Composable
 private fun LibraryPage(navController: NavController, back: () -> Unit) {
     val ctx = LocalContext.current
@@ -418,6 +447,8 @@ private fun LibraryPage(navController: NavController, back: () -> Unit) {
                 )
             }
         }
+        // Podcasts: SponsorBlock (SponsorBlockGroup.kt).
+        sponsorBlockGroup()
     }
 }
 
@@ -490,6 +521,28 @@ private fun LyricsPage(open: (SettingsPage) -> Unit, back: () -> Unit) {
                     else com.music.spotui.data.AppLanguage.nativeName(translateTo),
                     chevron = true, onClick = { open(SettingsPage.LyricsLanguage) },
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StreamingPage(cellular: Boolean, back: () -> Unit) {
+    val ctx = LocalContext.current
+    var current by remember(cellular) { mutableStateOf(getStreamingQuality(ctx, cellular)) }
+    // Very high is the Web Player's Premium level: offered with a Premium account, kept while chosen.
+    val premium by app.myspoti.spotify.AccountPlan.premium.collectAsState()
+    val choices = StreamingChoices.filter { it.first != StreamingQuality.VERY_HIGH || premium == true || current == StreamingQuality.VERY_HIGH }
+    ImmersivePage(
+        title = stringResource(if (cellular) R.string.quality_streaming_cell_title else R.string.quality_streaming_wifi_title),
+        onBack = back,
+    ) {
+        immersiveGroup("choices", footerRes = R.string.quality_streaming_detail) {
+            choices.forEach { (value, label, detail) ->
+                row {
+                    ImmersiveChoiceRow(stringResource(label), selected = current == value, detail = stringResource(detail),
+                        onClick = { current = value; setStreamingQuality(ctx, value, cellular) })
+                }
             }
         }
     }
@@ -742,7 +795,7 @@ private fun StoragePage(back: () -> Unit) {
         if (com.music.spotui.data.offline.OfflineStore.tracks.isNotEmpty()) immersiveGroup("remove") {
             row {
                 ImmersiveGroupRow(
-                    stringResource(R.string.lbl_downloads_clear), detail = stringResource(R.string.downloads_size, size),
+                    stringResource(R.string.settings_item_remove_downloads_title), detail = stringResource(R.string.downloads_size, size),
                     destructive = true, onClick = { ask = true },
                 )
             }
@@ -750,15 +803,15 @@ private fun StoragePage(back: () -> Unit) {
     }
     if (ask) ImmersiveAlertDialog(
         onDismissRequest = { ask = false },
-        title = { Text(stringResource(R.string.lbl_downloads_clear_q), style = Immersive.Headline) },
-        text = { Text(stringResource(R.string.lbl_download_remove_note), style = Immersive.Subhead) },
+        title = { Text(stringResource(R.string.settings_storage_remove_downloads_dialog_title), style = Immersive.Headline) },
+        text = { Text(stringResource(R.string.playlist_entity_remove_download_dialog_description), style = Immersive.Subhead) },
         confirmButton = {
             TextButton(onClick = { ask = false; com.music.spotui.data.offline.OfflineDownloader.removeAll() }) {
-                Text(stringResource(R.string.lbl_delete_confirm), color = Immersive.Destructive)
+                Text(stringResource(R.string.playlist_entity_remove_download_dialog_positive_button), color = Immersive.Destructive)
             }
         },
         dismissButton = {
-            TextButton(onClick = { ask = false }) { Text(stringResource(R.string.lbl_cancel), color = Immersive.Accent) }
+            TextButton(onClick = { ask = false }) { Text(stringResource(R.string.add_to_playlist_button_cancel), color = Immersive.Accent) }
         },
     )
 }
@@ -874,13 +927,20 @@ private fun DisplayPage(open: (SettingsPage) -> Unit, back: () -> Unit) {
                 ImmersiveSwitchRow(stringResource(R.string.settings_amoled_theme), checked = energy.blackPreference,
                     onChecked = app.myspoti.power.EnergySettings::setBlackBackground, detail = stringResource(R.string.settings_amoled_theme_subtitle))
             }
+            row {
+                var picking by remember { mutableStateOf(false) }
+                ImmersiveGroupRow(stringResource(R.string.refresh_rate_title), detail = stringResource(R.string.refresh_rate_detail),
+                    onClick = { picking = true },
+                    trailing = { Text(com.music.spotui.ui.components.refreshRateLabel(), color = Immersive.TextSecondary, modifier = Modifier.padding(end = 8.dp)) })
+                if (picking) com.music.spotui.ui.components.RefreshRateDialog { picking = false }
+            }
             // The looping visuals, as in the Classic settings: off while the energy saver holds them.
             row {
-                ImmersiveSwitchRow(stringResource(R.string.lbl_song_videos),
+                ImmersiveSwitchRow(stringResource(R.string.settings_item_canvas_title),
                     checked = energy.canvasEnabled && !energy.policy.saverEnabled,
                     enabled = !energy.policy.saverEnabled,
                     onChecked = app.myspoti.power.EnergySettings::setCanvasEnabled,
-                    detail = stringResource(if (energy.policy.saverEnabled) R.string.energy_saver_summary else R.string.lbl_song_videos_note))
+                    detail = stringResource(if (energy.policy.saverEnabled) R.string.energy_saver_summary else R.string.video_settings_canvas_subtitle))
             }
             row {
                 ImmersiveSwitchRow(stringResource(R.string.canvas_wifi_only), checked = canvasWifiOnly,
@@ -933,7 +993,7 @@ private fun DisplayPage(open: (SettingsPage) -> Unit, back: () -> Unit) {
             }
             row {
                 ImmersiveGroupRow(
-                    stringResource(R.string.lbl_language),
+                    stringResource(R.string.settings_item_app_language_title),
                     value = if (language == com.music.spotui.data.AppLanguage.SYSTEM) auto else com.music.spotui.data.AppLanguage.nativeName(language),
                     chevron = true, onClick = { open(SettingsPage.Language) },
                 )
@@ -1021,7 +1081,7 @@ private fun LanguagePage(back: () -> Unit) {
     val current = remember { com.music.spotui.data.AppLanguage.current(ctx) }
     val auto = stringResource(R.string.language_auto)
     fun label(tag: String) = if (tag == com.music.spotui.data.AppLanguage.SYSTEM) auto else com.music.spotui.data.AppLanguage.nativeName(tag)
-    ImmersivePage(title = stringResource(R.string.lbl_language), onBack = back) {
+    ImmersivePage(title = stringResource(R.string.settings_item_app_language_title), onBack = back) {
         immersiveGroup("choices", footerRes = R.string.language_partial_note) {
             com.music.spotui.data.AppLanguage.AVAILABLE.forEach { tag ->
                 row {
@@ -1096,7 +1156,42 @@ private fun AppPage(navController: NavController, back: () -> Unit) {
                 )
             }
         }
+        immersiveGroup("scrobbling") {
+            row {
+                var open by remember { mutableStateOf(false) }
+                ImmersiveGroupRow(stringResource(R.string.scrobble_title), detail = com.music.spotui.ui.components.scrobbleSummary(), onClick = { open = true })
+                if (open) com.music.spotui.ui.components.ScrobbleDialog { open = false }
+            }
+        }
+        immersiveGroup("channel") {
+            // Stable or beta updates (the same choice as in About).
+            row {
+                var picking by remember { mutableStateOf(false) }
+                val beta = com.music.spotui.data.api.UpdateChecker.isBeta
+                ImmersiveGroupRow(
+                    stringResource(R.string.update_channel_title),
+                    detail = stringResource(R.string.update_channel_detail),
+                    onClick = { picking = true },
+                    trailing = {
+                        Text(stringResource(if (beta) R.string.update_channel_beta else R.string.update_channel_stable),
+                            color = Immersive.TextSecondary, modifier = Modifier.padding(end = 8.dp))
+                    },
+                )
+                if (picking) com.music.spotui.ui.components.UpdateChannelDialog(beta,
+                    onPick = { com.music.spotui.data.api.UpdateChecker.setBetaChannel(ctx, it); picking = false }) { picking = false }
+            }
+        }
         immersiveGroup("repair") {
+            // The hidden Web Player stuck or crashed: rebuild it without leaving the app.
+            row {
+                ImmersiveGroupRow(
+                    stringResource(R.string.restart_player_title), detail = stringResource(R.string.restart_player_detail),
+                    onClick = {
+                        app.myspoti.host.android.MyspotiRuntime.host.reload()
+                        android.widget.Toast.makeText(ctx, ctx.getString(R.string.restart_player_done), android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                )
+            }
             row {
                 ImmersiveGroupRow(
                     stringResource(R.string.diagnostic_export_title), detail = stringResource(R.string.diagnostic_export_detail),
@@ -1113,7 +1208,7 @@ private fun AppPage(navController: NavController, back: () -> Unit) {
 
 // ---------------------------------------------------------------- Accounts
 
-/** The music account (none or YouTube Music), and passing the setup to another device. */
+/** The Spotify accounts kept on the phone ([com.music.spotui.ui.components.AccountsList]), and signing this one out. */
 @Composable
 private fun AccountsPage(back: () -> Unit) {
     val ctx = androidx.compose.ui.platform.LocalContext.current
@@ -1145,6 +1240,28 @@ private fun AccountsPage(back: () -> Unit) {
                     onClick = { if (ytm.signedIn) ytm.signOut() else signingIn = true },
                 )
                 if (signingIn) com.music.spotui.ui.components.YtmSignInDialog(onDismiss = { signingIn = false })
+            }
+        }
+        // Songs an extension streams, played by the chosen provider too (unheard): counted there.
+        if (com.music.spotui.data.preferences.AccountProviderPref.id != app.myspoti.api.account.AccountProviders.NONE) immersiveGroup("listen-sync") {
+            row {
+                ImmersiveSwitchRow(
+                    stringResource(R.string.settings_connect_mirror_title),
+                    checked = com.music.spotui.data.preferences.ConnectMirrorPref.on,
+                    onChecked = { com.music.spotui.data.preferences.ConnectMirrorPref.set(ctx, it) },
+                    detail = stringResource(R.string.settings_connect_mirror_detail),
+                )
+            }
+        }
+        immersiveGroup("accounts") {
+            row { com.music.spotui.ui.components.AccountsList() }
+        }
+        immersiveGroup("sign-out") {
+            row {
+                ImmersiveGroupRow(
+                    stringResource(R.string.connect_device_menu_logout), destructive = true,
+                    onClick = { com.music.spotui.di.SessionActions.logout(com.music.spotui.di.Graph.app) },
+                )
             }
         }
         immersiveGroup("pass", headerRes = R.string.pass_section) {

@@ -157,7 +157,7 @@ fun LiveRadioScreen(navController: NavController) {
             modifier = Modifier.statusBarsPadding().padding(12.dp).size(40.dp).clip(CircleShape)
                 .background(AppBackground.copy(alpha = 0.4f)).pressable { navController.navigateUp() },
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.lbl_back), tint = AppText)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.accessibility_navigate_back), tint = AppText)
         }
     }
 }

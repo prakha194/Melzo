@@ -72,7 +72,7 @@ fun CategoryScreen(navController: NavController, genre: String, title: String) {
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.lbl_back),
+                contentDescription = stringResource(R.string.accessibility_navigate_back),
                 tint = AppText,
                 modifier = Modifier
                     .wideClickable(horizontal = 8.dp, vertical = 10.dp) { navController.popBackStack() }

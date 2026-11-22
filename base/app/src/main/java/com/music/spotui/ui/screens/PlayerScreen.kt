@@ -551,7 +551,7 @@ fun PlayerScreen(navController: NavController) {
                                 val grow = (1f + (1f - shown) * 0.06f) * beat
                                 scaleX = grow; scaleY = grow
                             },
-                        model = cover,
+                        model = app.myspoti.host.android.Covers.large(cover),
                         contentScale = ContentScale.Crop,
                         contentDescription = "")
                     // The song a crossfade fades out, dissolving into this one.
@@ -678,6 +678,7 @@ fun PlayerScreen(navController: NavController) {
                 )
                 // Buttons from extensions (player.buttons), under the player's own controls.
                 val extTrack = androidx.compose.runtime.remember(songTitle, songSinger) { com.music.spotui.extensions.Extensions.currentTrack() }
+                com.music.spotui.extensions.MirrorIndicator()
                 com.music.spotui.extensions.ExtensionPlayerButtons(extTrack)
                 // 8dp card margin + the Connect row's lower half (24 dp) + this = the official 37dp
                 // from the row's centre to the card.
@@ -882,17 +883,17 @@ private fun playerContextName(playerViewModel: PlayerViewModel): String =
 /** "Lecture à partir de <type>" + context name, or the queue (like the official app). */
 @Composable
 private fun playingFromLabels(np: SongPlayer.NowPlaying, fallbackName: String): Pair<String, String> {
-    if (np.provider == "queue") return stringResource(R.string.lbl_from_queue) to ""
+    if (np.provider == "queue") return stringResource(R.string.context_type_description_play_queue) to ""
     val type = np.contextUri.split(":").getOrNull(1).orEmpty()
     val name = contextDisplayName(np, fallbackName)
     return when {
-        isLikedContext(np.contextUri) -> stringResource(R.string.lbl_from_library) to stringResource(R.string.lbl_liked_songs)
-        type == "playlist" -> stringResource(R.string.lbl_from_playlist) to name
-        type == "album" -> stringResource(R.string.lbl_from_album) to name
-        type == "artist" -> stringResource(R.string.lbl_from_artist) to name
-        type == "show" -> stringResource(R.string.lbl_from_podcast) to name
-        type == "search" -> stringResource(R.string.lbl_from_search) to name
-        else -> stringResource(R.string.lbl_channel_playback) to name
+        isLikedContext(np.contextUri) -> stringResource(R.string.context_type_description_collection_your_library) to stringResource(R.string.collection_liked_songs_title)
+        type == "playlist" -> stringResource(R.string.context_type_description_playlist) to name
+        type == "album" -> stringResource(R.string.context_type_description_album) to name
+        type == "artist" -> stringResource(R.string.context_type_description_artist) to name
+        type == "show" -> stringResource(R.string.context_type_description_show) to name
+        type == "search" -> stringResource(R.string.context_type_description_search) to name
+        else -> stringResource(R.string.default_notification_channel_name) to name
     }
 }
 
@@ -997,7 +998,7 @@ fun PlayerTopBar(
                 ) { onMenuClick() }
                 .wrapContentSize()
                 .size(24.dp),
-            contentDescription = stringResource(R.string.lbl_more))
+            contentDescription = stringResource(R.string.content_description_context_menu))
     }
 }
 
@@ -1071,7 +1072,7 @@ fun LikeButton(liked: Boolean, size: androidx.compose.ui.unit.Dp = 28.dp, touch:
                 // The official check is bolder, with round ends.
                 Icon(PlayerIcons.check, contentDescription = stringResource(R.string.remove_from_liked), tint = Color.Black, modifier = Modifier.size(size * 0.7f))
             } else {
-                Icon(painterResource(id = R.drawable.ic_add), contentDescription = stringResource(R.string.lbl_like_add), tint = Color.White, modifier = Modifier.size(size))
+                Icon(painterResource(id = R.drawable.ic_add), contentDescription = stringResource(R.string.aligned_curation_context_menu_item_add_to_liked_songs), tint = Color.White, modifier = Modifier.size(size))
             }
         }
     }
@@ -1124,7 +1125,7 @@ fun PlayerInfo(
                     // A few passes, after the sheet has settled (not an endless 120 Hz animation);
                     // inside the tap target, which scrolling leaves as it was.
                     .titleMarquee(iterations = 3),
-                text = if (adPlaying) stringResource(R.string.ad_now) else songTitle,
+                text = if (adPlaying) stringResource(R.string.ad_playing) else songTitle,
                 color = Color.White,
                 fontSize = 22.sp,
                 lineHeight = 26.sp,
@@ -1328,7 +1329,7 @@ fun PlayerFull(
             ,
             tint = Color.White,
             painter = painterResource(id = R.drawable.ic_player_back),
-            contentDescription = stringResource(R.string.lbl_previous))
+            contentDescription = stringResource(R.string.np_content_desc_prev))
         androidx.compose.foundation.layout.Box(
             modifier = Modifier
                 // requiredSize forces an exact 64×64 square even if the parent Column
@@ -1383,7 +1384,7 @@ fun PlayerFull(
             ,
             tint = Color.White,
             painter = painterResource(id = R.drawable.ic_player_skip),
-            contentDescription = stringResource(R.string.lbl_next))
+            contentDescription = stringResource(R.string.np_content_desc_next))
         Icon(
             modifier = Modifier
                 .size(com.music.spotui.ui.components.MinTouch)
@@ -1441,7 +1442,7 @@ fun PlayerConnectRow(
                 imageVector = com.music.spotui.ui.components.activeDeviceIcon(),
                 tint = com.music.spotui.ui.theme.AppAccent,
                 modifier = Modifier.size(24.dp),
-                contentDescription = stringResource(R.string.lbl_devices),
+                contentDescription = stringResource(R.string.mr_user_route_category_name),
             )
             Column(modifier = Modifier.padding(start = 6.dp).widthIn(max = 220.dp)) {
                 Text(
@@ -1458,7 +1459,9 @@ fun PlayerConnectRow(
                 var nerd by remember { mutableStateOf(false) }
                 if (quality) com.music.spotui.ui.components.QualitySheet { quality = false }
                 if (nerd) com.music.spotui.ui.components.StatsForNerdsSheet { nerd = false }
-                if (source.isNotBlank() && com.music.spotui.data.preferences.PlayerSourceLinePref.shown) Text(
+                if (source.isNotBlank() && com.music.spotui.data.preferences.PlayerSourceLinePref.shown) Row(verticalAlignment = Alignment.CenterVertically) {
+                com.music.spotui.ui.components.QualityBadge(tint = com.music.spotui.ui.theme.AppMuted, onClick = { quality = true }, modifier = Modifier.padding(end = 6.dp))
+                Text(
                     text = source,
                     color = com.music.spotui.ui.theme.AppMuted,
                     fontSize = 11.sp,
@@ -1471,6 +1474,7 @@ fun PlayerConnectRow(
                         onLongClick = { nerd = true },
                     ) { quality = true },
                 )
+                }
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1488,15 +1492,20 @@ fun PlayerConnectRow(
                         ) { shareMenu = true }
                         .wrapContentSize()
                         .size(24.dp),
-                    contentDescription = stringResource(R.string.lbl_share_action),
+                    contentDescription = stringResource(R.string.action_share_label),
                 )
                 androidx.compose.material3.DropdownMenu(expanded = shareMenu, onDismissRequest = { shareMenu = false }) {
                     androidx.compose.material3.DropdownMenuItem(
                         text = { Text(stringResource(R.string.share_link)) },
                         onClick = {
                             shareMenu = false
-                            com.music.spotui.ui.components.ShareItem.show(com.music.spotui.ui.components.ShareTarget(
-                                SongPlayer.nowPlaying.value.uri, title, artist, coverUri,
+                            // Songs and episodes alike: the link follows what plays (spotify:<kind>:<id>).
+                            val parts = SongPlayer.nowPlaying.value.uri.split(':')
+                            val link = if (parts.size == 3 && parts[0] == "spotify") "https://open.spotify.com/${parts[1]}/${parts[2]}"
+                                else SongPlayer.currentTrackId.takeIf { it.isNotBlank() }?.let { "https://open.spotify.com/track/$it" }
+                            if (link != null) com.music.spotui.ui.components.SpotifyCode.show(com.music.spotui.ui.components.ShareTarget(
+                                "spotify:" + link.removePrefix("https://open.spotify.com/").replace('/', ':'),
+                                title, artist, coverUri,
                             ))
                         },
                     )
@@ -1506,7 +1515,7 @@ fun PlayerConnectRow(
                             shareMenu = false
                             shareScope.launch {
                                 com.music.spotui.ui.components.ShareCard.share(
-                                    context, title, artist, coverUri, context.getString(R.string.lbl_share_action))
+                                    context, title, artist, coverUri, context.getString(R.string.action_share_label))
                             }
                         },
                     )
@@ -1525,7 +1534,7 @@ fun PlayerConnectRow(
                     ) { onQueue() }
                     .wrapContentSize()
                     .size(24.dp),
-                contentDescription = stringResource(R.string.lbl_queue),
+                contentDescription = stringResource(R.string.action_queue_label),
             )
         }
     }
@@ -1635,7 +1644,7 @@ fun AddButton(song: () -> SongsModel, liked: Boolean, size: androidx.compose.ui.
     LikeButton(liked = saved, size = size, touch = touch) {
         if (saved) savedIn = song() else {
             onLike()
-            android.widget.Toast.makeText(context, context.getString(R.string.lbl_liked), android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(context, context.getString(R.string.snackbar_added_to_liked_songs), android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 }

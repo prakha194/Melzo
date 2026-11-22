@@ -1,7 +1,7 @@
 // YouTube Music as an account provider: the user's own session (the cookies of their sign-in on the
 // official site), the listen sync on the official web app in a hidden page (see :api-web), the
 // account's library read and a metadata provider on that session. Plain JVM: the page runs in an
-// Android WebView (:host-android).
+// Android WebView (:host-android) or desktop Chrome over CDP (:host-cdp).
 plugins {
     alias(libs.plugins.kotlin.jvm)
 }

@@ -12,8 +12,7 @@ import kotlinx.serialization.json.doubleOrNull
  * the app's fonts, colours, spacing and icons, never the extension's. The only free page is
  * [Action.WEBVIEW_PAGE]. See docs/extensions/API.md §6 for the schema.
  *
- * A block opens a page of the app ([Target.open], an item uri the app opens itself: a catalog
- * provider's, `deezer:album:302127`, or a `spotify:` one an older extension sends) or calls the
+ * A block opens a Spotify page ([Target.open], a `spotify:` uri the app opens itself) or calls the
  * extension back ([Target.action], delivered to its `tap` hook). Nothing else: no style, no
  * position, no layer; a block cannot reach a [ProtectedSurface].
  */
@@ -44,7 +43,7 @@ enum class TextStyle { TITLE, BODY, CAPTION }
 
 data class Item(val uri: String, val title: String, val subtitle: String?, val image: String?)
 
-/** Where a tap goes: a page the app opens, or the extension's `tap` hook with [action]. */
+/** Where a tap goes: a Spotify page the app opens, or the extension's `tap` hook with [action]. */
 data class Target(val open: String?, val action: String?)
 
 object Blocks {
@@ -67,11 +66,6 @@ object Blocks {
 
     private val ACTION_ID = Regex("^[A-Za-z0-9_.:-]{1,64}$")
     private val SPOTIFY_URI = Regex("^spotify:(track|album|playlist|artist|show|episode):[A-Za-z0-9]{1,40}$")
-    /** A catalog provider's item: `deezer:track:3135556`, `musicbrainz:album:<uuid>`… */
-    private val CATALOG_URI = Regex("^(deezer|itunes|musicbrainz|ytmusic|tidal):(track|album|playlist|artist):[A-Za-z0-9_-]{1,64}$")
-
-    /** Whether a block may open [uri]: an item of a catalog provider, or a `spotify:` one (still accepted, as it always was). */
-    fun isItemUri(uri: String): Boolean = SPOTIFY_URI.matches(uri) || CATALOG_URI.matches(uri)
 
     /** The block types a [Surface] accepts. */
     fun allowed(surface: Surface): Set<String> = when (surface) {
@@ -139,12 +133,12 @@ object Blocks {
     private fun item(e: JsonElement, kind: ItemKind): Item {
         val o = e as? JsonObject ?: throw ExtensionException("blocks: each item is an object { uri, title }")
         val uri = str(o, "uri") ?: throw ExtensionException("blocks: an item needs its \"uri\"")
-        if (!isItemUri(uri) || uri.split(':')[1] != kind.uriType) throw ExtensionException("blocks: \"$uri\" is not a ${kind.uriType} uri (deezer:${kind.uriType}:…)")
+        if (!SPOTIFY_URI.matches(uri) || uri.split(':')[1] != kind.uriType) throw ExtensionException("blocks: \"$uri\" is not a spotify:${kind.uriType}: uri")
         return Item(uri, need(o, "title", TITLE, "item"), text(o, "subtitle", TITLE), image(o, "image"))
     }
 
     private fun target(o: JsonObject, type: String): Target? {
-        val open = str(o, "open")?.also { if (!isItemUri(it)) throw ExtensionException("blocks: \"open\" is the uri of a song, album, playlist or artist (deezer:album:…)") }
+        val open = str(o, "open")?.also { if (!SPOTIFY_URI.matches(it)) throw ExtensionException("blocks: \"open\" is a spotify: uri of a song, album, playlist, artist, show or episode") }
         val action = action(o, type)
         if (open != null && action != null) throw ExtensionException("blocks: \"$type\" has \"open\" or \"action\", not both")
         return if (open == null && action == null) null else Target(open, action)
@@ -196,7 +190,7 @@ object PageNetwork {
         val uri = runCatching { java.net.URI(url) }.getOrNull() ?: return false
         val host = uri.host?.lowercase() ?: return false
         if (uri.scheme != "https" || !method.equals("GET", ignoreCase = true)) return false
-        if (ExtensionRuntime.isPrivate(host) || SpotifyHosts.isSpotify(host)) return false
+        if (ExtensionRuntime.isPrivate(host) || RawRequest.isSpotifyHost(host)) return false
         return (anyGranted && "*" in listed) || (networkGranted && listed.any { it != "*" && ExtensionRuntime.hostMatches(it, host) })
     }
 
@@ -204,7 +198,7 @@ object PageNetwork {
     fun csp(listed: List<String>, networkGranted: Boolean, anyGranted: Boolean): String {
         val hosts = when {
             anyGranted && "*" in listed -> "https:"
-            networkGranted -> listed.filter { it != "*" && !SpotifyHosts.isSpotify(it.removePrefix("*.")) }.joinToString(" ") { "https://$it" }
+            networkGranted -> listed.filter { it != "*" && !RawRequest.isSpotifyHost(it.removePrefix("*.")) }.joinToString(" ") { "https://$it" }
             else -> ""
         }
         return "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: $hosts; media-src data: $hosts; " +

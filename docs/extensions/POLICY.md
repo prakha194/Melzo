@@ -17,12 +17,6 @@ We do not look for problems, but we act on reports of an extension that:
 2. **Steals data**: it sends passwords, tokens, cookies or personal data anywhere the user was not told.
 3. **Uses other people's accounts**: shared, stolen or scraped logins or tokens.
 4. **Impersonates**: it presents itself as made or endorsed by someone who did not make it.
-5. **Circumvents a protection**: it decrypts protected streams or files, or gets around a service's
-   DRM, encryption or access controls.
-6. **Blocks or skips ads**, or plays a service unheard so that listens or ad impressions count
-   without anyone listening.
-7. **Distributes content without the rights**: it gets music or other works from sources that have
-   no right to provide them.
 
 ## Legal notices
 

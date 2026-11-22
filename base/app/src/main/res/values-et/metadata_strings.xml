@@ -7,5 +7,6 @@
     <string name="metadata_asked">Küsitakse</string>
     <string name="metadata_off">Väljas: ei küsita kunagi</string>
     <string name="metadata_reset">Tagasi vaikejärjestusele</string>
+    <string name="metadata_not_on_spotify">Spotifyst ei leitud: seda lugu ei saa veel esitada</string>
     <string name="metadata_switch">Küsi teenuselt %1$s</string>
 </resources>

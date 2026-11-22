@@ -23,6 +23,7 @@
     <string name="pass_no_network">Χωρίς Wi-Fi: σύνδεσε τη συσκευή στο ίδιο Wi-Fi με το τηλέφωνο.</string>
     <string name="pass_received">Λήφθηκε από %1$s. Η εφαρμογή επανεκκινεί.</string>
     <string name="pass_confirm_title">Αποστολή σε %1$s;</string>
+    <string name="pass_confirm_text">Οι ρυθμίσεις, οι επεκτάσεις και η σύνδεση Spotify αντιγράφονται σε αυτή τη συσκευή, απευθείας μέσω Wi-Fi και κρυπτογραφημένα. Στείλ’ τα μόνο στις δικές σου συσκευές.</string>
     <string name="pass_send_action">Αποστολή</string>
     <string name="pass_sent">Στάλθηκε σε %1$s</string>
     <string name="pass_failed">Δεν στάλθηκε: %1$s</string>
@@ -34,4 +35,5 @@
     <string name="settings_genius_title">Genius</string>
     <string name="settings_genius_detail">Τι σημαίνουν τα τραγούδια και οι σημειώσεις στους στίχους τους, και οι στίχοι του Genius όταν δεν τους έχει άλλη πηγή. Απενεργοποιημένο: τίποτα δεν ζητείται από το Genius.</string>
     <string name="welcome_start">Ας ξεκινήσουμε</string>
+    <string name="setup_account_spotify_next">Μετά συνδέεσαι στη σελίδα του Spotify. Το Spoon δεν βλέπει ποτέ τον κωδικό σου.</string>
 </resources>

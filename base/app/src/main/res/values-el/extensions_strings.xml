@@ -53,6 +53,7 @@
     <string name="extensions_cat_all">Όλες</string>
     <string name="extensions_cat_lyrics">Στίχοι</string>
     <string name="extensions_cat_playback">Αναπαραγωγή και ήχος</string>
+    <string name="extensions_cat_library">Βιβλιοθήκη</string>
     <string name="extensions_cat_discovery">Ανακάλυψη</string>
     <string name="extensions_cat_stats">Στατιστικά</string>
     <string name="extensions_cat_look">Εμφάνιση</string>
@@ -63,6 +64,7 @@
     <string name="extensions_browse_store">Περιήγηση στο κατάστημα</string>
     <string name="extensions_other_ways">Άλλοι τρόποι εγκατάστασης</string>
     <string name="extensions_empty_title">Τι είναι οι επεκτάσεις;</string>
+    <string name="extensions_empty_body">Οι επεκτάσεις προσθέτουν στο Spoon ό,τι δεν κάνει από μόνο του: στίχους από άλλες πηγές, από πού προέρχεται ο ήχος ή η λήψη ενός τραγουδιού, εργαλεία που χρησιμοποιούν τον λογαριασμό σου στο Spotify. Η καθεμία τρέχει σε απομονωμένο περιβάλλον και ρωτά πριν φτάσει οπουδήποτε. Πρόσθεσε ένα αποθετήριο για να τις περιηγηθείς ή εγκατάστησε ένα πακέτο που εμπιστεύεσαι.</string>
     <string name="extensions_official_badge">Επίσημο</string>
     <string name="extensions_repo_yours">Προστέθηκε από εσένα</string>
     <string name="extensions_repo_community">Κοινότητα</string>
@@ -106,6 +108,8 @@
     <string name="action_library_read">Ανάγνωση της βιβλιοθήκης σου</string>
     <string name="action_library_write">Αλλαγή της βιβλιοθήκης σου</string>
     <string name="action_playlists_write">Επεξεργασία των playlist σου</string>
+    <string name="action_spotify_catalog">Περιήγηση στο Spotify</string>
+    <string name="action_spotify_raw">Πλήρης πρόσβαση στο Spotify</string>
     <string name="action_network">Χρήση του διαδικτύου</string>
     <string name="action_network_any">Χρήση οποιουδήποτε ιστότοπου</string>
     <string name="action_webview_page">Δική της ιστοσελίδα</string>
@@ -121,6 +125,7 @@
     <string name="area_audio">Ήχος και λήψεις</string>
     <string name="area_home">Αρχική και αναζήτηση</string>
     <string name="area_menus">Μενού και player</string>
+    <string name="area_library">Βιβλιοθήκη και Spotify</string>
     <string name="area_other">Σελίδες και άλλα</string>
     <string name="area_activity">Πρόσφατη δραστηριότητα</string>
     <string name="area_turn_off">Απενεργοποίηση</string>
@@ -129,6 +134,7 @@
     <string name="area_make_active">Να είναι η βασική για: %1$s</string>
     <!-- Install prompt -->
     <string name="ext_third_party_notice">Επέκταση τρίτου, χωρίς έλεγχο από το Spoon, με ευθύνη του δημιουργού της.</string>
+    <string name="ext_risk_accept">Κατανοώ ότι αυτή η επέκταση είναι από τρίτο και την εγκαθιστώ με δική μου ευθύνη</string>
     <string name="ext_clash_exclusive">Αντικαθιστά το %1$s, που παρέχεται τώρα από το %2$s</string>
     <string name="ext_clash_conflict">Ασύμβατη με το %1$s (εγκατεστημένο)</string>
     <string name="ext_clash_replaces">Αντικαθιστά το %1$s (εγκατεστημένο)</string>
@@ -195,9 +201,14 @@
     <string name="extension_change_replaces">Απενεργοποιεί το %1$s όταν εγκατασταθεί</string>
     <string name="extension_change_conflicts">Αρνείται να λειτουργήσει μαζί με το %1$s</string>
     <string name="action_webview_auth">Σύνδεση σε ιστότοπο</string>
+    <string name="extension_confirm_once">Να επιτραπεί μία φορά</string>
+    <string name="extension_confirm_always">Πάντα να επιτρέπεται το %1$s</string>
     <string name="ext_auth_title">%1$s: σύνδεση</string>
     <string name="ext_auth_close">Κλείσιμο</string>
     <string name="ext_auth_notice">Δική της σελίδα: όσα πληκτρολογείτε και τα cookies της μένουν στο Spoon. Η επέκταση λαμβάνει μόνο τη διεύθυνση στην οποία καταλήγει η σελίδα.</string>
+    <string name="ext_grants_title">Πάντα επιτρεπόμενα</string>
+    <string name="ext_grants_note">Αλλαγές στο Spotify που κάνει αυτή η επέκταση χωρίς να ρωτήσει. Ανακαλέστε μία για να ερωτάστε ξανά.</string>
+    <string name="ext_grant_revoke">Ανάκληση</string>
     <string name="extensions_unreadable_file">Δεν ήταν δυνατή η ανάγνωση του αρχείου</string>
     <string name="ext_welcome_title">Το %1$s εγκαταστάθηκε</string>
     <string name="ext_welcome_steps">Για να ολοκληρώσετε</string>

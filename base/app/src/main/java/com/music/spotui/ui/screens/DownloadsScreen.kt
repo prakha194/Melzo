@@ -75,7 +75,7 @@ import com.music.spotui.ui.theme.AppBackground
 @Composable
 fun DownloadsScreen(navController: NavController) {
     val context = LocalContext.current
-    val title = stringResource(R.string.lbl_downloads)
+    val title = stringResource(R.string.collection_downloaded)
     // Snapshot reads: the list follows downloads as they finish. Derived, so a progress tick (which
     // changes no list) leaves the sorted lists and the counts alone instead of rebuilding them.
     val tracks by remember { derivedStateOf { OfflineStore.tracks.values.sortedByDescending { it.addedAt } } }
@@ -146,7 +146,7 @@ fun DownloadsScreen(navController: NavController) {
                     Text(stringResource(R.string.downloads_source), color = AppMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
                     Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Spacer(Modifier.weight(1f))
-                        Icon(painterResource(R.drawable.ic_player_shuffle), stringResource(R.string.lbl_shuffle), tint = AppText,
+                        Icon(painterResource(R.drawable.ic_player_shuffle), stringResource(R.string.play_mode_item_shuffle_title), tint = AppText,
                             modifier = Modifier.size(28.dp).pressable { if (tracks.isNotEmpty()) play(tracks.indices.random(), shuffle = true) })
                         Spacer(Modifier.width(20.dp))
                         Box(
@@ -162,7 +162,7 @@ fun DownloadsScreen(navController: NavController) {
                                 .clip(CircleShape).background(com.music.spotui.ui.theme.AppAccent),
                         ) {
                             com.music.spotui.ui.components.PlayPauseIcon(playingHere && SongPlayer.isPlaying(),
-                                stringResource(R.string.lbl_play), tint = Color.Black, modifier = Modifier.size(26.dp))
+                                stringResource(R.string.content_description_play_button), tint = Color.Black, modifier = Modifier.size(26.dp))
                         }
                     }
                 }
@@ -216,8 +216,8 @@ fun DownloadsScreen(navController: NavController) {
                         val line = when (status) {
                             OfflineStatus.Unavailable -> stringResource(R.string.download_unavailable)
                             OfflineStatus.Failed -> (OfflineStore.notAnswering[r.trackId]?.let { stringResource(R.string.download_source_not_answering, it) }
-                                ?: stringResource(R.string.lbl_download_failed)) + " · " + stringResource(R.string.download_retry)
-                            else -> stringResource(R.string.lbl_downloading)
+                                ?: stringResource(R.string.download_badge_error_content_description)) + " · " + stringResource(R.string.download_retry)
+                            else -> stringResource(R.string.download_notification_downloading)
                         }
                         Text(line, color = if (problem) AppDestructive else AppMuted, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
@@ -269,7 +269,7 @@ fun DownloadsScreen(navController: NavController) {
                 val current = LocalPlayer.active.value && np.uri == "spotify:track:${t.trackId}"
                 com.music.spotui.ui.components.SwipeToRemove(t.trackId, onRemove = {
                     val gone = com.music.spotui.data.offline.OfflineCollections.removeSong(t.trackId)
-                    android.widget.Toast.makeText(context, if (gone) context.getString(R.string.lbl_download_removed) else com.music.spotui.data.offline.OfflineCollections.keptMessage(context, t.trackId), android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, if (gone) context.getString(R.string.toast_undownload) else com.music.spotui.data.offline.OfflineCollections.keptMessage(context, t.trackId), android.widget.Toast.LENGTH_SHORT).show()
                 }) { Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().pressable(0.97f) { play(i) }.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -287,7 +287,7 @@ fun DownloadsScreen(navController: NavController) {
                             Text(t.artist, color = AppMuted, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
-                    Icon(Icons.Default.MoreVert, stringResource(R.string.lbl_more), tint = AppText.copy(alpha = 0.7f),
+                    Icon(Icons.Default.MoreVert, stringResource(R.string.content_description_context_menu), tint = AppText.copy(alpha = 0.7f),
                         modifier = Modifier.size(24.dp).pressable(0.96f) { menuSong = OfflineStore.toSong(t) })
                 } }
             }
@@ -298,7 +298,7 @@ fun DownloadsScreen(navController: NavController) {
             modifier = Modifier.statusBarsPadding().padding(12.dp).widePressable { navController.navigateUp() }
                 .size(40.dp).clip(CircleShape).background(AppBackground.copy(alpha = 0.4f)),
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.lbl_back), tint = AppText)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.accessibility_navigate_back), tint = AppText)
         }
     }
 }

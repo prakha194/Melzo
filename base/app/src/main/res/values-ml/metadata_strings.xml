@@ -7,5 +7,6 @@
     <string name="metadata_asked">ചോദിക്കുന്നു</string>
     <string name="metadata_off">ഓഫ്: ഒരിക്കലും ചോദിക്കില്ല</string>
     <string name="metadata_reset">സ്ഥിര ക്രമത്തിലേക്ക് മടങ്ങുക</string>
+    <string name="metadata_not_on_spotify">Spotify-ൽ കണ്ടെത്തിയില്ല: ഈ പാട്ട് ഇതുവരെ പ്ലേ ചെയ്യാനാവില്ല</string>
     <string name="metadata_switch">%1$s-നോട് ചോദിക്കുക</string>
 </resources>

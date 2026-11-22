@@ -7,5 +7,6 @@
     <string name="metadata_asked">Demandé</string>
     <string name="metadata_off">Désactivé : jamais demandé</string>
     <string name="metadata_reset">Revenir à l\'ordre par défaut</string>
+    <string name="metadata_not_on_spotify">Introuvable sur Spotify : ce titre ne peut pas encore être lu</string>
     <string name="metadata_switch">Demander à %1$s</string>
 </resources>

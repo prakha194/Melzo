@@ -44,4 +44,11 @@ class SonosLocalTest {
         assertFalse(SonosLocal.needsPlay(null, true))
         assertFalse(SonosLocal.needsPlay("PAUSED_PLAYBACK", false))
     }
+
+    @Test fun theWakeHasNeitherBlobNorKey() {
+        val text = String(Zeroconf.wakeRequest("192.168.1.20", 1400, "/spotifyzc", info), Charsets.UTF_8)
+        assertTrue(text.startsWith("POST /spotifyzc?action=addUser HTTP/1.1\r\n"))
+        val body = text.substringAfter("\r\n\r\n")
+        assertEquals("action=addUser&version=2.9.0&tokenType=authorization_code&clientKey=&blob=", body)
+    }
 }

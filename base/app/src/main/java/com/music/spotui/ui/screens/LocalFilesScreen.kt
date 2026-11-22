@@ -99,15 +99,15 @@ fun LocalFilesScreen(navController: NavController) {
     Box(Modifier.fillMaxSize().background(AppBackground)) {
         when {
             !granted -> EmptyState(
-                title = stringResource(R.string.lbl_local_files_empty),
-                subtitle = stringResource(R.string.lbl_local_files_empty_note),
-                button = stringResource(if (askedOnce) R.string.lbl_open_settings else R.string.lbl_allow),
+                title = stringResource(R.string.local_files_empty_section_title),
+                subtitle = stringResource(R.string.local_files_empty_section_subtitle),
+                button = stringResource(if (askedOnce) R.string.local_files_empty_section_button_go_to_settings else R.string.local_files_empty_section_dialog_permission_rationale_accept),
             ) {
                 if (askedOnce) context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
                 else launcher.launch(LocalMusic.permission)
             }
             tracks?.isEmpty() == true -> EmptyState(
-                title = stringResource(R.string.lbl_local_files_none),
+                title = stringResource(R.string.local_files_empty_section_no_files_title),
                 subtitle = stringResource(R.string.local_files_none_subtitle),
                 button = null,
             ) {}
@@ -122,7 +122,7 @@ fun LocalFilesScreen(navController: NavController) {
                             painterResource(R.drawable.local_files_cover), null,
                             modifier = Modifier.align(Alignment.CenterHorizontally).size(200.dp).clip(RoundedCornerShape(6.dp)),
                         )
-                        Text(stringResource(R.string.lbl_local_files), color = AppText, fontSize = 26.sp, fontWeight = FontWeight.Bold,
+                        Text(stringResource(R.string.local_files_title), color = AppText, fontSize = 26.sp, fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(top = 20.dp))
                         val n = tracks?.size ?: 0
                         Text(pluralStringResource(R.plurals.local_files_count, n, n), color = AppMuted, fontSize = 14.sp,
@@ -133,7 +133,7 @@ fun LocalFilesScreen(navController: NavController) {
                                 border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF7F7F7F)),
                             ) { Text(stringResource(R.string.local_folders_button), color = AppText, fontSize = 13.sp) }
                             Spacer(Modifier.weight(1f))
-                            Icon(painterResource(R.drawable.ic_player_shuffle), stringResource(R.string.lbl_shuffle), tint = AppText,
+                            Icon(painterResource(R.drawable.ic_player_shuffle), stringResource(R.string.play_mode_item_shuffle_title), tint = AppText,
                                 modifier = Modifier.size(28.dp).pressable { tracks?.let { if (it.isNotEmpty()) LocalPlayer.play(it, it.indices.random(), shuffle = true) } })
                             Spacer(Modifier.width(20.dp))
                             Box(
@@ -149,7 +149,7 @@ fun LocalFilesScreen(navController: NavController) {
                                     .clip(CircleShape).background(com.music.spotui.ui.theme.AppAccent),
                             ) {
                                 com.music.spotui.ui.components.PlayPauseIcon(playingLocal && SongPlayer.isPlaying(),
-                                    stringResource(R.string.lbl_play), tint = Color.Black, modifier = Modifier.size(26.dp))
+                                    stringResource(R.string.content_description_play_button), tint = Color.Black, modifier = Modifier.size(26.dp))
                             }
                         }
                     }
@@ -160,7 +160,7 @@ fun LocalFilesScreen(navController: NavController) {
                 }
                 val shown = tracks.orEmpty().filter { com.music.spotui.ui.components.matchesFind(find, it.title, it.artist, it.album) }
                 if (shown.isEmpty() && find.isNotBlank()) item(key = "find-empty") {
-                    com.music.spotui.ui.components.FindInListEmpty(stringResource(R.string.lbl_no_results, find.trim()))
+                    com.music.spotui.ui.components.FindInListEmpty(stringResource(R.string.assisted_curation_search_empty_view_no_result_title, find.trim()))
                 }
                 itemsIndexed(shown, key = { _, t -> t.id }) { _, t ->
                     val current = playingLocal && np.uri == "local:${t.id}"
@@ -179,7 +179,7 @@ fun LocalFilesScreen(navController: NavController) {
                             Text(t.title, color = if (current) com.music.spotui.ui.theme.AppAccent else AppText, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             if (t.artist.isNotBlank()) Text(t.artist, color = AppMuted, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
-                        Icon(painterResource(R.drawable.ic_add), stringResource(R.string.lbl_add_to_playlist), tint = AppText,
+                        Icon(painterResource(R.drawable.ic_add), stringResource(R.string.context_menu_add_to_playlist), tint = AppText,
                             modifier = Modifier.size(24.dp).pressable(0.92f) { adding = t })
                     }
                 }
@@ -191,7 +191,7 @@ fun LocalFilesScreen(navController: NavController) {
             modifier = Modifier.statusBarsPadding().padding(12.dp).size(40.dp).clip(CircleShape)
                 .background(AppBackground.copy(alpha = 0.4f)).pressable { navController.navigateUp() },
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.lbl_back), tint = AppText)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.accessibility_navigate_back), tint = AppText)
         }
     }
 }

@@ -74,7 +74,7 @@ import com.music.spotui.ui.navigation.Routes
 @Composable
 fun ImmersiveDownloadsScreen(navController: NavController) {
     val context = LocalContext.current
-    val title = stringResource(R.string.lbl_downloads)
+    val title = stringResource(R.string.collection_downloaded)
     // Snapshot reads: the list follows downloads as they finish. Derived, so a progress tick (which
     // changes no list) leaves the sorted lists alone instead of rebuilding them.
     val tracks by remember { derivedStateOf { OfflineStore.tracks.values.sortedByDescending { it.addedAt } } }
@@ -191,8 +191,8 @@ fun ImmersiveDownloadsScreen(navController: NavController) {
                         OfflineStatus.Unavailable -> stringResource(R.string.download_unavailable)
                         OfflineStatus.Failed ->
                             (OfflineStore.notAnswering[r.trackId]?.let { stringResource(R.string.download_source_not_answering, it) }
-                                ?: stringResource(R.string.lbl_download_failed)) + " · " + stringResource(R.string.download_retry)
-                        else -> stringResource(R.string.lbl_downloading)
+                                ?: stringResource(R.string.download_badge_error_content_description)) + " · " + stringResource(R.string.download_retry)
+                        else -> stringResource(R.string.download_notification_downloading)
                     }
                     ImmersiveListRow(
                         title = r.title,
@@ -218,7 +218,7 @@ fun ImmersiveDownloadsScreen(navController: NavController) {
                     )
                 }
                 if (shown.isEmpty() && find.isNotBlank()) item(key = "downloads:find-empty") {
-                    com.music.spotui.ui.immersive.components.ImmersiveMessageState(stringResource(R.string.lbl_no_results, find.trim()))
+                    com.music.spotui.ui.immersive.components.ImmersiveMessageState(stringResource(R.string.assisted_curation_search_empty_view_no_result_title, find.trim()))
                 }
                 itemsIndexed(shown, key = { _, t -> t.trackId }) { i, t ->
                     val current = LocalPlayer.active.value && np.uri == "local:${OfflineStore.localIdOf(t.trackId)}"
@@ -228,7 +228,7 @@ fun ImmersiveDownloadsScreen(navController: NavController) {
                             val gone = OfflineCollections.removeSong(t.trackId)
                             Toast.makeText(
                                 context,
-                                if (gone) context.getString(R.string.lbl_download_removed) else OfflineCollections.keptMessage(context, t.trackId),
+                                if (gone) context.getString(R.string.toast_undownload) else OfflineCollections.keptMessage(context, t.trackId),
                                 Toast.LENGTH_SHORT,
                             ).show()
                         }) {

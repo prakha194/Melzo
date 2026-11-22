@@ -17,18 +17,18 @@ import com.music.spotui.di.SongPlayer
 fun ImmersiveSleepTimerSheet(onDismiss: () -> Unit) {
     val active = SongPlayer.sleepEndsAt.value != null
     ImmersiveSheet(onDismiss = onDismiss) {
-        ImmersiveSheetTitle(stringResource(R.string.lbl_sleep_timer))
+        ImmersiveSheetTitle(stringResource(R.string.context_menu_sleep_timer))
         val options = buildList {
             for (m in listOf(5, 10, 15, 30, 45)) add(stringResource(R.string.sleep_minutes, m) to m)
-            add(stringResource(R.string.lbl_one_hour) to 60)
-            add(stringResource(R.string.lbl_sleep_end_of_song) to 0)
+            add(stringResource(R.string.mute_chat_duration_one_hour) to 60)
+            add(stringResource(R.string.context_menu_sleep_timer_end_of_track) to 0)
         }
         options.forEach { (label, minutes) ->
             ImmersiveSheetOption(label = label, selected = false) { SongPlayer.setSleepTimer(minutes); onDismiss() }
         }
         if (active) {
             ImmersiveSheetOption(
-                label = stringResource(R.string.lbl_sleep_timer_off), selected = false, danger = true,
+                label = stringResource(R.string.context_menu_sleep_timer_turn_off), selected = false, danger = true,
             ) { SongPlayer.setSleepTimer(null); onDismiss() }
         }
         Spacer(Modifier.height(12.dp))

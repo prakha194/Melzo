@@ -17,5 +17,8 @@
     <string name="energy_saver_title">Экономия заряда</string>
     <string name="energy_saver_summary">Canvas выключен, видео и анимации легче</string>
     <string name="playback_seek_description">Позиция воспроизведения</string>
+    <string name="account_page_title">Аккаунт Spotify</string>
+    <string name="account_page_detail">Подписка, конфиденциальность и устройства, на spotify.com</string>
     <string name="player_source_downloaded">Скачано</string>
+    <string name="extension_change_write">Теперь также может отправлять данные в Spotify: %1$s</string>
 </resources>

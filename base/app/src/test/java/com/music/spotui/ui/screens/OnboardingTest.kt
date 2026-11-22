@@ -24,8 +24,8 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /**
- * The first launch: the music account is chosen (none or YouTube Music), with no sign-in of the
- * app's own; someone already set up is asked nothing again, and the "new look" popup never
+ * The first launch: the music account is chosen before any sign-in, Spotify's sign-in is asked only
+ * for Spotify, someone already signed in is asked nothing again, and the "new look" popup never
  * follows an onboarding whose look step asked it already (it stays for an existing user who never saw it).
  */
 @RunWith(RobolectricTestRunner::class)
@@ -44,41 +44,62 @@ class OnboardingTest {
 
     @After fun tearDown() { LookPref.set(app, Look.CLASSIC) }
 
-    private fun entry(open: Boolean, setup: Boolean = true, choosing: Boolean = false, tv: Boolean = false) =
-        Onboarding.entry(open, setup, choosing, tv)
+    private fun entry(
+        signedIn: Boolean, chosen: Boolean, provider: String, setup: Boolean = true,
+        connecting: Boolean = false, choosing: Boolean = false, tv: Boolean = false,
+    ) = Onboarding.entry(signedIn, chosen, provider, setup, connecting, choosing, tv)
 
-    @Test fun `a new install chooses its music account, then the setup`() {
-        // Welcome first; its button leads to the account choice. No sign-in anywhere.
-        assertEquals(Entry.WELCOME, entry(open = false))
+    @Test fun `a new install chooses its account before Spotify's sign-in`() {
+        // Welcome first; its button leads to the account choice, not to Spotify's sign-in page.
+        assertEquals(Entry.WELCOME, entry(signedIn = false, chosen = false, provider = AccountProviders.SPOTIFY))
         assertTrue(Onboarding.welcomeChoosesAccount(tv = false))
-        assertEquals(Entry.ACCOUNT, entry(open = false, choosing = true))
-        // Chosen: the setup, which no longer asks the account.
+        assertEquals(Entry.ACCOUNT, entry(signedIn = false, chosen = false, provider = AccountProviders.SPOTIFY, choosing = true))
+        // Spotify chosen: its sign-in, and nothing of the app before it.
+        assertEquals(AfterChoice.SPOTIFY_SIGN_IN, Onboarding.afterChoice(AccountProviders.SPOTIFY, ytmSignedIn = false))
         Setup.setAccountSeen(app)
-        assertEquals(Entry.SETUP, entry(open = true))
-        assertFalse(STEP_ACCOUNT in Setup.steps(app))
+        assertEquals(Entry.WELCOME, entry(signedIn = false, chosen = true, provider = AccountProviders.SPOTIFY))
+        assertEquals(Entry.CONNECTING, entry(signedIn = false, chosen = true, provider = AccountProviders.SPOTIFY, connecting = true))
+        // Signed in: the setup, which no longer asks the account (chosen before the sign-in).
+        assertEquals(Entry.SETUP, entry(signedIn = true, chosen = true, provider = AccountProviders.SPOTIFY))
+        val steps = Setup.steps(app)
+        assertFalse(STEP_ACCOUNT in steps)
+        assertEquals(listOf(STEP_INTRO, STEP_LOOK, STEP_QUALITY, STEP_PERMISSIONS, STEP_EXTENSIONS), steps)
     }
 
-    @Test fun `no account or YouTube Music, and YouTube Music signs in on its own page`() {
+    @Test fun `no account or YouTube Music opens with no Spotify sign-in`() {
         assertEquals(AfterChoice.APP, Onboarding.afterChoice(AccountProviders.NONE, ytmSignedIn = false))
+        assertEquals(Entry.SETUP, entry(signedIn = false, chosen = true, provider = AccountProviders.NONE))
+        assertEquals(Entry.APP, entry(signedIn = false, chosen = true, provider = AccountProviders.NONE, setup = false))
+        // YouTube Music: its own sign-in while signed out, then the app.
         assertEquals(AfterChoice.YTM_SIGN_IN, Onboarding.afterChoice(AccountProviders.YTMUSIC, ytmSignedIn = false))
         assertEquals(AfterChoice.APP, Onboarding.afterChoice(AccountProviders.YTMUSIC, ytmSignedIn = true))
-        // A Spotify account chosen by an earlier version: none now.
-        assertEquals(AccountProviders.NONE, AccountProviders.normalized("spotify"))
-        assertFalse("spotify" in AccountProviders.OFFERED)
+        assertEquals(Entry.SETUP, entry(signedIn = false, chosen = true, provider = AccountProviders.YTMUSIC))
+        assertTrue(Onboarding.opensWithoutSpotify(accountChosen = true, provider = AccountProviders.YTMUSIC, tv = false))
+        // Still on the choice (nothing confirmed): another provider ticked does not open the app under it.
+        assertEquals(Entry.ACCOUNT, entry(signedIn = false, chosen = false, provider = AccountProviders.NONE, choosing = true))
     }
 
-    @Test fun `someone already set up is asked nothing again`() {
+    @Test fun `someone already signed in is asked nothing again`() {
+        // An update: signed in, every step seen. Straight to the app, no choice, no sign-in.
         prefs("myspoti_prefs").edit().putBoolean("SetupDone", true).putBoolean("SetupExtensionsSeen", true)
             .putBoolean("SetupAccountSeen", true).commit()
         com.music.spotui.data.preferences.setQualityChosen(app)
         LookPref.setChosen(app)
         assertFalse(Setup.needed(app))
-        assertEquals(Entry.APP, entry(open = true, setup = false))
+        for (provider in AccountProviders.OFFERED) {
+            assertEquals(Entry.APP, entry(signedIn = true, chosen = true, provider = provider, setup = false))
+            assertEquals(Entry.APP, entry(signedIn = true, chosen = false, provider = provider, setup = false))
+        }
+        // Signed in before the account step existed: only that step, after the sign-in already made.
+        prefs("myspoti_prefs").edit().remove("SetupAccountSeen").commit()
+        assertEquals(Entry.SETUP, entry(signedIn = true, chosen = false, provider = AccountProviders.SPOTIFY))
+        assertEquals(listOf(STEP_ACCOUNT), Setup.steps(app))
     }
 
-    @Test fun `a TV opens straight on its app`() {
+    @Test fun `a TV keeps its Spotify sign-in`() {
         assertFalse(Onboarding.welcomeChoosesAccount(tv = true))
-        assertEquals(Entry.APP, entry(open = false, setup = false, tv = true))
+        assertEquals(Entry.WELCOME, entry(signedIn = false, chosen = false, provider = AccountProviders.SPOTIFY, choosing = true, tv = true))
+        assertEquals(Entry.WELCOME, entry(signedIn = false, chosen = true, provider = AccountProviders.NONE, tv = true))
     }
 
     @Test fun `the new look popup never follows the onboarding`() {
@@ -104,7 +125,7 @@ class OnboardingTest {
         assertFalse(Onboarding.lookOfferShown(Entry.APP, false, false, false, LookPref.offered, tv = false))
     }
 
-    /** The account choice: "none" is offered, Continue hands over. */
+    /** The account choice drawn before any sign-in: Spotify's sign-in is said to come next, Continue hands over. */
     private fun accountChoice(look: Look) {
         LookPref.set(app, look)
         var done = 0
@@ -116,13 +137,13 @@ class OnboardingTest {
         }
         rule.waitForIdle()
         rule.onNodeWithText(app.getString(R.string.setup_account_title)).assertExists()
-        rule.onNodeWithText(app.getString(R.string.setup_account_none_detail)).assertExists()
+        rule.onNodeWithText(app.getString(R.string.setup_account_spotify_next)).assertExists()
         rule.onNodeWithText(app.getString(R.string.setup_continue)).performScrollTo().performClick()
         rule.waitForIdle()
         assertEquals(1, done)
         assertEquals(0, back)
     }
 
-    @Test fun `the account choice, Classic`() = accountChoice(Look.CLASSIC)
-    @Test fun `the account choice, Immersive`() = accountChoice(Look.IMMERSIVE)
+    @Test fun `the account choice before the sign-in, Classic`() = accountChoice(Look.CLASSIC)
+    @Test fun `the account choice before the sign-in, Immersive`() = accountChoice(Look.IMMERSIVE)
 }

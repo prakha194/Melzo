@@ -4,6 +4,10 @@ import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.util.Log
+import app.myspoti.engine.AccessToken
+import app.myspoti.engine.ClientToken
+import app.myspoti.engine.EngineConfig
+import app.myspoti.engine.TokenSource
 import app.myspoti.pass.PassLink
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.Dispatchers
@@ -30,10 +34,10 @@ class WatchList(val uri: String, val name: String, val subtitle: String)
  * The phone's app: asked over the Wearable Data Layer (the link between the user's own phone and
  * watch: Bluetooth, the Wi-Fi or Google's servers), else straight over the Wi-Fi ([PassLink], with
  * the secret the phone gave over the Data Layer; the phone found again by its NSD announce when
- * its address changed). The watch never gets the phone's accounts: only the Wi-Fi link's
- * secret, kept sealed on the watch ([WatchStore]).
+ * its address changed). The watch has no browser to sign in with: the session is the phone's,
+ * kept sealed on the watch ([WatchStore]) so a restart of the app needs no phone while it lasts.
  */
-class PhoneLink(private val context: Context) {
+class PhoneLink(private val context: Context) : TokenSource {
     private val store = WatchStore(context)
 
     private suspend fun ask(path: String, body: String = ""): String {
@@ -95,16 +99,45 @@ class PhoneLink(private val context: Context) {
         }
     }
 
-    /** The Wi-Fi link's secret and where the phone is, asked over the Data Layer and kept. */
-    suspend fun refreshLink() = lock.withLock {
-        val read = Json.parseToJsonElement(askLayer(LINK_PATH, "")).jsonObject
+    /** The session, asked again once its web token is about to end or after a refusal ([fresh]). */
+    private suspend fun session(fresh: Boolean = false): JsonObject = lock.withLock {
+        val now = System.currentTimeMillis()
+        if (!fresh) {
+            cached?.takeIf { now < it.expires() - EARLY_MS }?.let { return it }
+            store.secret(SESSION_FILE)?.let { runCatching { Json.parseToJsonElement(it).jsonObject }.getOrNull() }
+                ?.takeIf { now < it.expires() - EARLY_MS }?.let { cached = it; return it }
+        }
+        val read = Json.parseToJsonElement(ask(SESSION, if (fresh) "fresh" else "")).jsonObject
+        // The Wi-Fi link's secret and where the phone is, kept apart from the session.
         if (read.text("lanSecret").isNotBlank()) store.putSecret(LINK, JsonObject(mapOf(
             "secret" to read["lanSecret"]!!, "port" to kotlinx.serialization.json.JsonPrimitive(read.text("lanPort")),
             "id" to (read["lanId"] ?: kotlinx.serialization.json.JsonPrimitive("")), "host" to (read["lanHost"] ?: kotlinx.serialization.json.JsonPrimitive("")),
         )).toString())
+        val session = JsonObject(read.filterKeys { !it.startsWith("lan") })
+        store.putSecret(SESSION_FILE, session.toString())
+        cached = session
+        session
     }
 
+    /** The session read (from the phone, or kept here): it also says whether the listen mirror is on. */
+    suspend fun refreshSession() { session() }
+
+    private fun JsonObject.expires() = this["accessExpiresAtMs"]?.jsonPrimitive?.long ?: 0L
     private fun JsonObject.text(key: String) = this[key]?.jsonPrimitive?.content.orEmpty()
+
+    override suspend fun accessToken(forceRefresh: Boolean): AccessToken =
+        session(forceRefresh).let { AccessToken(it.text("accessToken"), it.expires(), it.text("clientId")) }
+
+    override suspend fun clientToken(): ClientToken = session().let { ClientToken(it.text("clientToken"), it.text("clientDeviceId")) }
+
+    /** The identity the phone's install already shows the service: the watch's engine presents the same. */
+    suspend fun config(): EngineConfig = session().let { s ->
+        EngineConfig(
+            appVersion = s.text("appVersion"), browserName = "Chrome", browserVersion = s.text("browserVersion"), os = "linux",
+            userAgent = s.text("userAgent"), acceptLanguage = s.text("acceptLanguage"),
+            clientHints = linkedMapOf("sec-ch-ua" to s.text("secChUa"), "sec-ch-ua-mobile" to "?0", "sec-ch-ua-platform" to "\"Linux\""),
+        )
+    }
 
     /** The playlists, from the phone; the last ones read when it is not there. */
     suspend fun library(): List<WatchList> {
@@ -122,6 +155,12 @@ class PhoneLink(private val context: Context) {
         }
     }
 
+    /**
+     * What the watch plays from its extensions, told to the phone ([body]: the song and its state, or
+     * `{"stopped":true}`): with "Count extension plays" on there, the phone's account plays it unheard.
+     */
+    suspend fun listen(body: String) { ask(LISTEN, body) }
+
     /** The phone's extensions (packages and state, as the pass carries them): through a Data Layer channel, else the Wi-Fi. */
     suspend fun extensions(): String = runCatching {
         val nodes = Wearable.getNodeClient(context).connectedNodes.await()
@@ -134,16 +173,26 @@ class PhoneLink(private val context: Context) {
     }.getOrElse { askLan(EXTENSIONS, "") }.also { if (it.startsWith("error:")) throw IllegalStateException(it.removePrefix("error:").trim()) }
 
     companion object {
-        const val LINK_PATH = "/orpheon/session"
+        const val SESSION = "/orpheon/session"
         const val LIBRARY = "/orpheon/library"
         const val TRACKS = "/orpheon/tracks"
         const val EXTENSIONS = "/orpheon/extensions"
+        const val LISTEN = "/orpheon/listen"
         private const val TAG = "Orpheon"
+        private const val SESSION_FILE = "session"
         private const val LINK = "link"
         private const val ASK_MS = 20_000L
         private const val FIND_MS = 5_000L
         private const val EXTENSIONS_MS = 60_000L
+        private const val EARLY_MS = 60_000L
+        // One session for the whole app: the engine and the screens share it.
         private val lock = Mutex()
+        @Volatile private var cached: JsonObject? = null
+        /**
+         * The phone's "Count extension plays on your account" (Spotify chosen), as the last session
+         * read said: the watch's own listen mirror ([WatchSync]) runs only with it.
+         */
+        val listenSync: Boolean get() = cached?.get("listenSync")?.jsonPrimitive?.content == "true"
     }
 }
 

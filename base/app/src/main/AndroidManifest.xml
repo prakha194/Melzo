@@ -42,7 +42,7 @@
         <!-- Samsung DeX: the app keeps running (and playing) when the window moves to or from DeX. -->
         <meta-data android:name="com.samsung.android.keepalive.density" android:value="true" />
         <meta-data android:name="com.samsung.android.multidisplay.keep_process_alive" android:value="true" />
-        <!-- Cover art for Android Auto (content:// only); the catalogs' image hosts only. -->
+        <!-- Cover art for Android Auto (content:// only); Spotify image CDN hosts only. -->
         <provider
             android:name="com.music.spotui.di.ArtworkProvider"
             android:authorities="${applicationId}.artwork"
@@ -132,6 +132,34 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="orpheon-pass" />
             </intent-filter>
+            <!-- No autoVerify: these are Spotify's domains, verification can never
+                 pass for this app. spotify.link / spoti.fi short links (how the official
+                 apps share a collaborative playlist invitation) are offered too: the id and
+                 the invitation token (pt) are only in the redirect target, which the app
+                 resolves itself (InviteLinks). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="open.spotify.com" />
+                <data
+                    android:scheme="https"
+                    android:host="spotify.com" />
+                <data
+                    android:scheme="https"
+                    android:host="www.spotify.com" />
+                <data
+                    android:scheme="https"
+                    android:host="play.spotify.com" />
+                <data
+                    android:scheme="https"
+                    android:host="spotify.link" />
+                <data
+                    android:scheme="https"
+                    android:host="spoti.fi" />
+            </intent-filter>
         </activity>
 
         <!-- Supporter icons (SupportReminder.setIcon), off with the supporter perks: re-enabling
@@ -198,6 +226,19 @@
         </activity-alias>
         -->
 
+        <!-- Spotify's account pages, in a browser that shares the app's sign-in. -->
+        <activity
+            android:name="com.music.spotui.ui.screens.AccountBrowser"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.Orpheon" />
+        <!-- Spotify's consent page for a Connect device (a Sonos), over the device picker. -->
+        <activity
+            android:name="com.music.spotui.connect.DesktopConsentActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Orpheon" />
         <!-- Per-app language on Android 12 and older (AppCompat stores the choice). -->
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"

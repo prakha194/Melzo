@@ -109,7 +109,7 @@ fun ImmersiveHomeScreen(navController: NavController) {
         }
     }
 
-    val homeTitle = stringResource(R.string.lbl_tab_home)
+    val homeTitle = stringResource(R.string.navigationbar_musicappitems_home_title)
     val title = feed?.greeting?.takeIf { it.isNotBlank() } ?: homeTitle
     var showProfile by remember { mutableStateOf(false) }
     if (showProfile) {
@@ -136,7 +136,7 @@ fun ImmersiveHomeScreen(navController: NavController) {
     val gridSection = sections.firstOrNull()?.takeIf { it.title.isBlank() }
     val carousels = if (gridSection != null) sections.drop(1) else sections
     // Liked Songs leads the shortcuts when Spotify's grid does not carry it.
-    val likedName = stringResource(R.string.lbl_liked_songs)
+    val likedName = stringResource(R.string.collection_liked_songs_title)
     val shortcuts = remember(gridSection, sections, facet, likedName) { homeShortcuts(gridSection?.items, sections.isEmpty(), facet, likedName) }
     // The shortcuts at the top load in the background, ready before a tap.
     LaunchedEffect(shortcuts) { prefetchHomeShortcuts(shortcuts) }
@@ -153,10 +153,10 @@ fun ImmersiveHomeScreen(navController: NavController) {
                 ImmersiveHomeFacets(
                     facet,
                     labels = mapOf(
-                        "" to stringResource(R.string.lbl_filter_all),
-                        "music-chip" to stringResource(R.string.lbl_filter_music),
-                        "podcasts-chip" to stringResource(R.string.lbl_podcasts),
-                        "audiobooks-chip" to stringResource(R.string.lbl_audiobooks),
+                        "" to stringResource(R.string.filter_chip_all_label),
+                        "music-chip" to stringResource(R.string.recents_content_filter_music),
+                        "podcasts-chip" to stringResource(R.string.ad_category_title_podcasts),
+                        "audiobooks-chip" to stringResource(R.string.audiobooks_title),
                     ),
                     podcasts = Features.PODCASTS,
                     select = homeViewModel::selectFacet,
@@ -276,7 +276,7 @@ private fun homeItemKeys(items: List<HomeItem>): List<String> {
 private fun HomeItem.cardSubtitle(): String = when (this) {
     is HomeItem.Album -> subtitle
     is HomeItem.Playlist -> subtitle
-    is HomeItem.Artist -> stringResource(R.string.lbl_artist)
+    is HomeItem.Artist -> stringResource(R.string.artist_subtitle)
     is HomeItem.Show -> subtitle
 }
 

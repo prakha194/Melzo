@@ -1,5 +1,7 @@
 package com.music.spotui.ui.components
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import com.music.spotui.ui.theme.tone
 import com.music.spotui.ui.theme.AppText
 import com.music.spotui.ui.theme.AppMuted
@@ -39,9 +41,10 @@ import app.myspoti.engine.BuildConfig
 import app.myspoti.engine.R
 import com.music.spotui.data.api.SupportReminder
 import com.music.spotui.ui.theme.AppAccent
+import kotlinx.coroutines.launch
 
-const val SOURCE_URL = "https://github.com/prakha194/Spotify"
-private val repo get() = BuildConfig.UPDATE_REPO.ifBlank { "kota-zo/myspoti" }
+private val repo get() = BuildConfig.UPDATE_REPO.ifBlank { "Kirisos-Guna/myspoti" }
+val REPO_URL get() = "https://github.com/$repo"
 
 private fun openUrl(context: Context, url: String) {
     runCatching {
@@ -49,7 +52,7 @@ private fun openUrl(context: Context, url: String) {
     }
 }
 
-/** About: the version, who made Spoon, and where its source code lives. */
+/** About: the version, the source code and a star on GitHub. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutSheet(onDismiss: () -> Unit) {
@@ -69,35 +72,102 @@ fun AboutSheet(onDismiss: () -> Unit) {
                 )
                 Column(Modifier.padding(start = 14.dp)) {
                     Text("Spoon", color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text("${stringResource(R.string.lbl_version)} ${BuildConfig.VERSION_NAME}",
+                    Text("${stringResource(R.string.settings_item_version_title)} ${BuildConfig.VERSION_NAME}",
                         color = AppMuted, fontSize = 13.sp)
                 }
             }
             Text(stringResource(R.string.about_free), color = AppMuted, fontSize = 13.sp,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp))
-            Text("Spoon is made by Prashant.", color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp))
-            Text("Free and open source, under the GNU GPL v3. Based on Orpheon by kota-zo.",
-                color = AppMuted, fontSize = 12.sp,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 8.dp))
-            AboutRow("Source code", "github.com/prakha194/Spotify") { openUrl(context, SOURCE_URL) }
+            AboutRow(stringResource(R.string.about_github), stringResource(R.string.about_github_detail)) { openUrl(context, REPO_URL) }
+            UpdateRows()
+            Text(stringResource(R.string.about_star_body), color = AppMuted, fontSize = 13.sp,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 12.dp))
+            StarOnGitHubButton(Modifier.padding(horizontal = 20.dp))
         }
     }
 }
 
-/** GitHub Sponsors, under the Ko-fi button: outlined, so Ko-fi stays the main one. */
+/**
+ * "Update channel" (stable or beta, chosen in a dialog) and "Check for updates" (asks GitHub now;
+ * a newer release opens the app's update card).
+ */
 @Composable
-fun GitHubSponsorButton(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
+private fun UpdateRows() {
+    val context = LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val check = com.music.spotui.data.api.rememberUpdateCheckState(context)
+    var picking by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val beta = com.music.spotui.data.api.UpdateChecker.isBeta
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().clickable { picking = true }.padding(horizontal = 20.dp, vertical = 10.dp),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.update_channel_title), color = AppText, fontSize = 16.sp)
+            Text(stringResource(R.string.update_channel_detail), color = AppMuted, fontSize = 12.sp)
+        }
+        Text(stringResource(if (beta) R.string.update_channel_beta else R.string.update_channel_stable),
+            color = AppText, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 12.dp))
+    }
+    AboutRow(
+        stringResource(R.string.settings_update_refresh),
+        when {
+            check.checking -> "…"
+            check.message != null -> check.message!!
+            else -> stringResource(R.string.update_check_detail)
+        },
+    ) { scope.launch { check.run() } }
+    if (picking) UpdateChannelDialog(beta, onPick = { com.music.spotui.data.api.UpdateChecker.setBetaChannel(context, it); picking = false }) { picking = false }
+}
+
+@Composable
+internal fun UpdateChannelDialog(beta: Boolean, onPick: (Boolean) -> Unit, onDismiss: () -> Unit) {
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(tone(0xFF1E1E1E))
+                .border(1.dp, AppText.copy(alpha = 0.12f), RoundedCornerShape(28.dp)).padding(24.dp),
+        ) {
+            Text(stringResource(R.string.update_channel_title), color = AppText, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            ChannelOption(stringResource(R.string.update_channel_stable), stringResource(R.string.update_channel_stable_detail), !beta) { onPick(false) }
+            ChannelOption(stringResource(R.string.update_channel_beta), stringResource(R.string.update_channel_beta_detail), beta) { onPick(true) }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.padding(top = 20.dp).fillMaxWidth().height(48.dp).clip(RoundedCornerShape(16.dp))
+                    .background(AppText.copy(alpha = 0.08f)).clickable(onClick = onDismiss),
+            ) { Text(stringResource(R.string.update_channel_cancel), color = AppText, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
+        }
+    }
+}
+
+@Composable
+private fun ChannelOption(title: String, detail: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(top = 16.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable(onClick = onClick).padding(vertical = 6.dp),
+    ) {
+        androidx.compose.material3.RadioButton(
+            selected = selected, onClick = onClick,
+            colors = androidx.compose.material3.RadioButtonDefaults.colors(selectedColor = AppText, unselectedColor = AppMuted),
+        )
+        Column(Modifier.padding(start = 8.dp)) {
+            Text(title, color = AppText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            if (detail.isNotEmpty()) Text(detail, color = AppMuted, fontSize = 13.sp)
+        }
+    }
+}
+
+/** "Star on GitHub": opens the repository, where a star helps others find the app. */
+@Composable
+fun StarOnGitHubButton(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
     val context = LocalContext.current
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(50))
-            .border(1.dp, AppText.copy(alpha = 0.6f), RoundedCornerShape(50))
-            .pressable(0.96f) { onClick?.invoke() ?: SupportReminder.openSponsors(context) },
-    ) { Text(stringResource(R.string.support_github_action), color = AppText, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
+            .background(AppAccent).pressable(0.96f) { onClick?.invoke(); openUrl(context, REPO_URL) },
+    ) { Text("★ " + stringResource(R.string.about_star_action), color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
 }
 
-/** "Support Myspoti" from the profile menu: Ko-fi or GitHub Sponsors, the user picks. */
+/** "Support Myspoti" from the profile menu: a star on GitHub. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SupportSheet(onDismiss: () -> Unit) {
@@ -110,14 +180,9 @@ fun SupportSheet(onDismiss: () -> Unit) {
     ) {
         androidx.compose.foundation.layout.Column(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 28.dp)) {
             Text(stringResource(R.string.support_title), color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Text(stringResource(R.string.support_body), color = AppMuted, fontSize = 14.sp,
+            Text(stringResource(R.string.about_star_body), color = AppMuted, fontSize = 14.sp,
                 modifier = Modifier.padding(top = 10.dp, bottom = 18.dp))
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(50))
-                    .background(AppAccent).pressable(0.96f) { onDismiss(); SupportReminder.open(context) },
-            ) { Text(stringResource(R.string.support_action), color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
-            GitHubSponsorButton(Modifier.padding(top = 10.dp)) { onDismiss(); SupportReminder.openSponsors(context) }
+            StarOnGitHubButton { onDismiss() }
         }
     }
 }
@@ -127,5 +192,42 @@ private fun AboutRow(title: String, detail: String, onClick: () -> Unit) {
     Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 10.dp)) {
         Text(title, color = AppText, fontSize = 16.sp)
         Text(detail, color = AppMuted, fontSize = 12.sp)
+    }
+}
+
+/** The refresh-rate row's value: "Automatic" or "120 Hz". */
+@Composable
+fun refreshRateLabel(): String = com.music.spotui.ui.look.RefreshRate.chosen.let { hz ->
+    if (hz == 0) stringResource(R.string.refresh_rate_auto) else stringResource(R.string.refresh_rate_hz, hz)
+}
+
+/** Picks the screen refresh rate (see RefreshRate): automatic, or one the screen offers. */
+@Composable
+internal fun RefreshRateDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val activity = context as? android.app.Activity ?: (context as? android.content.ContextWrapper)?.baseContext as? android.app.Activity
+    val rates = androidx.compose.runtime.remember { activity?.let { com.music.spotui.ui.look.RefreshRate.supported(it) }.orEmpty() }
+    val chosen = com.music.spotui.ui.look.RefreshRate.chosen
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(tone(0xFF1E1E1E))
+                .border(1.dp, AppText.copy(alpha = 0.12f), RoundedCornerShape(28.dp)).padding(24.dp),
+        ) {
+            Text(stringResource(R.string.refresh_rate_title), color = AppText, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.refresh_rate_detail), color = AppMuted, fontSize = 13.sp, modifier = Modifier.padding(top = 6.dp))
+            ChannelOption(stringResource(R.string.refresh_rate_auto), stringResource(R.string.refresh_rate_auto_detail), chosen == 0) {
+                com.music.spotui.ui.look.RefreshRate.set(context, 0); onDismiss()
+            }
+            rates.forEach { hz ->
+                ChannelOption(stringResource(R.string.refresh_rate_hz, hz), "", chosen == hz) {
+                    com.music.spotui.ui.look.RefreshRate.set(context, hz); onDismiss()
+                }
+            }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.padding(top = 20.dp).fillMaxWidth().height(48.dp).clip(RoundedCornerShape(16.dp))
+                    .background(AppText.copy(alpha = 0.08f)).clickable(onClick = onDismiss),
+            ) { Text(stringResource(R.string.update_channel_cancel), color = AppText, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
+        }
     }
 }

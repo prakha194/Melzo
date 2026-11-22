@@ -273,6 +273,17 @@ fun ExtensionScreen(navController: NavController, id: String) {
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) { Text(stringResource(R.string.ext_open_page), color = AppAccent) }
         ExtSection(R.string.actions_title)
         Column(Modifier.padding(horizontal = 20.dp)) { m.asksShown().sortedByDescending { it.critical }.forEach { a -> ActionRow(a) } }
+        // Writes allowed for good from a confirmation ("Always"): each one revocable here.
+        if (e.rawGrants.isNotEmpty()) {
+            Text(stringResource(R.string.ext_grants_title), color = AppText, fontSize = 14.sp, modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp))
+            Text(stringResource(R.string.ext_grants_note), color = AppMuted, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 20.dp))
+            e.rawGrants.forEach { g ->
+                Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(g.toString(), color = AppText, fontSize = 12.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { Extensions.revokeRawGrant(id, g) }) { Text(stringResource(R.string.ext_grant_revoke), color = Warning) }
+                }
+            }
+        }
         if (m.settings.isNotEmpty()) {
             ExtDivider()
             ExtSection(R.string.extension_settings)
@@ -528,6 +539,7 @@ private fun ChangeRow(c: app.myspoti.extensions.Change) {
     val title = when (c.kind) {
         app.myspoti.extensions.Change.Kind.ACTION -> stringResource(R.string.extension_change_action, label)
         app.myspoti.extensions.Change.Kind.HOST -> stringResource(R.string.extension_change_host, if (c.key == "*") stringResource(R.string.extension_change_any_host) else c.key)
+        app.myspoti.extensions.Change.Kind.WRITE -> stringResource(R.string.extension_change_write, c.key)
         app.myspoti.extensions.Change.Kind.EXCLUSIVE -> stringResource(R.string.extension_change_exclusive, label)
         app.myspoti.extensions.Change.Kind.WHY -> stringResource(R.string.extension_change_why, label)
         app.myspoti.extensions.Change.Kind.CODE -> stringResource(R.string.update_code_files, c.key.ifBlank { "main" } + " (+${c.added}/−${c.removed})")

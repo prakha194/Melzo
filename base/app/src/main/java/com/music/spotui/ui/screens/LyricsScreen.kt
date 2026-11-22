@@ -218,9 +218,11 @@ private fun jumpTo(timeMs: Long) {
 }
 
 private fun shareLyrics(context: Context, title: String, artist: String, line: String?) {
+    val id = SongPlayer.currentTrackId
     val text = buildString {
         if (!line.isNullOrBlank() && line != "♪") append("« ").append(line).append(" »\n")
         append(title).append(" · ").append(artist)
+        if (id.isNotBlank()) append("\nhttps://open.spotify.com/track/").append(id)
     }
     val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
     context.startActivity(Intent.createChooser(send, context.getString(R.string.lyrics_share)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -555,7 +557,7 @@ fun LyricsScreen(
                     interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClose,
                 ),
             ) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(R.string.lbl_lyrics_close), tint = palette.highlight, modifier = Modifier.size(32.dp))
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(R.string.lyrics_fullscreen_close_button_readout_value), tint = palette.highlight, modifier = Modifier.size(32.dp))
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                 Text(title, color = palette.highlight, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -579,7 +581,7 @@ fun LyricsScreen(
                         interactionSource = remember { MutableInteractionSource() }, indication = null,
                     ) { menu = true },
                 ) {
-                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.lbl_more), tint = palette.highlight)
+                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.content_description_context_menu), tint = palette.highlight)
                 }
                 LyricsMenu(
                     expanded = menu,
@@ -608,7 +610,7 @@ fun LyricsScreen(
                 }
             is LyricsViewModel.State.NotFound ->
                 Box(Modifier.weight(1f).fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.lbl_lyrics_none), color = palette.highlight, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.lyrics_fullscreen_no_lyrics_error_version_two), color = palette.highlight, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             is LyricsViewModel.State.Loaded -> {
                 val l = state.lyrics
@@ -651,7 +653,7 @@ fun LyricsScreen(
                         }
                         if (!l.synced) item {
                             Text(
-                                stringResource(R.string.lbl_lyrics_unsynced),
+                                stringResource(R.string.lyrics_fullscreen_unsynced),
                                 color = palette.highlight.copy(alpha = 0.8f),
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(bottom = 8.dp).revealIn(reveal, 0.35f, 22f),
@@ -688,7 +690,7 @@ fun LyricsScreen(
                         l.provider?.let { p ->
                             item {
                                 Text(
-                                    stringResource(R.string.lbl_lyrics_from, p),
+                                    stringResource(R.string.lyrics_credential_note, p),
                                     color = palette.highlight.copy(alpha = 0.8f),
                                     fontSize = 12.sp,
                                     // With the lines, in and out: alone it stayed up through the close, then vanished.
@@ -762,7 +764,7 @@ private fun LyricsMenu(
             },
         )
         if (canTranslate) DropdownMenuItem(
-            text = { Text(stringResource(if (translating) R.string.lbl_lyrics_translate_off else R.string.lbl_lyrics_translate)) },
+            text = { Text(stringResource(if (translating) R.string.lyrics_fullscreen_translate_button_enabled_readout_value else R.string.lyrics_fullscreen_context_menu_main_page_translate_lyrics_action)) },
             onClick = { onDismiss(); onTranslate() },
         )
         // The lines in Latin letters, when the lyrics have them.
@@ -822,10 +824,10 @@ private fun LyricsSelectionBar(palette: LyricsPalette, canShare: Boolean, onCanc
     Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 8.dp, bottom = 16.dp)) {
         Text(stringResource(R.string.lyrics_select_hint), color = palette.highlight.copy(alpha = 0.8f), fontSize = 13.sp, modifier = Modifier.padding(bottom = 10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            LyricsChip(stringResource(R.string.action_cancel_label), null, false, false, palette, onCancel)
+            LyricsChip(stringResource(R.string.cancel), null, false, false, palette, onCancel)
             // Nothing picked yet: the chip waits, dimmed.
             Box(Modifier.graphicsLayer { alpha = if (canShare) 1f else 0.4f }) {
-                LyricsChip(stringResource(R.string.lbl_lyrics_share), painterResource(R.drawable.ic_share), true, false, palette) { if (canShare) onShare() }
+                LyricsChip(stringResource(R.string.lyrics_fullscreen_chip_label_share), painterResource(R.drawable.ic_share), true, false, palette) { if (canShare) onShare() }
             }
         }
     }
@@ -849,8 +851,8 @@ private fun LyricsControls(
     val playing = com.music.spotui.di.Graph.currentSongState.playingState.value
     Column(modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 10.dp)) {
-            LyricsChip(stringResource(R.string.lbl_lyrics_share), painterResource(R.drawable.ic_share), false, false, palette, onShare)
-            if (showTranslate) LyricsChip(stringResource(R.string.lbl_lyrics_translate_chip), painterResource(R.drawable.ic_translate_lyrics), translationActive, translating, palette, onTranslate)
+            LyricsChip(stringResource(R.string.lyrics_fullscreen_chip_label_share), painterResource(R.drawable.ic_share), false, false, palette, onShare)
+            if (showTranslate) LyricsChip(stringResource(R.string.lyrics_fullscreen_chip_label_translate), painterResource(R.drawable.ic_translate_lyrics), translationActive, translating, palette, onTranslate)
             if (showRomanize) LyricsChip(stringResource(R.string.lyrics_romanize), rememberVectorPainter(Icons.Rounded.Abc), romanizationActive, false, palette, onRomanize)
         }
         LyricsSeekBar(
@@ -875,7 +877,7 @@ private fun LyricsControls(
         ) {
             com.music.spotui.ui.components.PlayPauseIcon(
                 playing = playing,
-                contentDescription = if (playing) stringResource(R.string.lbl_pause) else stringResource(R.string.lbl_play),
+                contentDescription = if (playing) stringResource(R.string.content_description_pause_button) else stringResource(R.string.content_description_play_button),
                 tint = palette.background,
                 modifier = Modifier.size(30.dp),
             )
@@ -961,7 +963,7 @@ fun InlineLyrics(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
-                stringResource(if (l.uncapped) R.string.lbl_lyrics else R.string.lbl_lyrics_preview),
+                stringResource(if (l.uncapped) R.string.lyrics_card_title else R.string.lyrics_card_title_preview),
                 color = palette.highlight,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
@@ -1002,7 +1004,7 @@ fun InlineLyrics(
                     .clickable { onExpand() }
                     .padding(16.dp, 8.dp),
             ) {
-                Text(stringResource(R.string.lbl_lyrics_show), color = palette.background, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.lyrics_card_show_lyrics_button), color = palette.background, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

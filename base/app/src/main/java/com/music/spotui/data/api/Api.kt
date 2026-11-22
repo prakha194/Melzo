@@ -61,7 +61,7 @@ class Api constructor(
         /** Sentinel id for the pinned "Liked Songs" library entry. */
         const val LIKED_SONGS_ID = "liked-songs"
         /** The Liked Songs artwork, as the library and the home shortcuts draw it. */
-        const val LIKED_COVER = "android.resource://${app.myspoti.engine.BuildConfig.APPLICATION_ID}/drawable/liked_cover"
+        const val LIKED_COVER = "https://misc.scdn.co/liked-songs/liked-songs-640.png"
         /** The "Local Files" folder pinned under Liked Songs in the library (not a Spotify item). */
         const val LOCAL_FILES_ID = "local-files"
         /** "Downloaded" (songs kept for offline listening), pinned under Local Files. */
@@ -81,6 +81,7 @@ class Api constructor(
         /** Pages of 50 asked for a show's episodes / chapters, at most (500 rows). */
         const val MAX_EPISODE_PAGES = 10
         /** The page's collection set behind its "Mark as finished" menu. */
+        private const val MARKED_FINISHED = "markedasfinished"
         @Volatile var albums: List<AlbumsModel>? = null
         @Volatile var artists: List<ArtistsModel>? = null
         @Volatile var home: HomeFeedModel? = null
@@ -152,7 +153,12 @@ class Api constructor(
     private suspend fun ready(): Boolean =
         withTimeoutOrNull(30_000) { api.ready.first { it } } != null
 
-    private suspend fun readyToRead(): Boolean = api.ready.value || ready()
+    /**
+     * For reads that go straight to Spotify over HTTP (search): ready as soon as a token is in hand,
+     * the one kept from the last launch included, without waiting for the page to load.
+     */
+    private suspend fun readyToRead(): Boolean =
+        api.ready.value || runCatching { app.myspoti.host.android.MyspotiRuntime.spotify.http.hasToken() }.getOrDefault(false) || ready()
 
     private suspend fun diskHome(): HomeFeedModel? =
         withContext(Dispatchers.IO) { ScreenCache.home.read() }?.also { HomeCache.home = it }
@@ -194,8 +200,8 @@ class Api constructor(
             playable = false,
             rowUid = t.uid.orEmpty(),
         )
-        // A song of a catalog provider (a search's, an album's of that provider): it goes by its catalog key
-        // (CatalogRuntime.keyOf), and plays from the audio-source extensions (SongPlayer.playSong).
+        // A song of another provider (a search's, an album's of that provider): no Spotify id, so the actions that
+        // need one are off; it plays once found on Spotify (SongPlayer.playSong).
         if (com.music.spotui.data.catalog.CatalogRuntime.isCatalogUri(t.uri)) return SongsModel(
             id = stableId("catalog:${t.uri}"),
             title = t.name.take(128),
@@ -203,7 +209,6 @@ class Api constructor(
             singer = singer,
             coverUri = cover(t.album?.images.orEmpty()),
             url = com.music.spotui.data.catalog.CatalogRuntime.PLAY_PREFIX + t.uri,
-            spotifyTrackId = com.music.spotui.data.catalog.CatalogRuntime.keyOf(t.uri).orEmpty(),
             explicit = t.explicit,
             durationMs = t.durationMs.toInt(),
             albumId = t.album?.uri.orEmpty(),
@@ -273,7 +278,7 @@ class Api constructor(
     private fun playlistEntry(p: Playlist) = LibraryEntry(
         spotifyId = p.uri.substringAfterLast(':'),
         name = p.name,
-        subtitle = context.getString(R.string.lbl_playlist) + (p.owner?.let { " • $it" } ?: ""),
+        subtitle = context.getString(R.string.assisted_curation_search_playlist) + (p.owner?.let { " • $it" } ?: ""),
         coverUri = cover(p.images),
         isPlaylist = true,
     )
@@ -282,20 +287,20 @@ class Api constructor(
         val id = c.uri.substringAfterLast(':')
         val image = cover(c.images)
         return when (c.kind) {
-            MediaKind.ALBUM -> HomeItem.Album(id = id, name = c.title, imageUrl = image, subtitle = c.subtitle ?: context.getString(R.string.lbl_type_album), artists = c.subtitle.orEmpty())
+            MediaKind.ALBUM -> HomeItem.Album(id = id, name = c.title, imageUrl = image, subtitle = c.subtitle ?: context.getString(R.string.album_type_album), artists = c.subtitle.orEmpty())
             MediaKind.ARTIST -> HomeItem.Artist(name = c.title, imageUrl = image, id = id)
-            MediaKind.PLAYLIST -> HomeItem.Playlist(name = c.title, imageUrl = image, subtitle = c.subtitle?.let { context.getString(R.string.lbl_playlist) + " • $it" } ?: context.getString(R.string.lbl_playlist), id = id)
+            MediaKind.PLAYLIST -> HomeItem.Playlist(name = c.title, imageUrl = image, subtitle = c.subtitle?.let { context.getString(R.string.assisted_curation_search_playlist) + " • $it" } ?: context.getString(R.string.assisted_curation_search_playlist), id = id)
             MediaKind.SHOW, MediaKind.AUDIOBOOK -> HomeItem.Show(id = id, name = c.title, imageUrl = image, subtitle = c.subtitle.orEmpty(), isEpisode = false)
             MediaKind.EPISODE, MediaKind.CHAPTER -> HomeItem.Show(id = id, name = c.title, imageUrl = image, subtitle = c.subtitle.orEmpty(), isEpisode = true)
-            MediaKind.COLLECTION -> HomeItem.Playlist(name = c.title, imageUrl = image.ifBlank { LIKED_COVER }, subtitle = context.getString(R.string.lbl_playlist), id = LIKED_SONGS_ID)
+            MediaKind.COLLECTION -> HomeItem.Playlist(name = c.title, imageUrl = image.ifBlank { LIKED_COVER }, subtitle = context.getString(R.string.assisted_curation_search_playlist), id = LIKED_SONGS_ID)
             else -> null
         }
     }
 
     private fun likedEntry() = LibraryEntry(
         spotifyId = LIKED_SONGS_ID,
-        name = context.getString(R.string.lbl_liked_songs),
-        subtitle = context.getString(R.string.lbl_playlist),
+        name = context.getString(R.string.collection_liked_songs_title),
+        subtitle = context.getString(R.string.assisted_curation_search_playlist),
         coverUri = LIKED_COVER,
         isPlaylist = true,
     )
@@ -351,10 +356,10 @@ class Api constructor(
         val shows = if (filtered.getOrNull().isNullOrEmpty()) readShows(LibraryFilter.ALL).takeIf { it.isSuccess || filtered.isFailure } ?: filtered else filtered
         val out = shows.getOrElse { return Result.failure(it) }.map {
             LibraryEntry(SHOW_PREFIX + it.uri.substringAfterLast(':'), it.name,
-                context.getString(R.string.lbl_podcast) + (it.subtitle?.let { s -> " • $s" } ?: ""), cover(it.images), isPlaylist = false)
+                context.getString(R.string.album_type_podcast) + (it.subtitle?.let { s -> " • $s" } ?: ""), cover(it.images), isPlaylist = false)
         }
         if (out.isEmpty()) return Result.success(out)
-        val news = LibraryEntry(NEW_EPISODES_ID, context.getString(R.string.episodes_new_title), context.getString(R.string.new_episodes_subtitle),
+        val news = LibraryEntry(NEW_EPISODES_ID, context.getString(R.string.new_episodes_title), context.getString(R.string.new_episodes_subtitle),
             out.first().coverUri, isPlaylist = true)
         return Result.success(listOf(news) + out)
     }
@@ -566,7 +571,7 @@ class Api constructor(
             publisher = head?.publisher?.takeIf { it.isNotBlank() }
                 ?: book?.authors?.joinToString(", ").orEmpty(),
             coverUri = cover,
-            description = head?.description ?: book?.description?.let { androidx.core.text.HtmlCompat.fromHtml(it, androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }.orEmpty(),
+            description = head?.description ?: book?.description?.let { app.myspoti.spotify.stripHtml(it) }.orEmpty(),
             rating = head?.rating ?: 0.0,
             saved = head?.saved == true,
             authors = book?.authors.orEmpty(),
@@ -582,12 +587,34 @@ class Api constructor(
         return runCatching { episodeSong(api.podcasts.episode("spotify:episode:$episodeId")) }.getOrNull()
     }
 
-    /** Episodes marked finished: kept by no service now. */
-    @Suppress("UNUSED_PARAMETER")
-    suspend fun setEpisodePlayed(episodeUri: String, played: Boolean) {}
+    /**
+     * Marks an episode finished, or not started. The page keeps this in its own
+     * "markedasfinished" collection — the set behind its "Mark as finished" menu — so the
+     * change follows the account like Spotify's own menu does.
+     */
+    suspend fun setEpisodePlayed(episodeUri: String, played: Boolean) {
+        if (episodeUri.isBlank()) return
+        MyspotiRuntime.spotify.raw.service(
+            "CollectionPlatformAPI",
+            if (played) "add" else "remove",
+            kotlinx.serialization.json.JsonPrimitive(MARKED_FINISHED),
+            kotlinx.serialization.json.JsonArray(listOf(kotlinx.serialization.json.JsonPrimitive(episodeUri))),
+        )
+    }
 
-    /** Uris of the episodes marked finished: none. */
-    suspend fun finishedEpisodes(): Set<String> = emptySet()
+    /** Raw uris the page has in its "markedasfinished" set (empty when it refuses). */
+    suspend fun finishedEpisodes(): Set<String> {
+        if (!ready()) return emptySet()
+        // The page's get() throws on an empty set: that simply means nothing is marked.
+        val raw = runCatching {
+            MyspotiRuntime.spotify.raw.service(
+                "CollectionPlatformAPI", "get", kotlinx.serialization.json.JsonPrimitive(MARKED_FINISHED),
+            )
+        }.getOrNull()
+        return (raw as? kotlinx.serialization.json.JsonArray).orEmpty()
+            .mapNotNull { (it as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull }
+            .toSet()
+    }
 
     /** "Your Episodes": saved podcast episodes. */
     suspend fun getSavedEpisodes(): List<SongsModel> {
@@ -659,8 +686,9 @@ class Api constructor(
         if (artistName.isBlank() && knownArtistId.isBlank()) { emit(Response.Success(ArtistOverviewModel(name = artistName))); return@flow }
         if (!ready()) { emit(Response.Error(notSignedIn())); return@flow }
         val uri = when {
-            // An artist of a catalog provider: its own page.
-            knownArtistId.contains(':') -> knownArtistId
+            // An artist of another provider: its Spotify page when Spotify has the same name, else its own.
+            knownArtistId.contains(':') ->
+                runCatching { com.music.spotui.data.catalog.CatalogRuntime.spotifyArtistFor(knownArtistId) }.getOrNull()?.let { "spotify:artist:$it" } ?: knownArtistId
             knownArtistId.isNotBlank() -> "spotify:artist:$knownArtistId"
             else -> runCatching { findArtist(artistName) }.getOrNull()?.uri
         }
@@ -812,11 +840,11 @@ class Api constructor(
         fun page(tracks: List<SongsModel>, complete: Boolean) = ContextPageModel(
             uri = "spotify:collection:tracks",
             type = "liked",
-            name = context.getString(R.string.lbl_liked_songs),
+            name = context.getString(R.string.collection_liked_songs_title),
             coverUri = "",
             ownerName = ProfileCache.name.orEmpty(),
             ownerAvatar = ProfileCache.imageUrl.orEmpty(),
-            metaLine = context.resources.getQuantityString(R.plurals.lbl_n_songs, tracks.size, tracks.size),
+            metaLine = context.resources.getQuantityString(R.plurals.liked_songs_header_metadata_text, tracks.size, tracks.size),
             tracks = tracks,
             complete = complete,
         )
@@ -848,7 +876,7 @@ class Api constructor(
         val tracks = runCatching { allLiked { if (first) emit(Response.Success(page(it, false))) } }.getOrElse {
             if (it is CancellationException) throw it
             Log.e("Api", "getLikedPage failed", it)
-            if (LikedCache.tracks == null) emit(Response.Error(context.getString(R.string.couldnt_load, context.getString(R.string.lbl_liked_songs))))
+            if (LikedCache.tracks == null) emit(Response.Error(context.getString(R.string.couldnt_load, context.getString(R.string.collection_liked_songs_title))))
             return@flow
         }
         LikedCache.tracks = tracks
@@ -902,10 +930,11 @@ class Api constructor(
 
     suspend fun getAlbumPage(asked: String, stored: Boolean = true): Flow<Response<ContextPageModel>> = flow {
         emit(Response.Loading())
-        // An album of a catalog provider (a whole uri): its own page, read from that provider and not kept on storage.
+        // An album of another provider (a whole uri): its Spotify copy when Spotify has it, else its own page,
+        // read from that provider and not kept on storage.
         val other = asked.contains(':')
         if (other && !ready()) { emit(Response.Error(notSignedIn())); return@flow }
-        val albumId = asked
+        val albumId = if (other) runCatching { com.music.spotui.data.catalog.CatalogRuntime.spotifyAlbumFor(asked) }.getOrNull() ?: asked else asked
         val onSpotify = !albumId.contains(':')
         val uri = if (onSpotify) "spotify:album:$albumId" else albumId
         val saved = if (stored && onSpotify) withContext(Dispatchers.IO) { ScreenCache.albumPage(albumId).read() } else null
@@ -933,8 +962,8 @@ class Api constructor(
         val songs = tracks.map { songOf(it).copy(album = album.name, coverUri = cover(album.images), albumId = albumId) }
         SongPlayer.registerContext(songs.map { it.url }, uri)
         val type = context.getString(when (album.type) {
-            "SINGLE" -> R.string.lbl_type_single; "EP" -> R.string.lbl_type_ep
-            "COMPILATION" -> R.string.lbl_type_compilation; else -> R.string.lbl_type_album
+            "SINGLE" -> R.string.album_type_single; "EP" -> R.string.album_type_ep
+            "COMPILATION" -> R.string.album_type_compilation; else -> R.string.album_type_album
         })
         val firstArtist = album.artists.firstOrNull()
         val page = ContextPageModel(
@@ -988,7 +1017,7 @@ class Api constructor(
         }
         if (fresh != null && fresh.size != pl.trackCount) firstPage = startFirstPage()
         val saves = pl.followers?.takeIf { it > 0 }?.let {
-            context.resources.getQuantityString(R.plurals.lbl_n_saves, it.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), it)
+            context.resources.getQuantityString(R.plurals.profile_list_item_saves_count, it.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), it)
         }.orEmpty()
         val header = ContextPageModel(
             uri = uri,
@@ -1017,7 +1046,7 @@ class Api constructor(
             // The song count rides along with the duration ("1 h 2 min / 12 songs") so the two
             // numbers that grow together as pages arrive stay next to each other.
             val durationAndCount = if (songs.isNotEmpty()) {
-                val count = context.resources.getQuantityString(R.plurals.lbl_n_songs, songs.size, songs.size)
+                val count = context.resources.getQuantityString(R.plurals.liked_songs_header_metadata_text, songs.size, songs.size)
                 if (total > 0) "${durationLabel(total)} / $count" else count
             } else ""
             val meta = listOf(saves, durationAndCount).filter { it.isNotBlank() }.joinToString(" • ")
@@ -1062,16 +1091,16 @@ class Api constructor(
     private fun entryOf(item: app.myspoti.api.LibraryItem): LibraryEntry? = when (item.kind) {
         MediaKind.FOLDER -> LibraryEntry(
             spotifyId = item.uri, name = item.name,
-            subtitle = context.getString(R.string.lbl_folder) + " • " +
-                context.resources.getQuantityString(R.plurals.lbl_n_playlists, item.count ?: 0, (item.count ?: 0).toString()),
+            subtitle = context.getString(R.string.create_menu_item_folder_title) + " • " +
+                context.resources.getQuantityString(R.plurals.add_to_playlist_folder_subtitle_playlists_count, item.count ?: 0, (item.count ?: 0).toString()),
             coverUri = "", isPlaylist = false, folderUri = item.uri, childCount = item.count ?: 0,
             uri = item.uri, pinned = item.pinned, addedAt = item.addedAt.orEmpty(),
         )
         MediaKind.PLAYLIST -> LibraryEntry(item.uri.substringAfterLast(':'), item.name,
-            context.getString(R.string.lbl_playlist) + (item.subtitle?.let { " • $it" } ?: ""), cover(item.images), isPlaylist = true,
+            context.getString(R.string.assisted_curation_search_playlist) + (item.subtitle?.let { " • $it" } ?: ""), cover(item.images), isPlaylist = true,
             uri = item.uri, pinned = item.pinned, addedAt = item.addedAt.orEmpty(), ownerUri = item.ownerUri.orEmpty())
         MediaKind.ALBUM -> LibraryEntry(item.uri.substringAfterLast(':'), item.name,
-            context.getString(R.string.lbl_type_album) + (item.subtitle?.let { " • $it" } ?: ""), cover(item.images), isPlaylist = false, artists = item.subtitle.orEmpty(),
+            context.getString(R.string.album_type_album) + (item.subtitle?.let { " • $it" } ?: ""), cover(item.images), isPlaylist = false, artists = item.subtitle.orEmpty(),
             uri = item.uri, pinned = item.pinned, addedAt = item.addedAt.orEmpty())
         MediaKind.COLLECTION -> if (item.uri == "spotify:collection:tracks") null
             else LibraryEntry(EPISODES_ID, item.name, "Podcast", cover(item.images), isPlaylist = true)

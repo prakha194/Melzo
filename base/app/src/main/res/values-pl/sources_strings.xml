@@ -4,6 +4,7 @@
     <string name="sources_download_title">Źródła pobierania</string>
     <string name="sources_audio_footer">Pytane od góry do dołu dla każdego utworu: pierwsze, które go ma, odtwarza go. Strzałkami zmienisz kolejność.</string>
     <string name="sources_download_footer">Pytane od góry do dołu: pierwsze źródło, które ma utwór, dostarcza plik. Strzałkami zmienisz kolejność.</string>
+    <string name="sources_account">Spotify</string>
     <string name="sources_account_detail">Odtwarzane, gdy żadne źródło powyżej nie ma utworu</string>
     <string name="sources_account_player">Odtwarzacz Twojego konta</string>
     <string name="sources_ready">Gotowe</string>
@@ -13,6 +14,7 @@
     <string name="sources_last_used">Ostatnio: %1$s, %2$s</string>
     <string name="sources_open">Otwórz rozszerzenie</string>
     <string name="sources_order_hint">Źródła są pytane w kolejności ustawionej w Ustawieniach (Odtwarzanie, Pobieranie).</string>
+    <string name="sources_below_account">Nie pytamy: Spotify jest wyżej</string>
     <string name="source_pick_title">Źródło</string>
     <string name="source_pick_detail">Odtwarza ten utwór i kolejne z wybranego źródła, do ponownego uruchomienia Spoon. Twoja kolejność w Ustawieniach pozostaje bez zmian.</string>
     <string name="source_pick_playing">Teraz odtwarzane</string>

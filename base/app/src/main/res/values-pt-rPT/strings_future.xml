@@ -23,6 +23,7 @@
     <string name="pass_no_network">Sem Wi-Fi: conecte este dispositivo à mesma Wi-Fi do telemóvel.</string>
     <string name="pass_received">Recebido de %1$s. O app reinicia.</string>
     <string name="pass_confirm_title">Enviar para %1$s?</string>
+    <string name="pass_confirm_text">Suas configurações, extensões e login do Spotify são copiados para este dispositivo, direto pela Wi-Fi e criptografados. Envie só para seus próprios dispositivos.</string>
     <string name="pass_send_action">Enviar</string>
     <string name="pass_sent">Enviado para %1$s</string>
     <string name="pass_failed">Não enviado: %1$s</string>
@@ -34,4 +35,5 @@
     <string name="settings_genius_title">Genius</string>
     <string name="settings_genius_detail">O significado das músicas e as anotações dos versos, e as letras do Genius quando nenhuma outra fonte as tem. Desativado: nada é pedido ao Genius.</string>
     <string name="welcome_start">Começar</string>
+    <string name="setup_account_spotify_next">A seguir inicias sessão na página oficial do Spotify. O Spoon nunca vê a tua palavra-passe.</string>
 </resources>

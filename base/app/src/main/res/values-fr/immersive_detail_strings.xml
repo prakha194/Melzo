@@ -9,7 +9,7 @@
     <string name="immersive_detail_more">Plus</string>
     <string name="immersive_detail_less">Moins</string>
     <string name="immersive_detail_featured_on">En featuring sur</string>
-    <string name="immersive_detail_remove_local">Retirer de la playlist</string>
+    <string name="immersive_detail_remove_local">Retirer de cette playlist</string>
     <string name="immersive_detail_follow">Suivre</string>
     <string name="immersive_detail_unfollow">Ne plus suivre</string>
 </resources>

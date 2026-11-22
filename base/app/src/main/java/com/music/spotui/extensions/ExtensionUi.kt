@@ -140,6 +140,8 @@ private fun shielded(): Boolean = SurfaceGuard.app.state.collectAsState().value.
 
 fun actionIcon(a: Action?): ImageVector = when (a) {
     Action.PLAYBACK_CONTROL -> Icons.Rounded.PlayCircle
+    Action.PLAYBACK_QUEUE -> Icons.AutoMirrored.Rounded.QueueMusic
+    Action.PLAYBACK_MIRROR -> Icons.Rounded.VolumeOff
     Action.PLAYBACK_EVENTS -> Icons.Rounded.GraphicEq
     Action.LYRICS_PROVIDE -> Icons.Rounded.Lyrics
     Action.LYRICS_ROMANIZE -> Icons.Rounded.Abc
@@ -152,6 +154,11 @@ fun actionIcon(a: Action?): ImageVector = when (a) {
     Action.PLAYER_BUTTONS -> Icons.Rounded.SmartButton
     Action.SETTINGS_PAGE -> Icons.Rounded.Tune
     Action.NOTIFY -> Icons.Rounded.Notifications
+    Action.LIBRARY_READ -> Icons.Rounded.LibraryMusic
+    Action.LIBRARY_WRITE -> Icons.Rounded.LibraryAdd
+    Action.PLAYLISTS_WRITE -> Icons.AutoMirrored.Rounded.PlaylistAdd
+    Action.SPOTIFY_CATALOG -> Icons.Rounded.Album
+    Action.SPOTIFY_RAW -> Icons.Rounded.Code
     Action.NETWORK -> Icons.Rounded.Public
     Action.WEBVIEW_PAGE -> Icons.Rounded.Web
     Action.WEBVIEW_AUTH -> Icons.Rounded.Key
@@ -163,6 +170,8 @@ fun actionIcon(a: Action?): ImageVector = when (a) {
 
 fun actionLabel(a: Action?): Int = when (a) {
     Action.PLAYBACK_CONTROL -> R.string.action_playback_control
+    Action.PLAYBACK_QUEUE -> R.string.action_playback_queue
+    Action.PLAYBACK_MIRROR -> R.string.action_playback_mirror
     Action.PLAYBACK_EVENTS -> R.string.action_playback_events
     Action.LYRICS_PROVIDE -> R.string.action_lyrics_provide
     Action.LYRICS_ROMANIZE -> R.string.action_lyrics_romanize
@@ -175,6 +184,11 @@ fun actionLabel(a: Action?): Int = when (a) {
     Action.PLAYER_BUTTONS -> R.string.action_player_buttons
     Action.SETTINGS_PAGE -> R.string.action_settings_page
     Action.NOTIFY -> R.string.action_notify
+    Action.LIBRARY_READ -> R.string.action_library_read
+    Action.LIBRARY_WRITE -> R.string.action_library_write
+    Action.PLAYLISTS_WRITE -> R.string.action_playlists_write
+    Action.SPOTIFY_CATALOG -> R.string.action_spotify_catalog
+    Action.SPOTIFY_RAW -> R.string.action_spotify_raw
     Action.NETWORK -> R.string.action_network
     Action.WEBVIEW_PAGE -> R.string.action_webview_page
     Action.WEBVIEW_AUTH -> R.string.action_webview_auth
@@ -193,6 +207,7 @@ fun areaIcon(area: Area): ImageVector = when (area) {
     Area.AUDIO -> Icons.Rounded.Headphones
     Area.HOME -> Icons.Rounded.Home
     Area.MENUS -> Icons.Rounded.MoreHoriz
+    Area.LIBRARY -> Icons.Rounded.LibraryMusic
     Area.OTHER -> Icons.Rounded.Extension
 }
 
@@ -202,6 +217,7 @@ fun areaLabel(area: Area): Int = when (area) {
     Area.AUDIO -> R.string.area_audio
     Area.HOME -> R.string.area_home
     Area.MENUS -> R.string.area_menus
+    Area.LIBRARY -> R.string.area_library
     Area.OTHER -> R.string.area_other
 }
 
@@ -249,12 +265,9 @@ private fun nameOf(id: String) = Extensions.registry.value.find(id)?.name ?: id
 fun openFromExtension(uri: String) {
     val parts = uri.split(':')
     when (parts.getOrNull(1)) {
-        // A catalog song plays from the extensions, as a search hit does.
-        "track" -> if (com.music.spotui.data.catalog.CatalogRuntime.isCatalogUri(uri)) {
-            com.music.spotui.di.SongPlayer.playSong(com.music.spotui.data.catalog.CatalogRuntime.PLAY_PREFIX + uri)
-        } else com.music.spotui.di.SongPlayer.playSong(uri)
+        "track" -> com.music.spotui.di.SongPlayer.playSong(uri)
         "episode" -> com.music.spotui.di.SongPlayer.playSong("episode:${parts[2]}")
-        else -> com.music.spotui.data.api.PageLinks.page.value = uri
+        else -> com.music.spotui.data.api.InviteLinks.page.value = uri
     }
 }
 
@@ -428,6 +441,14 @@ private fun MenuEntryRow(owner: String, b: Block.MenuEntry, showOwner: Boolean =
 }
 
 // ── The player ──
+
+/** "Spotify mirrored by <extension>" while an extension keeps Spotify muted (playback.mirror). */
+@Composable
+fun MirrorIndicator() {
+    val by = Extensions.mirrorBy.collectAsState().value ?: return
+    Text(stringResource(R.string.mirror_indicator, by), color = AppMuted, fontSize = 12.sp,
+        modifier = androidx.compose.ui.Modifier.padding(top = 6.dp))
+}
 
 /** The extensions' buttons under the player's own controls: a few on screen, the rest behind ⋯. */
 @Composable

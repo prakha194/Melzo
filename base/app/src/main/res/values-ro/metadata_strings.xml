@@ -7,5 +7,6 @@
     <string name="metadata_asked">Întrebat</string>
     <string name="metadata_off">Dezactivat: nu este întrebat niciodată</string>
     <string name="metadata_reset">Revino la ordinea implicită</string>
+    <string name="metadata_not_on_spotify">Nu a fost găsită pe Spotify: această melodie nu poate fi redată încă</string>
     <string name="metadata_switch">Întreabă %1$s</string>
 </resources>

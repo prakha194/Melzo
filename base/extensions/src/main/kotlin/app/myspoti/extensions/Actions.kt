@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 
 /**
  * How much an action can cost the user. A critical one is shown in the warning colour, the user
- * ticks "I accept the risk" before it is granted, and the app frames it at run time.
+ * ticks "I accept the risk" before it is granted, and the app frames it at run time (destructive
+ * Spotify writes are confirmed one by one, the app keeps the last word).
  */
 enum class Level { NORMAL, CRITICAL }
 
@@ -19,6 +20,7 @@ enum class Area(val key: String) {
     AUDIO("audio"),
     HOME("home"),
     MENUS("menus"),
+    LIBRARY("library"),
     /** Free pages, and the extensions that only support others (network, storage, messages). */
     OTHER("other");
 
@@ -47,9 +49,13 @@ enum class Action(
     val takeover: Boolean = false,
 ) {
     PLAYBACK_CONTROL("playback.control", Level.NORMAL, Area.PLAYBACK, "PlayCircle", "Control playback",
-        "myspoti.player.play/pause/next/previous/seek"),
+        "myspoti.player.play/pause/next/previous/seek; spotify.player play, pause, resume, seek, next, previous, shuffle, repeat, volume, speed, skipTo; spotify.devices transfer, pullHere"),
+    PLAYBACK_QUEUE("playback.queue", Level.NORMAL, Area.PLAYBACK, "QueueMusic", "Edit the queue",
+        "spotify.player addToQueue, playNext, moveInQueue, removeFromQueue, clearQueue (removals confirmed)"),
+    PLAYBACK_MIRROR("playback.mirror", Level.CRITICAL, Area.PLAYBACK, "VolumeOff", "Mirror Spotify silently",
+        "myspoti.spotify.player.setLocalMute(on): keeps Spotify playing unheard on this phone while Myspoti's own player plays, which counts listens on your Spotify account (one extension at a time, cleared on track change, stop or when the extension goes)"),
     PLAYBACK_EVENTS("playback.events", Level.NORMAL, Area.PLAYBACK, "GraphicEq", "Know what you play",
-        "myspoti.player.current(); myspoti.on('track' | 'playback')"),
+        "myspoti.player.current(); myspoti.on('track' | 'playback'); spotify.player state, queue, volume"),
     LYRICS_PROVIDE("lyrics.provide", Level.NORMAL, Area.LYRICS, "Lyrics", "Provide lyrics",
         "myspoti.provide('lyrics', fn(track) → lyrics)", takeover = true),
     LYRICS_ROMANIZE("lyrics.romanize", Level.NORMAL, Area.LYRICS, "Abc", "Romanize lyrics",
@@ -72,6 +78,16 @@ enum class Action(
         "manifest \"settings\"; myspoti.settings.get(key)", takeover = true),
     NOTIFY("notify", Level.NORMAL, null, "Notifications", "Show short messages",
         "myspoti.notify(text)"),
+    LIBRARY_READ("library.read", Level.NORMAL, Area.LIBRARY, "LibraryMusic", "Read your library",
+        "spotify.library, playlists (yours), users, recents, devices.list, podcasts.savedEpisodes, blends (reads), search.recent, home.whatsNew"),
+    LIBRARY_WRITE("library.write", Level.CRITICAL, Area.LIBRARY, "LibraryAdd", "Change your library",
+        "spotify.library add/remove/pin/folders; users follow/unfollow/private session; extras taste and bans; episodes saved; search.clearRecent (removals confirmed)"),
+    PLAYLISTS_WRITE("playlists.write", Level.CRITICAL, Area.LIBRARY, "PlaylistAdd", "Edit your playlists",
+        "spotify.playlists create/rename/describe/cover/access/collaborate/follow/add/move/remove/delete; spotify.blends invite/join/rename/leave (removals confirmed)"),
+    SPOTIFY_CATALOG("spotify.catalog", Level.NORMAL, Area.LIBRARY, "Album", "Browse Spotify",
+        "spotify.search, catalog, playlists (public), home, podcasts, extras (lyrics, canvas, credits, radio)"),
+    SPOTIFY_RAW("spotify.raw", Level.CRITICAL, Area.LIBRARY, "Code", "Full Spotify access",
+        "spotify.raw gql/service/get/request: anything the account can do (changes confirmed)"),
     NETWORK("network", Level.NORMAL, null, "Public", "Use the internet",
         "myspoti.http to the hosts listed (\"*\": any host, critical)"),
     WEBVIEW_PAGE("webview.page", Level.CRITICAL, Area.OTHER, "Web", "Its own web page",
@@ -108,6 +124,10 @@ enum class Action(
             "notify" to listOf(NOTIFY),
             "player.read" to listOf(PLAYBACK_EVENTS),
             "player.control" to listOf(PLAYBACK_CONTROL),
+            "spotify.catalog" to listOf(SPOTIFY_CATALOG),
+            "spotify.library.read" to listOf(LIBRARY_READ, PLAYBACK_EVENTS),
+            "spotify.write" to listOf(LIBRARY_WRITE, PLAYLISTS_WRITE, PLAYBACK_CONTROL, PLAYBACK_QUEUE),
+            "spotify.raw" to listOf(SPOTIFY_RAW),
         )
 
         /**
@@ -135,6 +155,11 @@ data class ActionRequest(
     val why: String = "",
     /** network only: the hosts it may call ("api.example.com", "*.example.com", or "*"). */
     val hosts: List<String> = emptyList(),
+    /**
+     * spotify.raw only: the `raw.request` writes it needs ("POST https://host/path"), shown before
+     * install and allowed with it, so they never ask while music plays. 8 at most.
+     */
+    val writes: List<String> = emptyList(),
 )
 
 /**

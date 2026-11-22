@@ -687,7 +687,9 @@ private fun RowScope.PlayerCredits(
         }
         // What the sound is when Myspoti's own player plays it (an extension's stream, a
         // download); a tap opens what plays and its quality. Same state as the Classic player.
-        if (!state.adPlaying && sourceShown && sourceRoom) Text(
+        if (!state.adPlaying && sourceShown && sourceRoom) androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+        com.music.spotui.ui.components.QualityBadge(tint = tint.copy(alpha = 0.7f), onClick = onSource, modifier = Modifier.padding(end = 6.dp).graphicsLayer { alpha = sourceAlpha })
+        Text(
             text = sourceLabel.ifEmpty { " " },
             style = Immersive.Caption.copy(lineHeight = 14.sp),
             color = tint.copy(alpha = 0.45f),
@@ -700,6 +702,7 @@ private fun RowScope.PlayerCredits(
                     else Modifier,
                 ),
         )
+        }
     }
     Spacer(Modifier.width(10.dp))
     // Beside the credits rather than in the toggle row: liking is about this song.
@@ -762,6 +765,7 @@ private fun PlayerControlsBlock(
     )
     // Buttons from extensions (player.buttons), under the player's own controls.
     val extTrack = remember(state.title, state.artist) { com.music.spotui.extensions.Extensions.currentTrack() }
+    com.music.spotui.extensions.MirrorIndicator()
     com.music.spotui.extensions.ExtensionPlayerButtons(extTrack)
     Spacer(Modifier.height(18.dp))
 }

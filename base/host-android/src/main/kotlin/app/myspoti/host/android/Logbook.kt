@@ -1,6 +1,7 @@
 package app.myspoti.host.android
 
 import android.content.Context
+import app.myspoti.spotify.bridge.LogMask
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -9,15 +10,14 @@ import java.util.Locale
 /**
  * The engine's own log, kept in memory so a tester can hand it back as a file.
  *
- * What goes on inside the player is invisible on a phone, and `adb logcat` ([LOG]) is out of
- * reach of the person reporting the bug. Every line is mirrored to Logcat with the very same text
+ * The WebView bridge is invisible on a phone: the only evidence of a refused playback
+ * command (`402 COMMAND_FAILED`) or of a sign-in that stalls is these lines, and until now
+ * they were reachable only through `adb logcat` ([WebPlayerHost.LOG]) — which the person
+ * reporting the bug cannot run. Every line is mirrored to Logcat with the very same text
  * ([log]) and kept in a bounded ring buffer that [export] writes to a shareable file, so
  * the report a tester sends is the app's own log and nothing else has to change.
  */
 object Logbook {
-    /** The Logcat tag of every line. */
-    const val LOG = "Myspoti"
-
     /**
      * Only the tail is kept: a report is read from the end, and an unbounded buffer would
      * grow for the whole life of the process (the page can run for hours).
@@ -39,7 +39,7 @@ object Logbook {
     fun log(raw: String) {
         // Secrets are hidden and a huge line cut here, once, for every caller (see LogMask).
         val line = LogMask.shown(raw, MAX_LINE)
-        android.util.Log.d(LOG, line)
+        android.util.Log.d(WebPlayerHost.LOG, line)
         synchronized(lines) {
             lines.addLast("${stamp.format(Date())} $line")
             while (lines.size > MAX_LINES) lines.removeFirst()
@@ -100,6 +100,21 @@ object Logbook {
         return file
     }
 
+    /**
+     * What the device's Widevine is (security level, HDCP, version): a 403 on the audio licence
+     * (seen on a new sign-in, Android 11) or a silent stream cannot be told from the log alone.
+     * Read once; a MediaDrm failure is itself the answer.
+     */
+    private val drmFact: String? by lazy {
+        runCatching {
+            val drm = android.media.MediaDrm(java.util.UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"))
+            try {
+                fun p(k: String) = runCatching { drm.getPropertyString(k) }.getOrNull() ?: "?"
+                "widevine ${p("version")} level=${p("securityLevel")} hdcp=${p("hdcpLevel")}/${p("maxHdcpLevel")} vendor=${p("vendor")} algorithms=${p("algorithms")}"
+            } finally { if (android.os.Build.VERSION.SDK_INT >= 28) drm.close() else @Suppress("DEPRECATION") drm.release() }
+        }.getOrElse { "MediaDrm failed: ${it.javaClass.simpleName} ${it.message?.take(80)}" }
+    }
+
     /** Where the sound goes: a silent music volume or a route to a sink that makes none reads as "plays, no sound". */
     private fun audioDetails(context: Context): String? = runCatching {
         val am = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
@@ -150,6 +165,10 @@ object Logbook {
         add("maker" to "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
     }
 
+    /** The lines the 402 analyses read: refusals, the matrix, registration, clusters, licences, routes, ads. */
+    private val RELEVANT_402 = Regex("""(?i)refus|\b402\b|registration|cluster:|licence|command headers|commands from the page|relay route|relay: |audio after|ad break|page ready|connect/transfer|previous player device""")
+    private const val RELEVANT_LINES = 50
+
     /** An age in coarse buckets: never a date. */
     internal fun ageBucket(ms: Long): String {
         val days = ms / 86_400_000L
@@ -162,36 +181,64 @@ object Logbook {
         }
     }
 
-    private val FACT_ORDER = listOf("network", "devices")
+    private val FACT_ORDER = listOf("account", "network", "registration", "devices", "relay route")
 
     private fun report(context: Context): String {
         val info = runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull()
         val versionName = info?.versionName ?: "?"
         val versionCode = info?.let { androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(it) } ?: 0L
+        // The player's page URL tells which Spotify screen the app was on; read only when the
+        // runtime started, or the not-yet-initialized host would crash the export.
+        val pageUrl = if (MyspotiRuntime.isStarted) runCatching { MyspotiRuntime.host.url.value }.getOrNull() else null
         val tail = synchronized(lines) { lines.toList() }
         val webView = runCatching { android.webkit.WebView.getCurrentWebViewPackage() }.getOrNull()
+        val widevine = if (MyspotiRuntime.isStarted) runCatching {
+            if (MyspotiRuntime.spotify.player.drmMissing.value) "missing (nothing Spotify streams can play)" else null
+        }.getOrNull() else null
         val header = buildList {
             add("app" to "$versionName ($versionCode)")
             add("android" to "${android.os.Build.VERSION.RELEASE} (SDK ${android.os.Build.VERSION.SDK_INT})")
             add("device" to "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
             add("webview" to (webView?.let { "${it.packageName} ${it.versionName}" } ?: "?"))
             add("locale" to Locale.getDefault().toLanguageTag())
-            info?.firstInstallTime?.let { add("installed" to ageBucket(System.currentTimeMillis() - it)) }
+            if (!pageUrl.isNullOrEmpty()) add("page" to pageUrl)
             for (key in FACT_ORDER) facts[key]?.let { add(key to it) }
             facts.keys.filter { it !in FACT_ORDER }.sorted().forEach { add(it to facts.getValue(it)) }
+            add("widevine" to (widevine ?: facts["widevine"] ?: "not reported missing"))
+            drmFact?.let { add("drm" to it) }
             audioDetails(context)?.let { add("audio" to it) }
             runCatching { headerExtras?.invoke() }.getOrNull()?.let { addAll(it) }
         }
+        // With how long ago this WebView was signed in (a new sign-in had its licences refused, 30/10).
+        val signedIn = if (MyspotiRuntime.isStarted) runCatching { MyspotiRuntime.host.signedInSince }.getOrNull() else null
+        val signedInAge = when {
+            signedIn == null || signedIn == 0L -> null
+            signedIn < 0 -> "signed in here before this was noted"
+            else -> "signed in here ${ageBucket(System.currentTimeMillis() - signedIn)}"
+        }
+        val installAge = info?.firstInstallTime?.let { ageBucket(System.currentTimeMillis() - it) }
+            ?.let { age -> listOfNotNull(age, signedInAge).joinToString(", ") }
+        val summary = app.myspoti.spotify.report.Refusal402.summary(facts["account"], installAge)
         // Masked and cut down (DiagnosticDigest): small enough to paste, nothing that opens an account.
         return buildString {
-            appendLine("Orpheon diagnostic report")
-            header.forEach { (k, v) -> appendLine("${k.padEnd(12)}: ${DiagnosticDigest.mask(v)}") }
+            appendLine("Myspoti diagnostic report")
+            // The 402 questions answered in one screen (Refusal402), before anything else.
+            appendLine("--- 402 summary ---")
+            summary.forEach { (k, v) -> appendLine("${k.padEnd(12)}: ${app.myspoti.spotify.report.DiagnosticDigest.mask(v)}") }
+            appendLine()
+            header.forEach { (k, v) -> appendLine("${k.padEnd(12)}: ${app.myspoti.spotify.report.DiagnosticDigest.mask(v)}") }
             appendLine()
             appendLine("--- power ---")
-            powerLines(context).forEach { (k, v) -> appendLine("${k.padEnd(12)}: ${DiagnosticDigest.mask(v)}") }
+            powerLines(context).forEach { (k, v) -> appendLine("${k.padEnd(12)}: ${app.myspoti.spotify.report.DiagnosticDigest.mask(v)}") }
+            val relevant = tail.filter { RELEVANT_402.containsMatchIn(it.drop(13)) }.takeLast(RELEVANT_LINES)
+            if (relevant.isNotEmpty()) {
+                appendLine()
+                appendLine("--- 402 lines (last $RELEVANT_LINES) ---")
+                relevant.forEach { appendLine(app.myspoti.spotify.report.DiagnosticDigest.mask(it).take(400)) }
+            }
             appendLine()
             appendLine("--- log ---")
-            append(DiagnosticDigest.digest(tail))
+            append(app.myspoti.spotify.report.DiagnosticDigest.digest(tail))
         }
     }
 }

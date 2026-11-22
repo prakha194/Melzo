@@ -121,6 +121,7 @@ data class AudioStream(
      * 44.1 kHz"), 80 characters at most.
      */
     val source: String? = null,
+    val transform: FileTransform? = null,
 ) {
     /** How long the app keeps this answer: [expiresInMs], at most [maxMs]. */
     fun keepMs(maxMs: Long): Long = expiresInMs?.coerceIn(0, maxMs) ?: maxMs
@@ -145,7 +146,6 @@ data class AudioStream(
          */
         fun parse(json: String): AudioStream? {
             val o = runCatching { ExtJson.parseToJsonElement(json).jsonObject }.getOrNull() ?: throw ExtensionException("audio-source: not an object")
-            refuseTransform(o)
             fun long(k: String) = (o[k] as? JsonPrimitive)?.let { p -> p.longOrNull ?: p.contentOrNull?.toDoubleOrNull()?.toLong() }
             val mime = (o["mimeType"] as? JsonPrimitive)?.contentOrNull
             val duration = (o["durationMs"] as? JsonPrimitive)?.longOrNull
@@ -160,6 +160,7 @@ data class AudioStream(
             )
             val manifest = (o["manifest"] as? JsonPrimitive)?.contentOrNull
             if (manifest != null) {
+                if (o["transform"] != null) throw ExtensionException("transform: not for DASH")
                 if (manifest.length > MAX_MANIFEST) throw ExtensionException("audio-source: manifest over 1 MB")
                 val mpd = runCatching { String(java.util.Base64.getMimeDecoder().decode(manifest)) }.getOrNull()
                 if (mpd == null || !mpd.contains("<MPD")) throw ExtensionException("audio-source: manifest is not a base64 MPEG-DASH manifest")
@@ -168,7 +169,7 @@ data class AudioStream(
             }
             val url = (o["url"] as? JsonPrimitive)?.contentOrNull ?: return null
             checkUrl("audio-source", url)
-            return base.copy(url = url)
+            return base.copy(url = url, transform = parseFileTransform(o["transform"]))
         }
     }
 }
@@ -184,10 +185,14 @@ object AudioQuery {
     }
 }
 
-
-/** The app does not decrypt what an extension gives: an answer asking it to is refused. */
-private fun refuseTransform(o: JsonObject) {
-    if (o["transform"] != null) throw ExtensionException("transform: the app does not decrypt media")
+private fun parseFileTransform(raw: kotlinx.serialization.json.JsonElement?): FileTransform? = raw?.let {
+    val t = it as? JsonObject ?: throw ExtensionException("transform: must be an object")
+    fun text(k: String) = (t[k] as? JsonPrimitive)?.contentOrNull
+    fun number(k: String, default: Int) = if (k !in t) default else
+        text(k)?.toIntOrNull() ?: throw ExtensionException("transform: invalid $k")
+    if (text("algorithm") != "blowfish-cbc-pattern") throw ExtensionException("transform: unsupported algorithm")
+    FileTransform(text("keyHex") ?: "", text("ivHex") ?: "", number("segmentBytes",2048),
+        number("every",3), number("offset",0)).checked()
 }
 
 /** A public http(s) address, or the hook's error. */
@@ -241,6 +246,7 @@ data class DownloadFile(
     val provider: String?,
     /** The extension found this file by the song's ISRC (the exact recording). */
     val isrcMatched: Boolean,
+    val transform: FileTransform? = null,
 ) {
     val lossless get() = format == "flac" || format == "dash-flac"
 
@@ -269,7 +275,6 @@ data class DownloadFile(
         }
 
         private fun parse(o: JsonObject): DownloadFile? {
-            refuseTransform(o)
             fun str(k: String) = (o[k] as? JsonPrimitive)?.contentOrNull
             fun int(k: String) = (o[k] as? JsonPrimitive)?.longOrNull
             val format = str("format")?.lowercase() ?: throw ExtensionException("download-source: \"format\" (${FORMATS.joinToString()})")
@@ -283,6 +288,8 @@ data class DownloadFile(
                 url ?: return null
                 checkUrl("download-source", url)
             }
+            val transform = parseFileTransform(o["transform"])
+            if (transform != null && format == "dash-flac") throw ExtensionException("transform: not for DASH")
             return DownloadFile(
                 url = if (format == "dash-flac") null else url,
                 manifest = if (format == "dash-flac") manifest else null,
@@ -293,6 +300,7 @@ data class DownloadFile(
                 sizeHint = int("sizeHint")?.takeIf { it > 0 },
                 provider = str("provider")?.take(40)?.ifBlank { null },
                 isrcMatched = (o["isrcMatched"] as? JsonPrimitive)?.booleanOrNull ?: false,
+                transform = transform,
             )
         }
     }
@@ -300,8 +308,8 @@ data class DownloadFile(
 
 /**
  * One `playback` event (docs/extensions/API.md §3): what happened to the song playing, in
- * Orpheon's own player (`source = "local"`: downloads, local files, extensions' audio). The
- * `"spotify"` source and origin are no longer sent; they stay known for the extensions that test them.
+ * Myspoti's own player (`source = "local"`: downloads, local files, extensions' audio) or the
+ * Spotify Web Player (`"spotify"`).
  */
 @Serializable
 data class PlaybackEvent(
@@ -343,7 +351,7 @@ data class PlaybackEvent(
         const val LOCAL = "local"
         const val SPOTIFY = "spotify"
 
-        /** No longer sent (Orpheon plays nothing from Spotify); kept for the extensions that compare with it. */
+        /** Spotify's own stream (the Web Player, or Spotify Connect). */
         const val ORIGIN_SPOTIFY = "spotify"
         /** A song downloaded with a download-source extension. */
         const val ORIGIN_DOWNLOAD = "download"

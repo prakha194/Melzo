@@ -7,5 +7,6 @@
     <string name="metadata_asked">Galdetzen zaio</string>
     <string name="metadata_off">Desaktibatuta: ez zaio inoiz galdetzen</string>
     <string name="metadata_reset">Itzuli ordena lehenetsira</string>
+    <string name="metadata_not_on_spotify">Ez da aurkitu Spotify-n: abesti hau ezin da oraindik erreproduzitu</string>
     <string name="metadata_switch">Galdetu %1$s-ri</string>
 </resources>

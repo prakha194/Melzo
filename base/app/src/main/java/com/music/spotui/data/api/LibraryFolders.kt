@@ -20,7 +20,7 @@ object LibraryFolders {
         val app = context.applicationContext
         val placeholder = LibraryEdits.PENDING_PREFIX + "folder" + pendingIds.incrementAndGet()
         val edit = LibraryEdits.Add(null, LibraryEntry(
-            spotifyId = placeholder, name = title, subtitle = app.getString(R.string.lbl_folder),
+            spotifyId = placeholder, name = title, subtitle = app.getString(R.string.create_menu_item_folder_title),
             coverUri = "", isPlaylist = false, folderUri = placeholder, uri = placeholder,
             addedAt = java.time.Instant.now().toString(),
         ))

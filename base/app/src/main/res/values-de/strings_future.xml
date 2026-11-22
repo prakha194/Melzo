@@ -23,6 +23,7 @@
     <string name="pass_no_network">Kein WLAN: Verbinde dieses Gerät mit demselben WLAN wie dein Handy.</string>
     <string name="pass_received">Von %1$s empfangen. Die App startet neu.</string>
     <string name="pass_confirm_title">An %1$s senden?</string>
+    <string name="pass_confirm_text">Deine Einstellungen, Erweiterungen und Spotify-Anmeldung werden direkt über dein WLAN und verschlüsselt auf dieses Gerät kopiert. Sende sie nur an deine eigenen Geräte.</string>
     <string name="pass_send_action">Senden</string>
     <string name="pass_sent">An %1$s gesendet</string>
     <string name="pass_failed">Nicht gesendet: %1$s</string>
@@ -34,4 +35,5 @@
     <string name="settings_genius_title">Genius</string>
     <string name="settings_genius_detail">Was Songs bedeuten und die Annotationen zu ihren Zeilen, sowie Genius-Songtexte, wenn keine andere Quelle sie hat. Aus: Genius wird nichts gefragt.</string>
     <string name="welcome_start">Los geht\'s</string>
+    <string name="setup_account_spotify_next">Danach meldest du dich auf Spotifys eigener Seite an. Spoon sieht dein Passwort nie.</string>
 </resources>

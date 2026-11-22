@@ -70,6 +70,7 @@ import com.music.spotui.ui.screens.ContextViewModel
 import com.music.spotui.ui.theme.SpotuiTheme
 import com.music.spotui.ui.viewmodel.ArtistViewModel
 import com.music.spotui.ui.viewmodel.SearchViewModel
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -107,11 +108,26 @@ abstract class AdaptiveScreenshotTest(private val size: String) {
     }
 
     /**
-     * The API is a stand-in whose reads never answer (pages stay as seeded) and whose flows are empty.
+     * No Spotify session: the API is a stand-in whose reads never answer (pages stay as seeded) and
+     * whose flows are empty; the WebView host is a bare instance with only its account store.
      */
     private fun offlineRuntime() {
         val rt = app.myspoti.host.android.MyspotiRuntime
         rt.useApi(stub(app.myspoti.api.MyspotiApi::class.java))
+    }
+
+    /** The settings read the WebView host's account list: a bare host with only that (taken away after the test). */
+    private fun bareHost() {
+        val rt = app.myspoti.host.android.MyspotiRuntime
+        run {
+            val unsafe = Class.forName("sun.misc.Unsafe").getDeclaredField("theUnsafe").apply { isAccessible = true }.get(null)
+            val host = unsafe.javaClass.getMethod("allocateInstance", Class::class.java)
+                .invoke(unsafe, app.myspoti.host.android.WebPlayerHost::class.java) as app.myspoti.host.android.WebPlayerHost
+            val ctx = RuntimeEnvironment.getApplication()
+            app.myspoti.host.android.WebPlayerHost::class.java.getDeclaredField("accounts").apply { isAccessible = true }
+                .set(host, app.myspoti.host.android.AccountStore(java.io.File(ctx.filesDir, "accounts.json")))
+            rt.host = host
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -354,8 +370,8 @@ abstract class AdaptiveScreenshotTest(private val size: String) {
         rule.waitForIdle()
         rule.onRoot().captureRoboImage("build/outputs/roborazzi/adaptive-$size-classic-search-hint-fr.png")
         val d = rule.activity.resources.displayMetrics.density
-        val text = rule.activity.getString(app.myspoti.engine.R.string.lbl_search_hint)
-        org.junit.Assert.assertTrue("not the French hint: $text", text.startsWith("Titres, artistes"))
+        val text = rule.activity.getString(app.myspoti.engine.R.string.search_header_field_hint)
+        org.junit.Assert.assertTrue("not the French hint: $text", text.startsWith("Que souhaitez"))
         val hint = rule.onNodeWithText(text, useUnmergedTree = true)
             .fetchSemanticsNode().boundsInRoot
         org.junit.Assert.assertTrue("hint on more than one line: $hint", hint.height / d < 30f)
@@ -383,7 +399,12 @@ abstract class AdaptiveScreenshotTest(private val size: String) {
         }
     }
 
-    @Test fun classicSettings() = Unit.let { shoot("classic-settings") {
+    @After fun dropHost() {
+        app.myspoti.host.android.MyspotiRuntime::class.java.getDeclaredField("host").apply { isAccessible = true }
+            .set(app.myspoti.host.android.MyspotiRuntime, null)
+    }
+
+    @Test fun classicSettings() = bareHost().let { shoot("classic-settings") {
         ClassicShell("detail", capped = true) { nav -> com.music.spotui.ui.screens.SettingsScreen(nav) }
     } }
 
@@ -644,7 +665,7 @@ abstract class AdaptiveScreenshotTest(private val size: String) {
         org.junit.Assert.assertEquals(30, order.size)
     }
 
-    @Test fun immersiveSettings() = Unit.let { shoot("immersive-settings", Look.IMMERSIVE) {
+    @Test fun immersiveSettings() = bareHost().let { shoot("immersive-settings", Look.IMMERSIVE) {
         ImmersiveShell("detail", capped = true) { nav -> com.music.spotui.ui.immersive.pages.ImmersiveSettingsScreen(nav) }
     } }
 }

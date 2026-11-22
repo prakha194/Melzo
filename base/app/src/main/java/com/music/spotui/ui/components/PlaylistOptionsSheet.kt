@@ -163,7 +163,7 @@ fun PlaylistOptionsSheet(
             }
             androidx.compose.material3.HorizontalDivider(color = AppText.copy(alpha = 0.08f))
             Spacer(Modifier.height(6.dp))
-            val share = { ShareItem.show(ShareTarget(page.uri, page.name, page.ownerName, page.coverUri)); onDismiss() }
+            val share = { SpotifyCode.show(ShareTarget(page.uri, page.name, page.ownerName, page.coverUri)); onDismiss() }
             // The whole playlist into the queue, in its order (a long one is read to its end first).
             QueueListRows(page.uri, page, onDismiss)
             // Every song of this playlist into another one of yours (Web Player: "Add playlist to other playlist").
@@ -179,7 +179,7 @@ fun PlaylistOptionsSheet(
                         else { BlendInfo.share(context, link); onDismiss() }
                     }
                 }
-                OptionRow(Icons.AutoMirrored.Outlined.Logout, stringResource(R.string.blend_quit)) { leavingBlend = true }
+                OptionRow(Icons.AutoMirrored.Outlined.Logout, stringResource(R.string.blend_leave)) { leavingBlend = true }
             } else if (mine) {
                 onAddSongs?.let { add -> OptionRow(Icons.Outlined.AddCircleOutline, stringResource(R.string.add_songs_title)) { onDismiss(); add() } }
                 OptionRow(Icons.Outlined.Edit, stringResource(R.string.playlist_edit_details)) { editing = true }
@@ -196,7 +196,8 @@ fun PlaylistOptionsSheet(
                         onDismiss()
                     }
                 }
-                OptionRow(Icons.Outlined.QrCode2, stringResource(R.string.lbl_share), onClick = share)
+                OptionRow(Icons.Outlined.QrCode2, stringResource(R.string.context_menu_share), onClick = share)
+                OptionRow(Icons.Outlined.ContentCopy, stringResource(R.string.copy_link)) { SpotifyCode.copyLink(context, page.uri); onDismiss() }
                 // Who sees it: one action naming what it does next (not three choices to read).
                 val a = access
                 fun change(target: PlaylistAccess, said: Int) {
@@ -220,7 +221,8 @@ fun PlaylistOptionsSheet(
                 }
                 OptionRow(Icons.Outlined.Delete, stringResource(R.string.local_delete_playlist)) { deleting = true }
             } else {
-                OptionRow(Icons.Outlined.QrCode2, stringResource(R.string.lbl_share), onClick = share)
+                OptionRow(Icons.Outlined.QrCode2, stringResource(R.string.context_menu_share), onClick = share)
+                OptionRow(Icons.Outlined.ContentCopy, stringResource(R.string.copy_link)) { SpotifyCode.copyLink(context, page.uri); onDismiss() }
                 // The Web Player offers it only where canCancelMembership is true (a collaborator, not the owner).
                 if (page.canLeave) OptionRow(Icons.AutoMirrored.Outlined.Logout, stringResource(R.string.playlist_leave)) { leavingPlaylist = true }
             }
@@ -274,7 +276,7 @@ fun PlaylistOptionsSheet(
     if (leavingBlend) LookAlertDialog(
         onDismissRequest = { leavingBlend = false },
         containerColor = tone(0xFF282828),
-        title = { Text(stringResource(R.string.blend_quit), color = AppText) },
+        title = { Text(stringResource(R.string.blend_leave), color = AppText) },
         text = { Text(stringResource(R.string.blend_leave_confirm, page.name), color = AppMuted) },
         confirmButton = {
             TextButton(onClick = {
@@ -286,7 +288,7 @@ fun PlaylistOptionsSheet(
                 onDismiss(); onDeleted()
             }) { Text(stringResource(R.string.blend_leave_button), color = AppDestructive) }
         },
-        dismissButton = { TextButton(onClick = { leavingBlend = false }) { Text(stringResource(R.string.action_cancel_label), color = AppText) } },
+        dismissButton = { TextButton(onClick = { leavingBlend = false }) { Text(stringResource(R.string.cancel), color = AppText) } },
     )
 
     if (stoppingCollab) {
@@ -306,7 +308,7 @@ fun PlaylistOptionsSheet(
                     com.music.spotui.data.api.SpotifySync.stopPlaylistCollaboration(page.uri) { ok -> if (ok) onChanged() else restore() }
                 }) { Text(stringResource(R.string.playlist_stop_collab), color = AppDestructive) }
             },
-            dismissButton = { TextButton(onClick = { stoppingCollab = false }) { Text(stringResource(R.string.action_cancel_label), color = AppText) } },
+            dismissButton = { TextButton(onClick = { stoppingCollab = false }) { Text(stringResource(R.string.cancel), color = AppText) } },
         )
     }
 
@@ -325,7 +327,7 @@ fun PlaylistOptionsSheet(
                 onDismiss(); onDeleted()
             }) { Text(stringResource(R.string.playlist_leave_button), color = AppDestructive) }
         },
-        dismissButton = { TextButton(onClick = { leavingPlaylist = false }) { Text(stringResource(R.string.action_cancel_label), color = AppText) } },
+        dismissButton = { TextButton(onClick = { leavingPlaylist = false }) { Text(stringResource(R.string.cancel), color = AppText) } },
     )
 
     if (deleting) LookAlertDialog(
@@ -339,9 +341,9 @@ fun PlaylistOptionsSheet(
                 com.music.spotui.data.api.LibraryEdits.run(context, com.music.spotui.data.api.LibraryEdits.Remove(page.uri),
                     write = { MyspotiRuntime.api.playlists.delete(page.uri) })
                 onDismiss(); onDeleted()
-            }) { Text(stringResource(R.string.lbl_delete), color = AppDestructive) }
+            }) { Text(stringResource(R.string.actions_picker_delete), color = AppDestructive) }
         },
-        dismissButton = { TextButton(onClick = { deleting = false }) { Text(stringResource(R.string.action_cancel_label), color = AppText) } },
+        dismissButton = { TextButton(onClick = { deleting = false }) { Text(stringResource(R.string.cancel), color = AppText) } },
     )
 }
 
@@ -410,7 +412,7 @@ private fun EditDetailsDialog(page: ContextPageModel, onDismiss: () -> Unit, onS
                 Text(stringResource(R.string.playlist_save), color = AppAccent, fontWeight = FontWeight.Bold)
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel_label), color = AppText) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), color = AppText) } },
     )
 }
 
@@ -446,11 +448,11 @@ internal fun OptionRow(icon: ImageVector, label: String, enabled: Boolean = true
 /** "Play next" and "Add to queue" for the whole list [uri]; [known] is its page when the screen has it. */
 @Composable
 internal fun QueueListRows(uri: String, known: ContextPageModel?, onDismiss: () -> Unit) {
-    OptionRow(Icons.AutoMirrored.Outlined.PlaylistPlay, stringResource(R.string.lbl_play_next)) {
+    OptionRow(Icons.AutoMirrored.Outlined.PlaylistPlay, stringResource(R.string.context_menu_play_next)) {
         com.music.spotui.di.CollectionQueue.queue(uri, next = true, known = known)
         onDismiss()
     }
-    OptionRow(Icons.AutoMirrored.Outlined.QueueMusic, stringResource(R.string.lbl_queue_add)) {
+    OptionRow(Icons.AutoMirrored.Outlined.QueueMusic, stringResource(R.string.context_menu_add_to_queue)) {
         com.music.spotui.di.CollectionQueue.queue(uri, next = false, known = known)
         onDismiss()
     }

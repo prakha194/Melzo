@@ -7,5 +7,6 @@
     <string name="metadata_asked">पूछा जाता है</string>
     <string name="metadata_off">बंद: कभी नहीं पूछा जाता</string>
     <string name="metadata_reset">डिफ़ॉल्ट क्रम पर वापस जाएँ</string>
+    <string name="metadata_not_on_spotify">Spotify पर नहीं मिला: यह गाना अभी नहीं चल सकता</string>
     <string name="metadata_switch">%1$s से पूछें</string>
 </resources>

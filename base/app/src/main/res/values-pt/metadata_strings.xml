@@ -7,5 +7,7 @@
     <string name="metadata_asked">Consultado</string>
     <string name="metadata_off">Desativado: nunca consultado</string>
     <string name="metadata_reset">Voltar à ordem padrão</string>
+    <string name="metadata_not_on_spotify">Não encontrada no Spotify: esta música ainda não pode tocar</string>
+    <string name="metadata_spotify_no_answer">O Spotify não respondeu: toque novamente na música</string>
     <string name="metadata_switch">Consultar %1$s</string>
 </resources>

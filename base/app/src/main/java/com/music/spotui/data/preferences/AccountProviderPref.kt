@@ -6,9 +6,10 @@ import androidx.compose.runtime.setValue
 import app.myspoti.api.account.AccountProviders
 
 /**
- * "Music account": the account provider the account's library and the first metadata provider use
- * (Spotify, YouTube Music, or none), one at a time. Spotify for an install from before, which only
- * had Spotify.
+ * "Music account": the account provider the listen sync, the account's library and the first metadata
+ * provider use (Spotify, YouTube Music, or none), one at a time. Spotify for an install from before,
+ * which only had Spotify. Changing it ends the running sync and binds the chosen provider's
+ * ([com.music.spotui.di.AccountSync.providerChanged]).
  */
 object AccountProviderPref {
     private const val KEY = "account_provider"
@@ -25,6 +26,7 @@ object AccountProviderPref {
         if (v == id) return
         id = v
         prefs(c).edit().putString(KEY, v).apply()
+        com.music.spotui.di.AccountSync.providerChanged()
         com.music.spotui.di.YtmRuntime.startIfChosen()
     }
 }

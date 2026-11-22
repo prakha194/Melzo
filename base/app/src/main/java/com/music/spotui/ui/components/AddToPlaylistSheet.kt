@@ -159,7 +159,7 @@ internal fun PickRow(playlist: EditablePlaylist, onClick: () -> Unit) {
             Text(playlist.name, color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Medium,
                 maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                pluralStringResource(R.plurals.lbl_n_songs, playlist.trackCount, playlist.trackCount),
+                pluralStringResource(R.plurals.liked_songs_header_metadata_text, playlist.trackCount, playlist.trackCount),
                 color = androidx.compose.ui.graphics.Color.Gray, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
         }

@@ -39,8 +39,37 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.myspoti.engine.R
 import com.music.spotui.data.preferences.DownloadQuality
+import com.music.spotui.data.preferences.StreamingQuality
 import com.music.spotui.data.preferences.getDownloadQuality
+import com.music.spotui.data.preferences.getStreamingQuality
 import com.music.spotui.data.preferences.setDownloadQuality
+import com.music.spotui.data.preferences.setStreamingQuality
+
+/** The streaming levels of the Web Player, one choice; saved and applied at once. */
+@Composable
+fun StreamingQualityPicker(modifier: Modifier = Modifier, cellular: Boolean = false, title: Int = R.string.quality_streaming_title) {
+    val ctx = LocalContext.current
+    var current by remember(cellular) { mutableStateOf(getStreamingQuality(ctx, cellular)) }
+    // Very high (256 kbit/s) is the Web Player's level for Premium accounts: offered once the plan
+    // read says Premium (reported: no higher quality with a Premium account), and kept in the
+    // list while chosen (another account of the phone may be the free one).
+    val premium by app.myspoti.spotify.AccountPlan.premium.collectAsState()
+    QualityGroup(
+        title = stringResource(title),
+        detail = stringResource(R.string.quality_streaming_detail),
+        options = listOfNotNull(
+            Option(StreamingQuality.AUTO, R.string.quality_streaming_auto, R.string.quality_streaming_auto_detail),
+            Option(StreamingQuality.LOW, R.string.quality_streaming_low, R.string.quality_streaming_low_detail),
+            Option(StreamingQuality.NORMAL, R.string.quality_streaming_normal, R.string.quality_streaming_normal_detail),
+            Option(StreamingQuality.HIGH, R.string.quality_streaming_high, R.string.quality_streaming_high_detail),
+            Option(StreamingQuality.VERY_HIGH, R.string.quality_streaming_very_high, R.string.quality_streaming_very_high_detail)
+                .takeIf { premium == true || current == StreamingQuality.VERY_HIGH },
+        ),
+        selected = current,
+        onSelect = { current = it; setStreamingQuality(ctx, it, cellular) },
+        modifier = modifier,
+    )
+}
 
 /** Downloads: off, FLAC CD quality or FLAC hi-res; saved at once. */
 @Composable
@@ -166,7 +195,7 @@ fun DownloadAskHost() {
         confirmButton = {},
         dismissButton = {
             androidx.compose.material3.TextButton(onClick = { DownloadAsk.pending = null }) {
-                Text(stringResource(R.string.lbl_cancel), color = AppText)
+                Text(stringResource(R.string.add_to_playlist_button_cancel), color = AppText)
             }
         },
     )
@@ -191,7 +220,7 @@ private fun NeedSourceDialog() {
             }) { Text(stringResource(R.string.setup_ext_browse), color = accent, fontWeight = FontWeight.Bold) }
         },
         dismissButton = {
-            androidx.compose.material3.TextButton(onClick = close) { Text(stringResource(R.string.lbl_cancel), color = ink) }
+            androidx.compose.material3.TextButton(onClick = close) { Text(stringResource(R.string.add_to_playlist_button_cancel), color = ink) }
         },
     )
 }

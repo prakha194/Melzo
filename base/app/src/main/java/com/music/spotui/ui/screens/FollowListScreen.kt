@@ -71,7 +71,7 @@ fun FollowListScreen(navController: NavController, userId: String, followers: Bo
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.lbl_back), tint = AppText,
+                    Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.accessibility_navigate_back), tint = AppText,
                     modifier = Modifier.pressable(0.96f) { navController.navigateUp() }.padding(16.dp).size(26.dp),
                 )
                 Text(
@@ -95,7 +95,7 @@ fun FollowListScreen(navController: NavController, userId: String, followers: Bo
                         .padding(16.dp, 8.dp),
                 ) {
                     GlideImage(
-                        model = com.music.spotui.ui.components.imageUrlOf(u.imageUrl), contentDescription = null, contentScale = ContentScale.Crop,
+                        model = com.music.spotui.ui.components.spotifyImageUrl(u.imageUrl), contentDescription = null, contentScale = ContentScale.Crop,
                         failure = placeholder(R.drawable.placeholder), loading = placeholder(R.drawable.placeholder),
                         modifier = Modifier.size(52.dp).clip(CircleShape),
                     )

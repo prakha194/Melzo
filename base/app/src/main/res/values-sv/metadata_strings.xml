@@ -7,5 +7,6 @@
     <string name="metadata_asked">Tillfrågas</string>
     <string name="metadata_off">Av: tillfrågas aldrig</string>
     <string name="metadata_reset">Tillbaka till standardordningen</string>
+    <string name="metadata_not_on_spotify">Hittades inte på Spotify: låten kan inte spelas än</string>
     <string name="metadata_switch">Fråga %1$s</string>
 </resources>

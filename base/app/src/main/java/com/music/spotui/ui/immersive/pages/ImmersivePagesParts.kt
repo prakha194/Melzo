@@ -167,7 +167,7 @@ internal fun ImmersiveSwipeToRemove(key: Any, onRemove: () -> Unit, content: @Co
             ) {
                 Icon(
                     Icons.Rounded.DeleteOutline,
-                    contentDescription = stringResource(R.string.lbl_download_remove),
+                    contentDescription = stringResource(R.string.context_menu_undownload),
                     tint = Color.White,
                     modifier = Modifier.padding(horizontal = 24.dp).size(26.dp),
                 )
@@ -251,7 +251,7 @@ internal fun ImmersiveNameDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.lbl_cancel), style = Immersive.BodyStrong)
+                Text(stringResource(R.string.add_to_playlist_button_cancel), style = Immersive.BodyStrong)
             }
         },
     )

@@ -194,7 +194,7 @@ fun ImmersiveLocalFilesScreen(navController: NavController) {
         onDismiss = { choosingFolders = false },
     )
 
-    val title = stringResource(R.string.lbl_local_files)
+    val title = stringResource(R.string.local_files_title)
     val n = tracks?.size ?: 0
     ImmersivePage(
         title = title,
@@ -207,9 +207,9 @@ fun ImmersiveLocalFilesScreen(navController: NavController) {
         when {
             !granted -> item(key = "permission") {
                 LocalEmpty(
-                    stringResource(R.string.lbl_local_files_empty),
-                    stringResource(R.string.lbl_local_files_empty_note),
-                    stringResource(if (askedOnce) R.string.lbl_open_settings else R.string.lbl_allow),
+                    stringResource(R.string.local_files_empty_section_title),
+                    stringResource(R.string.local_files_empty_section_subtitle),
+                    stringResource(if (askedOnce) R.string.local_files_empty_section_button_go_to_settings else R.string.local_files_empty_section_dialog_permission_rationale_accept),
                 ) {
                     if (askedOnce) context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
                     else launcher.launch(LocalMusic.permission)
@@ -217,7 +217,7 @@ fun ImmersiveLocalFilesScreen(navController: NavController) {
             }
             tracks == null -> immersiveSongListSkeleton(count = 8)
             tracks?.isEmpty() == true -> item(key = "none") {
-                LocalEmpty(stringResource(R.string.lbl_local_files_none), stringResource(R.string.local_files_none_subtitle), null) {}
+                LocalEmpty(stringResource(R.string.local_files_empty_section_no_files_title), stringResource(R.string.local_files_none_subtitle), null) {}
             }
             else -> {
                 item(key = "buttons") {
@@ -242,7 +242,7 @@ fun ImmersiveLocalFilesScreen(navController: NavController) {
                 }
                 val shown = tracks.orEmpty().filter { com.music.spotui.ui.components.matchesFind(find, it.title, it.artist, it.album) }
                 if (shown.isEmpty() && find.isNotBlank()) item(key = "find-empty") {
-                    ImmersiveMessageState(stringResource(R.string.lbl_no_results, find.trim()))
+                    ImmersiveMessageState(stringResource(R.string.assisted_curation_search_empty_view_no_result_title, find.trim()))
                 }
                 items(shown, key = { it.id }) { t ->
                     val current = playingLocal && np.uri == "local:${t.id}"
@@ -378,9 +378,9 @@ fun ImmersiveEpisodeScreen(navController: NavController, episodeId: String, fall
 fun ImmersiveQueueScreen(navController: NavController) {
     // Spotify's real queue, pushed by the engine.
     val q by SongPlayer.engineQueue
-    ImmersivePage(title = stringResource(R.string.lbl_queue), onBack = { navController.popBackStack() }) {
+    ImmersivePage(title = stringResource(R.string.action_queue_label), onBack = { navController.popBackStack() }) {
         q.current?.let { cur ->
-            item(key = "now:header") { SectionHeader(stringResource(R.string.lbl_channel_playback)) }
+            item(key = "now:header") { SectionHeader(stringResource(R.string.default_notification_channel_name)) }
             item(key = "now") { ImmersiveSongRow(song = cur, playing = true, onClick = {}, onMore = null) }
         }
         if (q.queued.isNotEmpty()) {

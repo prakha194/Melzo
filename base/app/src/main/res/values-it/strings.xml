@@ -12,8 +12,11 @@
     <string name="notif_shuffle_enable">Attiva riproduzione casuale</string>
     <string name="notif_shuffle_disable">Disattiva riproduzione casuale</string>
     <string name="notif_shuffle_disable_smart">Disattiva riproduzione casuale intelligente</string>
+    <string name="account_page_title">Account Spotify</string>
+    <string name="account_page_detail">Abbonamento, privacy e dispositivi, su spotify.com</string>
     <string name="energy_saver_title">Risparmio energetico</string>
     <string name="energy_saver_summary">Canvas disattivati, video e animazioni più leggeri</string>
     <string name="playback_seek_description">Posizione di riproduzione</string>
     <string name="player_source_downloaded">Scaricato</string>
+    <string name="extension_change_write">Ora può anche inviare a Spotify: %1$s</string>
 </resources>

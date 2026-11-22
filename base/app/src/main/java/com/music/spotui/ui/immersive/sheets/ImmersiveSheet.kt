@@ -65,7 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.music.spotui.ui.components.imageUrlOf
+import com.music.spotui.ui.components.spotifyImageUrl
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.immersive.components.ImmersiveCover
 import com.music.spotui.ui.immersive.components.ImmersiveSongTitle
@@ -103,7 +103,7 @@ val LocalImmersiveRowStyle = staticCompositionLocalOf { ImmersiveRowStyle.Sheet 
 @Composable
 fun rememberImmersiveSheetTint(imageUrl: String?): ImmersiveSheetTint {
     val hasCover = !imageUrl.isNullOrBlank()
-    val colors = rememberArtworkColors(if (hasCover) imageUrlOf(imageUrl) ?: imageUrl else null).colors
+    val colors = rememberArtworkColors(if (hasCover) spotifyImageUrl(imageUrl) ?: imageUrl else null).colors
     val seed = colors.firstOrNull() ?: Immersive.Accent
     val target = remember(seed, hasCover) {
         if (!hasCover) return@remember ImmersiveSheetTint(FlatSheetColor, Immersive.Accent)
@@ -164,7 +164,7 @@ fun ImmersiveSheet(
                 Box(Modifier.matchParentSize().background(tint.background)) {
                     if (canBlur && !imageUrl.isNullOrBlank()) {
                         GlideImage(
-                            model = imageUrlOf(imageUrl) ?: imageUrl,
+                            model = spotifyImageUrl(imageUrl) ?: imageUrl,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier

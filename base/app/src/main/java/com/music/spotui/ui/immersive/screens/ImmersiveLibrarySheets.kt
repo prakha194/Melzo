@@ -38,14 +38,15 @@ import com.music.spotui.di.Graph
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.navigation.Routes
 import com.music.spotui.ui.navigation.profileRoute
+import com.music.spotui.ui.screens.AccountBrowser
 
 /** The label of a library sort order. */
 internal fun libraryOrderLabel(sort: LibraryOrder.Sort): Int = when (sort) {
-    LibraryOrder.Sort.CUSTOM -> R.string.lbl_sort_custom
+    LibraryOrder.Sort.CUSTOM -> R.string.your_library_sort_order_custom
     LibraryOrder.Sort.RECENTS -> R.string.library_sort_recents
     LibraryOrder.Sort.RECENTLY_ADDED -> R.string.library_sort_recently_added
-    LibraryOrder.Sort.ALPHABETICAL -> R.string.lbl_sort_name
-    LibraryOrder.Sort.CREATOR -> R.string.lbl_sort_owner
+    LibraryOrder.Sort.ALPHABETICAL -> R.string.your_library_sort_order_alphabetical
+    LibraryOrder.Sort.CREATOR -> R.string.your_library_sort_order_creator
 }
 
 /** "Sort by": custom order (moved by hand), recents, alphabetical or by creator, and a reset. */
@@ -55,7 +56,7 @@ internal fun ImmersiveLibrarySortSheet(onDismiss: () -> Unit) {
     ImmersiveGlassSheet(onDismiss) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(
-                text = stringResource(R.string.lbl_sort),
+                text = stringResource(R.string.filter_and_sort_sort_section_title),
                 style = Immersive.Title,
                 modifier = Modifier.padding(horizontal = Immersive.Gutter, vertical = 8.dp),
             )
@@ -112,7 +113,7 @@ internal fun ImmersiveAccountSheet(
                 AvatarDisc(
                     url = account.imageUrl,
                     initial = account.name.trim().firstOrNull()?.uppercase() ?: "•",
-                    contentDescription = stringResource(R.string.lbl_account),
+                    contentDescription = stringResource(R.string.account_title),
                     onClick = null,
                     size = 56.dp,
                 )
@@ -138,9 +139,13 @@ internal fun ImmersiveAccountSheet(
                     navController.navigate(profileRoute(myId, account.name))
                 }
             }
-            AccountRow(stringResource(R.string.settings_screen_title)) {
+            AccountRow(stringResource(R.string.settings_title)) {
                 onDismiss()
                 navController.navigate(Routes.Settings.route)
+            }
+            AccountRow(stringResource(R.string.immersive_screens_account_page) + "  ↗") {
+                onDismiss()
+                AccountBrowser.open(Graph.app, AccountBrowser.ACCOUNT_URL)
             }
             HorizontalDivider(color = Immersive.Separator)
             Spacer(Modifier.height(8.dp))

@@ -44,7 +44,6 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import app.myspoti.engine.R
 import com.music.spotui.ui.navigation.artistRoute
-import com.music.spotui.ui.navigation.pageIdOf
 import kotlinx.coroutines.launch
 
 /**
@@ -94,7 +93,7 @@ object ArtistChooser {
         }
     }
 
-    internal fun routeOf(a: ArtistRef) = artistRoute(a.name, pageIdOf(a.uri))
+    internal fun routeOf(a: ArtistRef) = artistRoute(a.name, a.uri.substringAfterLast(':'))
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)

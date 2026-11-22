@@ -15,8 +15,6 @@ val keystoreProperties = Properties().apply {
 
 // -PautomixLab: a test app with its own data, installed alongside every regular/dev build.
 val automixLab = findProperty("automixLab") != null
-// -Pclean: a debug build as its own app ("Spoon Clean", id suffix .clean), next to every other one.
-val cleanApp = findProperty("clean") != null
 
 
 /** The ABIs a release has an APK for, and how they are named in it (UpdateChecker reads the same names). */
@@ -40,16 +38,18 @@ android {
     namespace = "app.myspoti.engine"
     compileSdk = 37
 
-    // Two channels that install side by side: betas ("2.0.0-beta.3") stay "app.orpheon.beta",
-    // signed with the first key, as "Orpheon Beta"; releases are "app.orpheon",
-    // signed with their own key, as "Orpheon". (Provisional ids: the rename from Myspoti.)
+    // Two channels that install side by side: betas ("2.0.0-beta.3") stay "app.myspoti.beta",
+    // signed with the first key, as "Myspoti"; releases are "app.myspoti",
+    // signed with their own key, as "Myspoti".
     // Local builds (no version given) are on the beta side, like the phone test builds.
     val version = (findProperty("appVersionName") as String?) ?: "1.0.0"
     // "-beta" as in UpdateChecker.isBeta, one predicate for the app id, the label and the log stripping.
     val beta = findProperty("appVersionName") == null || version.contains("-beta")
     defaultConfig {
-        applicationId = if (automixLab) "app.myspoti.automixlab" else if (beta) "app.orpheon.beta" else "app.orpheon"
-        manifestPlaceholders["appLabel"] = if (automixLab) "Spoon Mix Lab" else if (beta) "Spoon Beta" else "Spoon"
+        // One app for every channel: stable and beta updates install over each other (the channel is a
+        // setting in About), so both are "app.myspoti", signed with the same key.
+        applicationId = if (automixLab) "app.myspoti.automixlab" else "app.myspoti"
+        manifestPlaceholders["appLabel"] = if (automixLab) "Myspoti Mix Lab" else "Spoon"
         // The adb command line (com.music.spotui.cli): betas and debug builds only.
         manifestPlaceholders["cliEnabled"] = beta.toString()
         minSdk = 29
@@ -60,8 +60,13 @@ android {
         // GitHub "owner/repo" whose releases the app checks for updates; empty = off
         // (local builds). CI sets it to the repository it builds.
         // Not in the dev and Mix Lab builds (below): no release carries their app id.
-        buildConfigField("String", "UPDATE_REPO", "\"${if (automixLab) "" else (findProperty("updateRepo") as String?) ?: System.getenv("MYSPOTI_UPDATE_REPO") ?: ""}\"")
+        buildConfigField("String", "UPDATE_REPO", "\"${if (automixLab) "" else (findProperty("updateRepo") as String?) ?: System.getenv("MYSPOTI_UPDATE_REPO") ?: "Kirisos-Guna/myspoti"}\"")
         buildConfigField("String", "APK_NAME", "\"$APK_NAME\"")
+        // Last.fm scrobbling: the app's API key and secret (https://www.last.fm/api/account/create),
+        // from -PlastfmApiKey / -PlastfmSecret (or ~/.gradle/gradle.properties) or the environment.
+        // Empty: Last.fm is not offered in this build (ListenBrainz still is).
+        buildConfigField("String", "LASTFM_API_KEY", "\"${(findProperty("lastfmApiKey") as String?) ?: System.getenv("LASTFM_API_KEY") ?: ""}\"")
+        buildConfigField("String", "LASTFM_SECRET", "\"${(findProperty("lastfmSecret") as String?) ?: System.getenv("LASTFM_SECRET") ?: ""}\"")
         // -Pabis=arm64-v8a: one APK for one phone (the test builds). Without it, the ABI splits below.
         (findProperty("abis") as String?)?.let { ndk { abiFilters += it.split(",") } }
         // On-device tests (codecs): ./gradlew connectedDebugAndroidTest
@@ -99,10 +104,7 @@ android {
 
     buildTypes {
         debug {
-            // Installs next to the release apps (own data, own sign-in).
-            if (cleanApp) applicationIdSuffix = ".clean"
-            else if (!automixLab) applicationIdSuffix = ".dev"
-            manifestPlaceholders["appLabel"] = if (cleanApp) "Spoon Clean" else if (automixLab) "Spoon Mix Lab" else "Spoon dev"
+            manifestPlaceholders["appLabel"] = if (automixLab) "Myspoti Mix Lab" else "Spoon"
             manifestPlaceholders["cliEnabled"] = "true"
             buildConfigField("String", "UPDATE_REPO", "\"\"")
         }
@@ -113,8 +115,7 @@ android {
             // -PoverDev: the optimised build under the dev app's id, to measure the speed of a
             // beta on the test phone without replacing the signed beta installed there.
             if (findProperty("overDev") != null && !automixLab) {
-                applicationIdSuffix = ".dev"
-                manifestPlaceholders["appLabel"] = "Spoon dev"
+                manifestPlaceholders["appLabel"] = "Myspoti"
                 buildConfigField("String", "UPDATE_REPO", "\"\"")
             }
             // The Mix Lab stays drivable from the CLI in its optimised build, as in its debug one.
@@ -150,6 +151,8 @@ dependencies {
     implementation(project(":host-android"))
     // YouTube Music as the account provider (listen sync, library read, metadata on the user's session).
     implementation(project(":api-ytmusic"))
+    // The native engine: the account's audio outside the Web Player page (NativeAudio), behind its setting.
+    implementation(project(":engine-android"))
     // The watch's app asks this one for the account's session and playlists (WearLinkService).
     implementation("com.google.android.gms:play-services-wearable:20.0.1")
     // AutoMix: song analysis and transition planning (pure Kotlin), Beat This on ONNX Runtime.
@@ -228,7 +231,7 @@ dependencies {
     // Screenshots of the TV screens on the computer (TvScreenshotTest): Robolectric draws them, Roborazzi saves them.
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("io.github.takahirom.roborazzi:roborazzi:1.40.1")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.40.1")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.79.0")
     testImplementation(platform(libs.compose.bom))
     testImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
@@ -240,10 +243,10 @@ dependencies {
 }
 /**
  * `./gradlew :app:collectApks` after assembleRelease: the APKs under clear names in
- * build/release-apks/: Orpheon-2.4.0-ARMv8.apk (64-bit phones, almost all of them),
- * Orpheon-2.4.0-ARMv7.apk (32-bit), Orpheon-2.4.0-universal.apk (both) and Orpheon-2.4.0-TV.apk
+ * build/release-apks/: Myspoti-2.4.0-ARMv8.apk (64-bit phones, almost all of them),
+ * Myspoti-2.4.0-ARMv7.apk (32-bit), Myspoti-2.4.0-universal.apk (both) and Myspoti-2.4.0-TV.apk
  * (Android TV: the universal APK, since many TVs run 32-bit apps on a 64-bit chip). Betas are
- * Orpheon-Beta-..., the optimised dev builds Orpheon-dev-...
+ * Myspoti-Beta-..., the optimised dev builds Myspoti-dev-...
  */
 tasks.register("collectApks") {
     mustRunAfter("assembleRelease")

@@ -53,6 +53,7 @@
     <string name="extensions_cat_all">Все</string>
     <string name="extensions_cat_lyrics">Тексты</string>
     <string name="extensions_cat_playback">Воспроизведение и звук</string>
+    <string name="extensions_cat_library">Медиатека</string>
     <string name="extensions_cat_discovery">Открытия</string>
     <string name="extensions_cat_stats">Статистика</string>
     <string name="extensions_cat_look">Оформление</string>
@@ -63,6 +64,7 @@
     <string name="extensions_browse_store">Открыть каталог</string>
     <string name="extensions_other_ways">Другие способы установки</string>
     <string name="extensions_empty_title">Что такое расширения?</string>
+    <string name="extensions_empty_body">Расширения добавляют в Spoon то, чего приложение само не умеет: тексты из других источников, откуда берётся звук или загрузка трека, инструменты, работающие с вашим аккаунтом Spotify. Каждое работает в песочнице и спрашивает разрешения, прежде чем к чему-либо обратиться. Добавьте репозиторий, чтобы просматривать их, или установите пакет, которому доверяете.</string>
     <string name="extensions_official_badge">Официальный</string>
     <string name="extensions_repo_yours">Добавлен вами</string>
     <string name="extensions_repo_community">Сообщество</string>
@@ -106,6 +108,8 @@
     <string name="action_library_read">Читать вашу медиатеку</string>
     <string name="action_library_write">Изменять вашу медиатеку</string>
     <string name="action_playlists_write">Изменять ваши плейлисты</string>
+    <string name="action_spotify_catalog">Просматривать Spotify</string>
+    <string name="action_spotify_raw">Полный доступ к Spotify</string>
     <string name="action_network">Пользоваться интернетом</string>
     <string name="action_network_any">Обращаться к любому сайту</string>
     <string name="action_webview_page">Собственная веб-страница</string>
@@ -121,6 +125,7 @@
     <string name="area_audio">Звук и загрузки</string>
     <string name="area_home">Главная и поиск</string>
     <string name="area_menus">Меню и плеер</string>
+    <string name="area_library">Медиатека и Spotify</string>
     <string name="area_other">Страницы и прочее</string>
     <string name="area_activity">Недавняя активность</string>
     <string name="area_turn_off">Отключить</string>
@@ -129,6 +134,7 @@
     <string name="area_make_active">Сделать основным для: %1$s</string>
     <!-- Install prompt -->
     <string name="ext_third_party_notice">Стороннее расширение, не проверено Spoon, на ответственности его автора.</string>
+    <string name="ext_risk_accept">Я понимаю, что это расширение создано третьей стороной, и устанавливаю его под свою ответственность</string>
     <string name="ext_clash_exclusive">Заменяет %1$s, которое сейчас предоставляет %2$s</string>
     <string name="ext_clash_conflict">Несовместимо с %1$s (установлено)</string>
     <string name="ext_clash_replaces">Заменяет %1$s (установлено)</string>
@@ -195,9 +201,14 @@
     <string name="extension_change_replaces">Отключает %1$s при установке</string>
     <string name="extension_change_conflicts">Отказывается работать вместе с %1$s</string>
     <string name="action_webview_auth">Войти на сайте</string>
+    <string name="extension_confirm_once">Разрешить один раз</string>
+    <string name="extension_confirm_always">Всегда разрешать %1$s</string>
     <string name="ext_auth_title">%1$s: вход</string>
     <string name="ext_auth_close">Закрыть</string>
     <string name="ext_auth_notice">Отдельная страница: введённое и её cookie остаются в Spoon. Расширение получает только конечный адрес страницы.</string>
+    <string name="ext_grants_title">Всегда разрешено</string>
+    <string name="ext_grants_note">Изменения в Spotify, которые это расширение вносит без запроса. Отзовите одно, чтобы вас снова спрашивали.</string>
+    <string name="ext_grant_revoke">Отозвать</string>
     <string name="extensions_unreadable_file">Не удалось прочитать файл</string>
     <string name="ext_welcome_title">Расширение «%1$s» установлено</string>
     <string name="ext_welcome_steps">Чтобы завершить</string>

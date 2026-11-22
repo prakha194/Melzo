@@ -7,5 +7,6 @@
     <string name="metadata_asked">জিজ্ঞাসা করা হয়</string>
     <string name="metadata_off">বন্ধ: কখনও জিজ্ঞাসা করা হয় না</string>
     <string name="metadata_reset">ডিফল্ট ক্রমে ফিরে যান</string>
+    <string name="metadata_not_on_spotify">Spotify-তে পাওয়া যায়নি: এই গানটি এখনও চালানো যাবে না</string>
     <string name="metadata_switch">%1$s-কে জিজ্ঞাসা করুন</string>
 </resources>

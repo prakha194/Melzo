@@ -248,7 +248,7 @@ fun ImmersiveLyricsPanel(modifier: Modifier = Modifier, contentPadding: PaddingV
                             )
                             if (canTranslate) LyricsToggle(
                                 icon = Icons.Rounded.Translate,
-                                description = stringResource(R.string.lbl_lyrics_translate_chip),
+                                description = stringResource(R.string.lyrics_fullscreen_chip_label_translate),
                                 on = current.showTranslation,
                                 loading = current.translating && current.translationRequested,
                                 onClick = { vm.toggleTranslation(target) },
@@ -902,9 +902,9 @@ private fun ShareBar(canShare: Boolean, onCancel: () -> Unit, onShare: () -> Uni
             modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            ImmersiveButton(stringResource(R.string.action_cancel_label), onCancel, Modifier.weight(1f))
+            ImmersiveButton(stringResource(R.string.cancel), onCancel, Modifier.weight(1f))
             ImmersiveButton(
-                stringResource(R.string.lbl_lyrics_share), onShare, Modifier.weight(1f),
+                stringResource(R.string.lyrics_fullscreen_chip_label_share), onShare, Modifier.weight(1f),
                 icon = Icons.Rounded.Share, filled = true, enabled = canShare,
             )
         }

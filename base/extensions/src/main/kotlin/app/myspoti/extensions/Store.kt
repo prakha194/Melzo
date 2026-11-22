@@ -10,6 +10,7 @@ package app.myspoti.extensions
 enum class Category(val key: String) {
     LYRICS("lyrics"),
     PLAYBACK("playback"),
+    LIBRARY("library"),
     DISCOVERY("discovery"),
     STATS("stats"),
     LOOK("look"),
@@ -21,11 +22,12 @@ enum class Category(val key: String) {
     val needs: Set<Action>
         get() = when (this) {
             LYRICS -> setOf(Action.LYRICS_PROVIDE, Action.LYRICS_ROMANIZE, Action.TRACKINFO_PROVIDE)
-            PLAYBACK -> setOf(Action.PLAYBACK_CONTROL, Action.PLAYBACK_EVENTS, Action.AUDIO_SOURCE, Action.PLAYER_BUTTONS)
-            DISCOVERY -> setOf(Action.HOME_SECTIONS, Action.SEARCH_PROVIDE)
-            STATS -> setOf(Action.PLAYBACK_EVENTS)
+            PLAYBACK -> setOf(Action.PLAYBACK_CONTROL, Action.PLAYBACK_QUEUE, Action.PLAYBACK_EVENTS, Action.AUDIO_SOURCE, Action.PLAYER_BUTTONS)
+            LIBRARY -> setOf(Action.LIBRARY_READ, Action.LIBRARY_WRITE, Action.PLAYLISTS_WRITE)
+            DISCOVERY -> setOf(Action.HOME_SECTIONS, Action.SEARCH_PROVIDE, Action.SPOTIFY_CATALOG)
+            STATS -> setOf(Action.PLAYBACK_EVENTS, Action.LIBRARY_READ)
             LOOK -> Action.BLOCKS + Action.WEBVIEW_PAGE + Action.UI_STYLE
-            SOCIAL -> setOf(Action.NETWORK)
+            SOCIAL -> setOf(Action.NETWORK, Action.LIBRARY_READ, Action.SPOTIFY_CATALOG)
             TOOLS, OTHER -> emptySet()
         }
 
@@ -34,7 +36,7 @@ enum class Category(val key: String) {
 
     companion object {
         /** The keys of the first store (before this list), read as their nearest category. */
-        private val OLD = mapOf("audio-source" to PLAYBACK, "player" to PLAYBACK, "spotify" to OTHER, "downloads" to TOOLS)
+        private val OLD = mapOf("audio-source" to PLAYBACK, "player" to PLAYBACK, "spotify" to LIBRARY, "downloads" to TOOLS)
 
         fun of(key: String): Category? = entries.firstOrNull { it.key == key } ?: OLD[key]
 

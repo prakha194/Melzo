@@ -31,9 +31,13 @@ import kotlinx.coroutines.flow.SharedFlow
  * [sessionUrls]. It relays the page script's messages (`window.MyspotiHost.postMessage`, a web message
  * listener taken only from [origin]'s main frame) and says when a page finished loading.
  *
- * It blocks, rewrites and hides nothing: no request is refused, the page sees its real visibility,
- * and nothing plays in it. A page whose renderer dies is made again at once and loads [origin]
- * ([gone]). [userAgent]: the WebView's own when null. Everything runs on the main thread.
+ * Unlike Spotify's page it blocks, rewrites and hides nothing: no request is refused, and the page
+ * sees its real visibility (a hidden view is hidden to it), so what the provider does with a hidden
+ * page on the user's plan is what happens. Its media is unheard from the first play of each document
+ * (a volume of 0.001, never "muted": Chromium pauses muted media of a hidden page), before the page
+ * script is in. A page whose renderer dies is made again at once and loads [origin] ([gone]): the
+ * sync then plays the song it is on there again. [userAgent]: the desktop browser's, as the desktop
+ * site is the one whose player is used. Everything runs on the main thread.
  */
 class HiddenPageHost(
     context: Context,
@@ -85,6 +89,9 @@ class HiddenPageHost(
         val web = this
         cookies().apply { setAcceptCookie(true); setAcceptThirdPartyCookies(web, true) }
         channel = exposeChannel(this)
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            WebViewCompat.addDocumentStartJavaScript(this, QUIET_MEDIA, setOf(origin))
+        }
         webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                 channel?.let { it.newPage(); view.evaluateJavascript(it.shim(), null) }
@@ -233,5 +240,27 @@ class HiddenPageHost(
 
     companion object {
         private const val CHANNEL = "MyspotiHost"
+
+        /**
+         * At the start of each document, before the page's own scripts: every media element is held at
+         * 0.001 from its first play and whenever the page sets its volume again (the page script does
+         * the same once it is in, see ytm-page.js).
+         */
+        private val QUIET_MEDIA = """
+            (() => {
+              if (window.__mspQuietHook) return;
+              window.__mspQuietHook = true;
+              const hold = el => {
+                if (el.__mspQuiet) return;
+                el.__mspQuiet = true;
+                const quiet = () => { if (el.volume > 0.001) el.volume = 0.001; };
+                el.addEventListener('volumechange', quiet);
+                el.addEventListener('playing', quiet);
+                quiet();
+              };
+              const play = HTMLMediaElement.prototype.play;
+              HTMLMediaElement.prototype.play = function () { hold(this); return play.apply(this, arguments); };
+            })();
+        """.trimIndent()
     }
 }

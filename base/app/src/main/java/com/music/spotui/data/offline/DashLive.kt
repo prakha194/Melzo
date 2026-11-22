@@ -109,7 +109,7 @@ internal class DashLive(
             override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Pair<Long, DashLive>>?) = size > 4
         }
         private const val KEEP_MS = 10 * 60_000L
-        private const val LOG = app.myspoti.host.android.Logbook.LOG
+        private const val LOG = app.myspoti.host.android.WebPlayerHost.LOG
 
         /** The live file of [manifestB64] (kept a few minutes: the player opens it again on every seek). */
         fun open(manifestB64: String, headers: Map<String, String>, userAgent: String): DashLive {

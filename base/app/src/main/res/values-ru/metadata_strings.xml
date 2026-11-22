@@ -7,5 +7,6 @@
     <string name="metadata_asked">Опрашивается</string>
     <string name="metadata_off">Выключено: никогда не опрашивается</string>
     <string name="metadata_reset">Вернуть порядок по умолчанию</string>
+    <string name="metadata_not_on_spotify">Не найдено в Spotify: эту песню пока нельзя воспроизвести</string>
     <string name="metadata_switch">Опрашивать %1$s</string>
 </resources>

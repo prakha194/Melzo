@@ -24,7 +24,7 @@
     <string name="pass_no_network">No Wi-Fi network: connect this device to the same Wi-Fi as your phone.</string>
     <string name="pass_received">Received from %1$s. The app restarts.</string>
     <string name="pass_confirm_title">Send to %1$s?</string>
-    <string name="pass_confirm_text">Your settings and extensions are copied to this device, straight over your Wi-Fi and encrypted. Send them only to your own devices.</string>
+    <string name="pass_confirm_text">Your settings, extensions and Spotify sign-in are copied to this device, straight over your Wi-Fi and encrypted. Send them only to your own devices.</string>
     <string name="pass_send_action">Send</string>
     <string name="pass_sent">Sent to %1$s</string>
     <string name="pass_failed">Not sent: %1$s</string>
@@ -36,4 +36,5 @@
     <string name="settings_genius_title">Genius</string>
     <string name="settings_genius_detail">What songs mean and the annotations on their lines, and Genius lyrics when no other source has them. Off: nothing is asked of Genius.</string>
     <string name="welcome_start">Get started</string>
+    <string name="setup_account_spotify_next">You sign in next, on Spotify\'s own page. Spoon never sees your password.</string>
 </resources>

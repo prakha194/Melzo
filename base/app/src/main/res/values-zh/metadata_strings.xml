@@ -7,5 +7,6 @@
     <string name="metadata_asked">询问中</string>
     <string name="metadata_off">已关闭：从不询问</string>
     <string name="metadata_reset">恢复默认顺序</string>
+    <string name="metadata_not_on_spotify">在 Spotify 上找不到：这首歌暂时无法播放</string>
     <string name="metadata_switch">询问 %1$s</string>
 </resources>

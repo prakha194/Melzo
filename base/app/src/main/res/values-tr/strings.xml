@@ -18,4 +18,7 @@
     <string name="energy_saver_title">Pil tasarrufu</string>
     <string name="energy_saver_summary">Canvas kapalı, daha hafif videolar ve animasyonlar</string>
     <string name="playback_seek_description">Oynatma konumu</string>
+    <string name="account_page_title">Spotify hesabı</string>
+    <string name="account_page_detail">Plan, gizlilik ve cihazlar, spotify.com üzerinden</string>
+    <string name="extension_change_write">Artık Spotify\'a da gönderebilir: %1$s</string>
 </resources>

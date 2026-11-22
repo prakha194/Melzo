@@ -75,7 +75,7 @@ private fun ScreenHeader(title: String, navController: NavController) {
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = stringResource(R.string.lbl_back),
+            contentDescription = stringResource(R.string.accessibility_navigate_back),
             tint = AppText,
             modifier = Modifier.wideClickable(horizontal = 8.dp, vertical = 10.dp) { navController.popBackStack() }.size(40.dp).padding(8.dp),
         )
@@ -159,7 +159,7 @@ fun EpisodesScreen(navController: NavController) {
     val episodes by produceState<List<com.music.spotui.data.entity.SongsModel>?>(null) { value = Graph.api.getSavedEpisodes() }
     var filter by remember { mutableStateOf(com.music.spotui.data.preferences.PodcastPrefs.libraryFilter()) }
     Column(Modifier.fillMaxSize().background(Background).statusBarsPadding()) {
-        ScreenHeader(stringResource(R.string.saved_episodes_title), navController)
+        ScreenHeader(stringResource(R.string.your_episodes_title), navController)
         when (val list = episodes) {
             null -> Loading()
             else -> if (list.isEmpty()) Text(stringResource(R.string.your_episodes_empty), color = Subtle, fontSize = 14.sp, modifier = Modifier.padding(20.dp))
@@ -214,7 +214,7 @@ fun EpisodesScreen(navController: NavController) {
 fun NewEpisodesScreen(navController: NavController) {
     val episodes by produceState<List<com.music.spotui.data.entity.SongsModel>?>(null) { value = Graph.api.getNewEpisodes() }
     Column(Modifier.fillMaxSize().background(Background).statusBarsPadding()) {
-        ScreenHeader(stringResource(R.string.episodes_new_title), navController)
+        ScreenHeader(stringResource(R.string.new_episodes_title), navController)
         when (val list = episodes) {
             null -> Loading()
             else -> if (list.isEmpty()) Text(stringResource(R.string.new_episodes_empty), color = Subtle, fontSize = 14.sp, modifier = Modifier.padding(20.dp))
@@ -278,6 +278,14 @@ fun RecapScreen(navController: NavController) {
                 Column(Modifier.padding(16.dp, 20.dp)) {
                     Text(stringResource(R.string.recap_minutes, recap.minutes), color = AppText, fontSize = 30.sp, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.recap_listens, recap.listens), color = Subtle, fontSize = 14.sp)
+                    if (recap.listens > 0) {
+                        var story by remember { mutableStateOf(false) }
+                        val label = stringResource(periods[period].first)
+                        androidx.compose.material3.Button(onClick = { story = true }, modifier = Modifier.padding(top = 10.dp)) {
+                            Text(stringResource(R.string.recap_story_play))
+                        }
+                        if (story) com.music.spotui.ui.components.RecapStory(recap, label) { story = false }
+                    }
                     Spacer(Modifier.height(10.dp))
                     val src = recap.bySource
                     Text(stringResource(R.string.recap_sources,

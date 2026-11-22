@@ -23,6 +23,7 @@
     <string name="pass_no_network">没有 Wi-Fi：请将此设备连接到与手机相同的 Wi-Fi。</string>
     <string name="pass_received">已从 %1$s 接收。应用将重新启动。</string>
     <string name="pass_confirm_title">发送到 %1$s？</string>
+    <string name="pass_confirm_text">你的设置、扩展和 Spotify 登录将通过 Wi-Fi 直接加密复制到此设备。只发送给你自己的设备。</string>
     <string name="pass_send_action">发送</string>
     <string name="pass_sent">已发送到 %1$s</string>
     <string name="pass_failed">未发送：%1$s</string>
@@ -34,4 +35,5 @@
     <string name="settings_genius_title">Genius</string>
     <string name="settings_genius_detail">歌曲的含义和歌词注释，以及在其他来源都没有歌词时使用 Genius 的歌词。关闭后：不会向 Genius 发出任何请求。</string>
     <string name="welcome_start">开始</string>
+    <string name="setup_account_spotify_next">接下来你将在 Spotify 自己的页面登录。Spoon 永远看不到你的密码。</string>
 </resources>

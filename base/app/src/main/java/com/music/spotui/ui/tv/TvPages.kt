@@ -133,11 +133,11 @@ internal fun TvArtistPage(o: ArtistOverviewModel, onOpen: (TvPage) -> Unit, onPl
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(TvSpace.large)) {
                         if (!header) TvCover(o.avatarImage, Modifier.size(200.dp).shadow(24.dp, CircleShape), RoundedCornerShape(100.dp), seed = o.name)
                         Column {
-                            Text(stringResource(R.string.lbl_artist).uppercase(), color = TvAccent, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.6.sp)
+                            Text(stringResource(R.string.artist_subtitle).uppercase(), color = TvAccent, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.6.sp)
                             Text(o.name, style = TvType.displayMedium.copy(shadow = TvType.overImage), color = Color.White, maxLines = 1,
                                 overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
                             o.monthlyListeners?.let {
-                                Text(stringResource(R.string.lbl_monthly_listeners, NumberFormat.getIntegerInstance().format(it)), style = TvType.titleMedium,
+                                Text(stringResource(R.string.monthly_listeners_text, NumberFormat.getIntegerInstance().format(it)), style = TvType.titleMedium,
                                     color = Color.White.copy(alpha = 0.7f))
                             }
                             Row(Modifier.padding(top = TvSpace.default)) {
@@ -150,7 +150,7 @@ internal fun TvArtistPage(o: ArtistOverviewModel, onOpen: (TvPage) -> Unit, onPl
             }
             if (o.topTracks.isNotEmpty()) item("popular") {
                 Column(Modifier.padding(horizontal = TvSpace.start)) {
-                    TvSectionTitle(stringResource(R.string.lbl_artist_top), Modifier)
+                    TvSectionTitle(stringResource(R.string.artist_popular_tracks), Modifier)
                     // Two columns of five, as a TV is wide.
                     val tracks = o.topTracks.take(10)
                     Row(horizontalArrangement = Arrangement.spacedBy(TvSpace.large)) {
@@ -164,7 +164,7 @@ internal fun TvArtistPage(o: ArtistOverviewModel, onOpen: (TvPage) -> Unit, onPl
             }
             val releases = o.popularReleases.filter { it.spotifyId.isNotBlank() }
             if (releases.isNotEmpty()) item("releases") {
-                TvShelf(stringResource(R.string.lbl_artist_top_releases)) {
+                TvShelf(stringResource(R.string.popular_releases_section_title)) {
                     itemsIndexed(releases, key = { i, a -> "$i:${a.spotifyId}" }) { _, a ->
                         TvAlbumCard(a.name, a.year, a.coverUri, 156.dp) {
                             onOpen(TvPage.Songs(LibraryEntry(a.spotifyId, a.name, a.artists, a.coverUri, isPlaylist = false, uri = "spotify:album:${a.spotifyId}")))
@@ -174,7 +174,7 @@ internal fun TvArtistPage(o: ArtistOverviewModel, onOpen: (TvPage) -> Unit, onPl
             }
             val related = o.relatedArtists.filter { it.id.isNotBlank() }
             if (related.isNotEmpty()) item("related") {
-                TvShelf(stringResource(R.string.lbl_similar_artists)) {
+                TvShelf(stringResource(R.string.fans_also_like_section_title)) {
                     itemsIndexed(related, key = { i, a -> "$i:${a.id}" }) { _, a ->
                         TvAlbumCard(a.name, "", a.coverUri, 140.dp, round = true) { onOpen(TvPage.Artist(a.id, a.name)) }
                     }

@@ -92,5 +92,10 @@ class UpdateCheckerTest {
         assertEquals(null, UpdateChecker.newest(list, beta = false, abis = arm64, name = "Orpheon"))
         val stable = list + rel("v1.0.0", false, "Orpheon-1.0.0-ARMv8.apk")
         assertEquals("1.0.0", UpdateChecker.newest(stable, beta = false, abis = arm64, name = "Orpheon")?.version)
+        // One app for both channels: the beta channel also takes a release newer than its betas,
+        // with that release's own (non-beta) APK.
+        val onBeta = UpdateChecker.newest(stable, beta = true, abis = arm64, name = "Orpheon")
+        assertEquals("1.0.0", onBeta?.version)
+        assertEquals("https://x/Orpheon-1.0.0-ARMv8.apk", onBeta?.apkUrl)
     }
 }

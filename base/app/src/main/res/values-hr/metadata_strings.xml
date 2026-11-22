@@ -7,5 +7,6 @@
     <string name="metadata_asked">Pita se</string>
     <string name="metadata_off">Isključeno: nikad se ne pita</string>
     <string name="metadata_reset">Natrag na zadani redoslijed</string>
+    <string name="metadata_not_on_spotify">Nije pronađeno na Spotifyju: ova se pjesma još ne može reproducirati</string>
     <string name="metadata_switch">Pitaj %1$s</string>
 </resources>

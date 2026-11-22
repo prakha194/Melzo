@@ -7,5 +7,6 @@
     <string name="metadata_asked">Опитується</string>
     <string name="metadata_off">Вимкнено: ніколи не опитується</string>
     <string name="metadata_reset">Повернути типовий порядок</string>
+    <string name="metadata_not_on_spotify">Не знайдено в Spotify: цю пісню поки не можна відтворити</string>
     <string name="metadata_switch">Опитувати %1$s</string>
 </resources>

@@ -63,7 +63,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.music.spotui.data.api.TopStats
 import com.music.spotui.data.local.ListenHistory
 import com.music.spotui.di.SongPlayer
-import com.music.spotui.ui.components.imageUrlOf
+import com.music.spotui.ui.components.spotifyImageUrl
 import com.music.spotui.ui.navigation.artistRoute
 import com.music.spotui.ui.navigation.profileRoute
 import com.music.spotui.ui.theme.AppAccent
@@ -142,10 +142,10 @@ internal fun SpotifyStatsTab(navController: NavController) {
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier.width(120.dp).clip(RoundedCornerShape(8.dp))
-                                        .clickable { navController.navigate(artistRoute(a.name, com.music.spotui.ui.navigation.pageIdOf(a.uri))) },
+                                        .clickable { navController.navigate(artistRoute(a.name, a.uri.substringAfterLast(':'))) },
                                 ) {
                                     com.music.spotui.ui.components.ProfileAvatar(
-                                        url = imageUrlOf(a.images.best(300)?.url), name = a.name, size = 120.dp)
+                                        url = spotifyImageUrl(a.images.best(300)?.url), name = a.name, size = 120.dp)
                                     Spacer(Modifier.height(8.dp))
                                     Text("${i + 1}. ${a.name}", color = AppText, fontSize = 14.sp, fontWeight = FontWeight.Bold,
                                         maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
@@ -162,7 +162,7 @@ internal fun SpotifyStatsTab(navController: NavController) {
                             modifier = Modifier.fillMaxWidth().clickable { SongPlayer.playSong(t.uri) }.padding(16.dp, 6.dp),
                         ) {
                             Text("${i + 1}", color = StatsSubtle, fontSize = 16.sp, modifier = Modifier.width(32.dp))
-                            GlideImage(model = imageUrlOf(t.album?.images?.best(160)?.url), contentDescription = null,
+                            GlideImage(model = spotifyImageUrl(t.album?.images?.best(160)?.url), contentDescription = null,
                                 contentScale = ContentScale.Crop, modifier = Modifier.size(48.dp).clip(RoundedCornerShape(4.dp)))
                             Column(Modifier.padding(start = 12.dp).weight(1f)) {
                                 Text(t.name, color = AppText, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -271,7 +271,7 @@ fun FriendActivityScreen(navController: NavController) {
         // Opened from Home's header (no longer a tab): back to it.
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(4.dp, 12.dp, 8.dp, 8.dp)) {
             androidx.compose.material3.IconButton(onClick = { navController.popBackStack() }) {
-                Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.lbl_back), tint = AppText)
+                Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.accessibility_navigate_back), tint = AppText)
             }
             Text(stringResource(R.string.friends_title), fontWeight = FontWeight.Bold, color = AppText, fontSize = 22.sp, maxLines = 1,
                 overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
@@ -341,7 +341,7 @@ private fun FriendRow(f: FriendActivity, now: Long, navController: NavController
             }
         }
         f.trackImageUrl?.let { cover ->
-            GlideImage(model = imageUrlOf(cover.replaceFirst("http://", "https://")), contentDescription = null,
+            GlideImage(model = spotifyImageUrl(cover.replaceFirst("http://", "https://")), contentDescription = null,
                 contentScale = ContentScale.Crop, modifier = Modifier.padding(start = 10.dp).size(44.dp).clip(RoundedCornerShape(4.dp)))
         }
     }

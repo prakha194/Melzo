@@ -217,9 +217,10 @@ fun AccountChoiceScreen(onBack: () -> Unit, onDone: () -> Unit) {
 }
 
 /**
- * The music account: none, or YouTube Music (its own sign-in page, from here). The same choice as
- * Settings > Music account. [beforeSignIn]: the first launch's (YouTube Music's sign-in is asked on
- * Continue while signed out).
+ * The music account: Spotify, YouTube Music (its own sign-in page, from here) or none. The same
+ * choice as Settings > Music account. [beforeSignIn]: the first launch's, before any sign-in (Spotify's
+ * comes next; YouTube Music's is asked on Continue while signed out); else Spotify is the account the
+ * user signed in with, for someone who had not seen this step yet.
  */
 @Composable
 private fun AccountStep(onNext: () -> Unit, beforeSignIn: Boolean = false) {
@@ -251,6 +252,8 @@ private fun AccountStep(onNext: () -> Unit, beforeSignIn: Boolean = false) {
         for (id in app.myspoti.api.account.AccountProviders.OFFERED) {
             val selected = pref.id == id
             val detail = when (id) {
+                app.myspoti.api.account.AccountProviders.SPOTIFY ->
+                    stringResource(if (beforeSignIn) R.string.setup_account_spotify_next else R.string.setup_account_spotify_detail)
                 app.myspoti.api.account.AccountProviders.YTMUSIC ->
                     if (ytm.signedIn) stringResource(R.string.settings_ytm_signed_in) else stringResource(R.string.setup_account_ytm_detail)
                 else -> stringResource(R.string.setup_account_none_detail)
@@ -271,6 +274,24 @@ private fun AccountStep(onNext: () -> Unit, beforeSignIn: Boolean = false) {
                 if (selected && id == app.myspoti.api.account.AccountProviders.YTMUSIC && !ytm.signedIn) {
                     TextButton(onClick = { signingIn = true }) {
                         Text(stringResource(R.string.settings_ytm_sign_in_title), color = accent, fontWeight = FontWeight.Bold)
+                    }
+                }
+                // The listen mirror, offered with the provider it counts on (off unless ticked).
+                if (selected && id != app.myspoti.api.account.AccountProviders.NONE) {
+                    val mirror = com.music.spotui.data.preferences.ConnectMirrorPref
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 10.dp).fillMaxWidth().clickable { mirror.set(context, !mirror.on) },
+                    ) {
+                        androidx.compose.material3.Checkbox(
+                            checked = mirror.on,
+                            onCheckedChange = { mirror.set(context, it) },
+                            colors = androidx.compose.material3.CheckboxDefaults.colors(checkedColor = accent),
+                        )
+                        Column(Modifier.weight(1f)) {
+                            CardTitle(stringResource(R.string.settings_connect_mirror_title))
+                            CardDetail(stringResource(R.string.settings_connect_mirror_detail))
+                        }
                     }
                 }
             }
@@ -352,6 +373,7 @@ private fun QualityStep(onNext: () -> Unit) {
     ) {
         SetupTitle(stringResource(R.string.setup_quality_title), Modifier.padding(horizontal = 20.dp).riseIn(0))
         SetupSubtitle(stringResource(R.string.setup_quality_subtitle), Modifier.padding(horizontal = 20.dp).riseIn(1))
+        Box(Modifier.riseIn(2)) { com.music.spotui.ui.components.StreamingQualityPicker(Modifier.padding(top = 8.dp)) }
         Box(Modifier.riseIn(3)) { com.music.spotui.ui.components.DownloadQualityPicker() }
         SetupButton(stringResource(R.string.setup_continue), onNext, Modifier.fillMaxWidth().padding(horizontal = 20.dp).height(50.dp).riseIn(4))
     }

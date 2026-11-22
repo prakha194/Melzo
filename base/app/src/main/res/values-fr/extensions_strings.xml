@@ -53,6 +53,7 @@
     <string name="extensions_cat_all">Toutes</string>
     <string name="extensions_cat_lyrics">Paroles</string>
     <string name="extensions_cat_playback">Lecture et audio</string>
+    <string name="extensions_cat_library">Bibliothèque</string>
     <string name="extensions_cat_discovery">Découverte</string>
     <string name="extensions_cat_stats">Statistiques</string>
     <string name="extensions_cat_look">Apparence</string>
@@ -63,7 +64,7 @@
     <string name="extensions_browse_store">Parcourir la boutique</string>
     <string name="extensions_other_ways">Autres façons d\'installer</string>
     <string name="extensions_empty_title">Les extensions, c\'est quoi ?</string>
-    <string name="extensions_empty_body">Les extensions ajoutent à Spoon ce qu\'il ne fait pas lui-même : des paroles d\'autres sources, d\'où vient l\'audio ou le téléchargement d\'un titre. Chacune tourne dans un bac à sable et demande avant d\'atteindre quoi que ce soit. Ajoutez un dépôt pour les parcourir, ou installez un paquet de confiance.</string>
+    <string name="extensions_empty_body">Les extensions ajoutent à Spoon ce qu\'il ne fait pas lui-même : des paroles d\'autres sources, d\'où vient l\'audio ou le téléchargement d\'un titre, des outils qui utilisent votre compte Spotify. Chacune tourne dans un bac à sable et demande avant d\'atteindre quoi que ce soit. Ajoutez un dépôt pour les parcourir, ou installez un paquet de confiance.</string>
     <string name="extensions_official_badge">Officiel</string>
     <string name="extensions_repo_yours">Ajouté par vous</string>
     <string name="extensions_repo_community">Communauté</string>
@@ -107,6 +108,8 @@
     <string name="action_library_read">Lire votre bibliothèque</string>
     <string name="action_library_write">Modifier votre bibliothèque</string>
     <string name="action_playlists_write">Modifier vos playlists</string>
+    <string name="action_spotify_catalog">Parcourir Spotify</string>
+    <string name="action_spotify_raw">Accès complet à Spotify</string>
     <string name="action_network">Utiliser Internet</string>
     <string name="action_network_any">Utiliser n\'importe quel site</string>
     <string name="action_webview_page">Sa propre page web</string>
@@ -122,6 +125,7 @@
     <string name="area_audio">Audio et téléchargements</string>
     <string name="area_home">Accueil et recherche</string>
     <string name="area_menus">Menus et lecteur</string>
+    <string name="area_library">Bibliothèque et Spotify</string>
     <string name="area_other">Pages et autres</string>
     <string name="area_activity">Activité récente</string>
     <string name="area_turn_off">Désactiver</string>
@@ -130,7 +134,7 @@
     <string name="area_make_active">En faire celle pour %1$s</string>
     <!-- Installation -->
     <string name="ext_third_party_notice">Extension tierce, non vérifiée par Spoon, sous la responsabilité de son auteur.</string>
-    <string name="ext_risk_accept">Je comprends que cette extension est faite par un tiers, je l\'installe sous ma propre responsabilité et je n\'utilise que des sources que j\'ai le droit d\'utiliser</string>
+    <string name="ext_risk_accept">Je comprends que cette extension est faite par un tiers et je l\'installe sous ma propre responsabilité</string>
     <string name="ext_clash_exclusive">Remplace %1$s, actuellement fourni par %2$s</string>
     <string name="ext_clash_conflict">Incompatible avec %1$s (installée)</string>
     <string name="ext_clash_replaces">Remplace %1$s (installée)</string>
@@ -201,9 +205,14 @@
     <string name="extension_change_replaces">Désactive %1$s à l\'installation</string>
     <string name="extension_change_conflicts">Refuse de tourner avec %1$s</string>
     <string name="action_webview_auth">Se connecter sur un site web</string>
+    <string name="extension_confirm_once">Autoriser une fois</string>
+    <string name="extension_confirm_always">Toujours autoriser %1$s</string>
     <string name="ext_auth_title">%1$s : connexion</string>
     <string name="ext_auth_close">Fermer</string>
     <string name="ext_auth_notice">Une page à part : ce que vous saisissez et ses cookies restent dans Spoon. L\'extension ne reçoit que l\'adresse finale de la page.</string>
+    <string name="ext_grants_title">Toujours autorisé</string>
+    <string name="ext_grants_note">Modifications Spotify que cette extension effectue sans vous demander. Révoquez-en une pour être à nouveau interrogé.</string>
+    <string name="ext_grant_revoke">Révoquer</string>
     <string name="extension_sign_in_needed">%1$s : connectez-vous pour continuer à utiliser sa source</string>
     <string name="extension_sign_in">Se connecter</string>
     <string name="extension_sign_in_later">Plus tard</string>

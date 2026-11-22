@@ -261,4 +261,30 @@ class GitHubTest {
         val two = runCatching { Archive.fromArchive(zip(listOf("a/manifest.json" to manifestJson, "b/main.js" to ""))) }.exceptionOrNull()
         assertTrue(two?.message, "several top folders" in two?.message.orEmpty())
     }
+
+    @Test fun spotifyWritesAreDeclaredCheckedGrantedAndAskedAgainWhenNew() {
+        val events = "POST https://spclient.wg.spotify.com/gabo-receiver-service/v3/events/"
+        val raw = ActionRequest("spotify.raw", "Sends your listens to Spotify", writes = listOf(events))
+        val m = manifest(1, raw)
+        assertTrue(m.problems().none { it.contains("write") })
+        assertEquals(listOf(RawGrant("POST", "spclient.wg.spotify.com", "/gabo-receiver-service/v3/events")), m.declaredWrites())
+        // Shown before install, under the action.
+        assertTrue(m.asks().first { it.key == "spotify.raw" }.hosts.contains("POST https://spclient.wg.spotify.com/gabo-receiver-service/v3/events"))
+        // An id in the path becomes *: the same request on another playlist, nothing else.
+        val put = manifest(1, ActionRequest("spotify.raw", "Edits playlists", writes = listOf("PUT https://spclient.wg.spotify.com/playlist/v2/playlist/37i9dQZF1DXcBWIGoYBM5M/changes")))
+        assertEquals("/playlist/v2/playlist/*/changes", put.declaredWrites().single().path)
+
+        for (bad in listOf("GET https://api.spotify.com/v1/me", "POST https://example.com/x", "POST", "TRACE https://api.spotify.com/")) {
+            assertTrue(bad, manifest(1, ActionRequest("spotify.raw", "x", writes = listOf(bad))).problems().any { it.contains("write") })
+        }
+        assertTrue(manifest(1, ActionRequest("spotify.raw", "x", writes = List(9) { "POST https://api.spotify.com/v1/x$it" })).problems().any { it.contains("8 writes") })
+        assertTrue(manifest(1, ActionRequest("network", "x", listOf("a.org"), writes = listOf(events))).problems().any { it.contains("only spotify.raw takes writes") })
+
+        // An update that adds a write waits for the user; the same writes again apply by themselves.
+        val accepted = snap(manifest(1, ActionRequest("spotify.raw", "Sends your listens to Spotify")))
+        val changes = (UpdateGate.decide(accepted, snap(manifest(2, raw))) as UpdateGate.Decision.Ask).changes
+        assertEquals(listOf(Change.Kind.WRITE), changes.map { it.kind })
+        assertTrue(changes.single().critical)
+        assertEquals(UpdateGate.Decision.Apply, UpdateGate.decide(snap(m), snap(manifest(2, raw))))
+    }
 }

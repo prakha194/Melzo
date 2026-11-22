@@ -9,11 +9,10 @@ import com.music.spotui.di.Graph
 
 /** The order of the metadata providers and the ones turned off, as plain lists (no Android: tested on the computer). */
 internal object MetadataOrder {
-    /** The scheme of the Spotify uris an earlier version saved: never a provider asked now. */
     const val SPOTIFY = "spotify"
 
-    /** Every provider the app knows, in the order they are asked by default. */
-    val ALL = DEFAULT_ORDER
+    /** Every provider the app knows, in the order they are asked by default: the signed-in Spotify account first. */
+    val ALL = listOf(SPOTIFY) + DEFAULT_ORDER
 
     /** [stored] with what it does not know left out and the providers it lacks (added by a newer app) after it. */
     fun normalized(stored: List<String>): List<String> {
@@ -35,6 +34,7 @@ internal object MetadataOrder {
 
     /** The name shown for a provider: their own names, never translated. */
     fun name(id: String): String = when (id) {
+        SPOTIFY -> "Spotify"
         "deezer" -> "Deezer"
         "ytmusic" -> "YouTube Music"
         "tidal" -> "Tidal"
@@ -46,7 +46,7 @@ internal object MetadataOrder {
 
 /**
  * Settings → Sources → Metadata: the order the providers of music metadata are asked in and the ones turned off. A
- * provider turned off is never asked.
+ * provider turned off is never asked. Spotify is asked only while an account is signed in.
  */
 object MetadataPref {
     private const val PREF = "myspoti_prefs"

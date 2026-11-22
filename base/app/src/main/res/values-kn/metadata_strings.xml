@@ -7,5 +7,6 @@
     <string name="metadata_asked">ಕೇಳಲಾಗುತ್ತದೆ</string>
     <string name="metadata_off">ಆಫ್: ಎಂದಿಗೂ ಕೇಳಲಾಗುವುದಿಲ್ಲ</string>
     <string name="metadata_reset">ಡೀಫಾಲ್ಟ್ ಕ್ರಮಕ್ಕೆ ಹಿಂತಿರುಗಿ</string>
+    <string name="metadata_not_on_spotify">Spotify ನಲ್ಲಿ ಸಿಗಲಿಲ್ಲ: ಈ ಹಾಡನ್ನು ಇನ್ನೂ ಪ್ಲೇ ಮಾಡಲಾಗುವುದಿಲ್ಲ</string>
     <string name="metadata_switch">%1$s ಅನ್ನು ಕೇಳಿ</string>
 </resources>

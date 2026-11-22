@@ -7,5 +7,6 @@
     <string name="metadata_asked">Lekérdezve</string>
     <string name="metadata_off">Ki: soha nincs lekérdezve</string>
     <string name="metadata_reset">Vissza az alapértelmezett sorrendhez</string>
+    <string name="metadata_not_on_spotify">Nem található a Spotify-on: ez a dal még nem játszható le</string>
     <string name="metadata_switch">%1$s lekérdezése</string>
 </resources>

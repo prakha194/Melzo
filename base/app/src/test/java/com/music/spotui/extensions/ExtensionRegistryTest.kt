@@ -72,13 +72,13 @@ class ExtensionRegistryTest {
 
     @Test fun aNewRightIsAskedAgainWithTheOnesUntickedBefore() {
         val old = manifest(1, permissions = listOf(PermissionRequest("network", listOf("api.example.com")), PermissionRequest("notify")))
-        val new = manifest(2, permissions = old.permissions + PermissionRequest("player.control", why = why))
+        val new = manifest(2, permissions = old.permissions + PermissionRequest("spotify.write", why = why))
         val plan = InstallPlan.of(new, installed(old, base), old) as InstallPlan.Update
         assertTrue(plan.reAsk)
-        assertEquals(listOf("playback.control"), plan.newAsks.map { it.key })
+        assertEquals(listOf("library.write", "playlists.write", "playback.control", "playback.queue"), plan.newAsks.map { it.key })
         assertEquals(setOf("notify"), plan.refused)
         // The prompt installs with all it lists.
-        assertEquals(base + setOf("notify", "playback.control"), Grants.keys(new))
+        assertEquals(base + setOf("notify", "library.write", "playlists.write", "playback.control", "playback.queue"), Grants.keys(new))
     }
 
     @Test fun moreHostsOrAnyHostIsAskedAgain() {

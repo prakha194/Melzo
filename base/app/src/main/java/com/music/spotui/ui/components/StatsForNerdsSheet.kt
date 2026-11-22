@@ -27,6 +27,8 @@ import com.music.spotui.automix.AutoMix
 import com.music.spotui.cast.CastPlayback
 import com.music.spotui.data.offline.OfflineStore
 import com.music.spotui.data.preferences.CrossfadePref
+import com.music.spotui.data.preferences.StreamingQuality
+import com.music.spotui.di.AccountSync
 import com.music.spotui.di.LocalPlayer
 import com.music.spotui.di.SongPlayer
 import com.music.spotui.extensions.ExtensionAudio
@@ -82,6 +84,7 @@ internal object NerdStats {
     suspend fun read(context: Context): List<NerdSection> = buildList {
         val local = LocalPlayer.active.value
         if (local) add(exoSection(context))
+        add(spotifySection(context, local))
     }
 
     private fun exoSection(c: Context): NerdSection {
@@ -196,4 +199,31 @@ internal object NerdStats {
         return rows
     }
 
+    private suspend fun spotifySection(c: Context, local: Boolean): NerdSection {
+        val rows = ArrayList<Pair<String, String>>()
+        val title = c.getString(R.string.nerd_section_spotify)
+        val remote = SongPlayer.activeDevice.value
+        if (remote != null) {
+            rows += c.getString(R.string.nerd_device) to remote.name
+            return NerdSection(title, rows, c.getString(R.string.nerd_spotify_remote))
+        }
+        val page = app.myspoti.host.android.MyspotiRuntime.spotify.player
+        rows += c.getString(R.string.nerd_device) to c.getString(R.string.nerd_device_this_phone)
+        val extension = Extensions.mirrorBy.value
+        rows += c.getString(R.string.nerd_mirror) to when {
+            extension != null -> c.getString(R.string.nerd_mirror_extension, extension)
+            AccountSync.listen.running -> c.getString(R.string.nerd_mirror_on)
+            else -> c.getString(R.string.nerd_mirror_off)
+        }
+        // The level the page is given (the lowest one while it only mirrors), and what it says it plays aloud.
+        rows += c.getString(R.string.nerd_requested) to c.getString(streamingLabel(StreamingQuality.of(page.streamingLevel)))
+        // AutoMix on while Spotify plays: why its songs are not mixed.
+        if (!local && AutoMix.on) com.music.spotui.ui.components.autoMixReasonText(AutoMix.whyNot())?.let { rows += c.getString(R.string.nerd_automix) to c.getString(it) }
+        if (!local) {
+            val (bitrate, mime) = page.audioInfo()
+            rows += c.getString(R.string.nerd_page_reports) to
+                if (bitrate > 0) "${codecName(mime)} · ${bitrate / 1000} kbit/s" else c.getString(R.string.nerd_page_reports_none)
+        }
+        return NerdSection(title, rows, c.getString(R.string.nerd_spotify_note))
+    }
 }

@@ -9,6 +9,8 @@ import app.myspoti.api.Page
 import app.myspoti.api.Playlist
 import app.myspoti.api.Search
 import app.myspoti.api.Track
+import app.myspoti.api.sync.SyncTrack
+import app.myspoti.api.sync.TrackIdResolver
 import java.io.IOException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -213,6 +215,47 @@ class CatalogWiringTest {
         assertEquals(0, deezer.calls)
     }
 
+    @Test fun aTrackWithoutAnIdIsLookedUpOnceThenKnown() = runBlocking {
+        val spotify = Fake("spotify", listOf(spotifyTrack))
+        val chain = ProviderChain(listOf(spotify))
+        val found = CompletableDeferred<Unit>()
+        val ids = CatalogTrackIds({ chain }, CoroutineScope(Dispatchers.Default), onFound = { found.complete(Unit) })
+        val r = TrackIdResolver.chain(TrackIdResolver.KnownIds, ids)
+        val local = SyncTrack(title = "Song", artists = listOf("Band"), durationMs = 200_000)
+        assertNull(r.idFor(local, "spotify"))
+        withTimeout(5_000) { found.await() }
+        assertEquals("S1", r.idFor(local, "spotify"))
+        val asked = spotify.calls
+        assertEquals("S1", r.idFor(local, "spotify"))
+        assertEquals(asked, spotify.calls)
+        // The id a track carries comes first, without a lookup.
+        assertEquals("K", r.idFor(local.copy(ids = mapOf("spotify" to "K")), "spotify"))
+    }
+
+    @Test fun aTrackNotFoundIsNotAskedAgainSoonAndAnUntitledOneNever() = runBlocking {
+        val spotify = Fake("spotify", listOf(spotifyTrack))
+        val chain = ProviderChain(listOf(spotify))
+        val scope = CoroutineScope(Dispatchers.Default)
+        val ids = CatalogTrackIds({ chain }, scope, onFound = {})
+        val missing = SyncTrack(title = "Nothing Like It", artists = listOf("Nobody"), durationMs = 100_000)
+        assertNull(ids.idFor(missing, "spotify"))
+        delay(300)
+        val asked = spotify.calls
+        assertTrue(asked >= 1)
+        assertNull(ids.idFor(missing, "spotify"))
+        delay(100)
+        assertEquals(asked, spotify.calls)
+        assertNull(ids.idFor(SyncTrack(), "spotify"))
+        // Lookups made side by side for the same track are one lookup.
+        val one = CatalogTrackIds({ chain }, scope, onFound = {})
+        val same = SyncTrack(title = "Song", artists = listOf("Band"), durationMs = 200_000, isrc = "AAAAA0000001")
+        val before = spotify.calls
+        (1..5).map { async { one.idFor(same, "spotify") } }.awaitAll()
+        withTimeout(5_000) { while (spotify.calls == before) delay(10) }
+        delay(100)
+        assertEquals(before + 1, spotify.calls)
+    }
+
     /** Reported: "not found on Spotify" for a song that played when tapped again. A failure is not an absence. */
     @Test fun aProviderThatCannotAnswerIsNeverTakenForOneThatHasNoSuchSong() = runBlocking {
         val chain = ProviderChain(listOf(Fake("spotify", listOf(spotifyTrack), down = true)), failuresToRest = 1)
@@ -227,6 +270,32 @@ class CatalogWiringTest {
             override suspend fun find(title: String, artist: String, limit: Int): List<Hit> = throw IllegalStateException("not ready")
         }
         assertTrue(ProviderChain(listOf(odd)).counterpartAnswer("spotify", "Song", "Band", 200_000) is Counterpart.Unknown)
+    }
+
+    @Test fun aLookupThatFailedIsAskedAgainSoonNotHalfAnHourLater() = runBlocking {
+        var down = true
+        val spotify = object : Fake("spotify", listOf(spotifyTrack)) {
+            override suspend fun find(title: String, artist: String, limit: Int): List<Hit> { calls++; if (down) throw ProviderDown(id, "down"); return hits }
+        }
+        var clock = 1_000_000L
+        val chain = ProviderChain(listOf(spotify), failuresToRest = 99, now = { clock })
+        val found = CompletableDeferred<Unit>()
+        val ids = CatalogTrackIds({ chain }, CoroutineScope(Dispatchers.Default), onFound = { found.complete(Unit) }, retryMs = 60_000, now = { clock })
+        val local = SyncTrack(title = "Song", artists = listOf("Band"), durationMs = 200_000)
+        assertNull(ids.idFor(local, "spotify"))
+        withTimeout(5_000) { while (spotify.calls == 0) delay(10) }
+        delay(100)
+        // Within the retry wait: not asked again.
+        clock += 10_000
+        assertNull(ids.idFor(local, "spotify"))
+        delay(100)
+        assertEquals(1, spotify.calls)
+        // Past it, the network back: asked again and found.
+        down = false
+        clock += 60_000
+        assertNull(ids.idFor(local, "spotify"))
+        withTimeout(5_000) { found.await() }
+        assertEquals("S1", ids.idFor(local, "spotify"))
     }
 
     // ── Updates ──

@@ -313,7 +313,9 @@ class PlaybackService : MediaBrowserServiceCompat() {
     }
 
     private fun apply(raw: NowPlayingInfo) {
-        val info = raw
+        // Every surface fed from here (notification, lock screen, car, Bluetooth) is large: the queue and
+        // the lists hand over the 64/300 px id, whatever the caller did; also the key of the cover cache.
+        val info = raw.coverUrl?.let { raw.copy(coverUrl = Covers.large(it)) } ?: raw
         // A bitmap recycled behind our back (issue #77: "cannot use a recycled source in createBitmap"
         // thrown by MediaMetadata.Builder.build) is dropped and fetched again, never handed to the session.
         if (cover?.isRecycled == true) { cover = null; lastCoverUrl = null }
@@ -420,9 +422,21 @@ class PlaybackService : MediaBrowserServiceCompat() {
         }
     }
 
-    /** The cover as a bitmap of at most [COVER_MAX_PX], from a URL or a local content URI; null on failure. */
+    /** The cover as a bitmap of at most [COVER_MAX_PX], from a Spotify image id, a URL or a local content URI; null on failure. */
     private fun fetchCover(url: String): Bitmap? {
-        for (candidate in listOf(url)) {
+        // The same ids the app resolves for Glide (SpotifyImages.kt): profile and playlist items give them.
+        val resolved = when {
+            url.startsWith("spotify:image:") -> "https://i.scdn.co/image/" + url.removePrefix("spotify:image:")
+            url.startsWith("spotify:mosaic:") -> "https://mosaic.scdn.co/640/" + url.removePrefix("spotify:mosaic:").split(':').joinToString("")
+            else -> url
+        }
+        // An album cover comes in 64, 300 and 640 px under the same id: ask for the 640 one first
+        // (the queue and the next song may only carry the small one), the given size is the fallback.
+        val candidates = listOfNotNull(
+            Covers.large(resolved).takeIf { it != resolved },
+            resolved,
+        ).distinct()
+        for (candidate in candidates) {
             val bytes = runCatching {
                 if (candidate.startsWith("http")) {
                     http.newCall(Request.Builder().url(candidate).build()).execute().use { r ->
@@ -512,7 +526,10 @@ class PlaybackService : MediaBrowserServiceCompat() {
                     .newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "Myspoti:playback")
                     .apply { setReferenceCounted(false) }.also { cpuLock = it }
                 cpu.acquire(LOCK_TIMEOUT_MS)
+                // Log only: dev builds.
+                if (debuggable) ScreenWatch.start(this)
             } else {
+                if (debuggable) ScreenWatch.stop(this)
                 cpuLock?.takeIf { it.isHeld }?.release()
             }
         }
@@ -535,7 +552,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     private fun show(info: NowPlayingInfo) {
         // A cover recycled behind our back since [apply] (the reported crash: "Can't copy a
         // recycled bitmap" building the notification) is dropped and fetched again.
-        if (cover?.isRecycled == true) { cover = null; lastCoverUrl = null; loadCover(info.coverUrl) }
+        if (cover?.isRecycled == true) { cover = null; lastCoverUrl = null; loadCover(info.coverUrl?.let(Covers::large)) }
         // Posted again only when what it shows changed (or its cover came): every post rebuilt the
         // system's media player (shade, lock screen, Now Bar) and copied the artwork once more.
         val renotify = notified?.sameNotification(info) != true || notifiedCover !== cover || !foreground
@@ -785,7 +802,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         /** Added while an episode plays: the notification's 15 s buttons and the keys of the same name. */
         private val SKIP_ACTIONS = PlaybackStateCompat.ACTION_FAST_FORWARD or PlaybackStateCompat.ACTION_REWIND
         private val http = OkHttpClient()
-        /** The largest side kept for artwork: what Android's media controls expect . */
+        /** The largest side kept for artwork: what Android's media controls expect (640 is Spotify's biggest cover). */
         private const val COVER_MAX_PX = 640
         /** About four 640 px covers. */
         private const val COVER_CACHE_BYTES = 8 * 1024 * 1024

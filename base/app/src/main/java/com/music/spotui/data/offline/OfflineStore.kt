@@ -280,7 +280,7 @@ object OfflineStore {
         artist = t.artist,
         album = t.album,
         durationMs = t.durationMs,
-        artUri = coverFile(t)?.let { Uri.fromFile(it) } ?: Uri.parse(t.coverUrl),
+        artUri = coverFile(t)?.let { Uri.fromFile(it) } ?: Uri.parse(app.myspoti.host.android.Covers.large(t.coverUrl)),
         speech = t.isEpisode,
     )
 

@@ -363,6 +363,7 @@ internal fun categoryLabel(c: Category?): Int = when (c) {
     null -> R.string.extensions_cat_all
     Category.LYRICS -> R.string.extensions_cat_lyrics
     Category.PLAYBACK -> R.string.extensions_cat_playback
+    Category.LIBRARY -> R.string.extensions_cat_library
     Category.DISCOVERY -> R.string.extensions_cat_discovery
     Category.STATS -> R.string.extensions_cat_stats
     Category.LOOK -> R.string.extensions_cat_look
@@ -493,7 +494,7 @@ internal fun Page(titleRes: Int?, navController: NavController, title: String? =
     Column(Modifier.fillMaxSize().background(AppBackground).statusBarsPadding()) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(4.dp)) {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lbl_back), tint = AppText)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.accessibility_navigate_back), tint = AppText)
             }
             Text(title ?: stringResource(titleRes!!), color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }

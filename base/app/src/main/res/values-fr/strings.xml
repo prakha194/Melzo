@@ -18,5 +18,8 @@
     <string name="energy_saver_title" tools:ignore="MissingTranslation">Économie d’énergie</string>
     <string name="energy_saver_summary" tools:ignore="MissingTranslation">Canvas désactivés, vidéos et animations allégées</string>
     <string name="playback_seek_description" tools:ignore="MissingTranslation">Position de lecture</string>
+    <string name="account_page_title">Compte Spotify</string>
+    <string name="account_page_detail">Abonnement, confidentialité et appareils, sur spotify.com</string>
     <string name="player_source_downloaded">Téléchargé</string>
+    <string name="extension_change_write">Peut aussi envoyer à Spotify : %1$s</string>
 </resources>

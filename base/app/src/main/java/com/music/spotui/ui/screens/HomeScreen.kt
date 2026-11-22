@@ -139,7 +139,7 @@ fun HomeScreen(navController: NavController){
 @Composable
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 fun HomeFeedContent(navController: NavController, feed: HomeFeedModel, facet: String = "", onFacet: (String) -> Unit = {}) {
-    // Sections render in the order the feed
+    // Mirror open.spotify.com exactly: sections render in the order the feed
     // returns them. The 2-column "shortcuts" grid is only used for the UNTITLED
     // section the web home starts with — if the feed leads with a titled section
     // ("Jump back in", "Made For …"), it renders as a titled carousel first,
@@ -155,7 +155,7 @@ fun HomeFeedContent(navController: NavController, feed: HomeFeedModel, facet: St
     val carousels = remember(sections, gridSection) { if (gridSection != null) sections.drop(1) else sections }
     val carouselKeys = remember(carousels) { uniqueKeys(carousels.map { it.title }) }
     // Liked Songs leads the shortcuts when Spotify's grid does not carry it.
-    val likedName = stringResource(R.string.lbl_liked_songs)
+    val likedName = stringResource(R.string.collection_liked_songs_title)
     val shortcuts = remember(gridSection, sections, facet, likedName) { homeShortcuts(gridSection?.items, sections.isEmpty(), facet, likedName) }
     // The shortcuts at the top load in the background, ready before a tap.
     androidx.compose.runtime.LaunchedEffect(shortcuts) { prefetchHomeShortcuts(shortcuts) }
@@ -246,7 +246,7 @@ private fun HomeHeaderRow(navController: NavController, facet: String, onFacet: 
                 GlideImage(
                     model = avatarUrl,
                     contentScale = ContentScale.Crop,
-                    contentDescription = stringResource(R.string.lbl_profile),
+                    contentDescription = stringResource(R.string.recently_played_user_profile),
                     modifier = Modifier.size(34.dp),
                 )
             } else {
@@ -280,12 +280,12 @@ private fun HomeHeaderRow(navController: NavController, facet: String, onFacet: 
             // Spotify's home chips. Once one is picked, as in Spotify: a close chip, the picked one,
             // and joined to it the chips it opens (Following: only what the user follows).
             val labels = mapOf(
-                "music-chip" to stringResource(R.string.lbl_filter_music),
-                "podcasts-chip" to stringResource(R.string.lbl_podcasts),
-                "audiobooks-chip" to stringResource(R.string.lbl_audiobooks),
+                "music-chip" to stringResource(R.string.recents_content_filter_music),
+                "podcasts-chip" to stringResource(R.string.ad_category_title_podcasts),
+                "audiobooks-chip" to stringResource(R.string.audiobooks_title),
             )
             if (facet.isEmpty()) {
-                HomePill(stringResource(R.string.lbl_filter_all), selected = true) {}
+                HomePill(stringResource(R.string.filter_chip_all_label), selected = true) {}
                 HomePill(labels.getValue("music-chip")) { onFacet("music-chip") }
                 if (com.music.spotui.data.api.Features.PODCASTS) {
                     HomePill(labels.getValue("podcasts-chip")) { onFacet("podcasts-chip") }
@@ -298,7 +298,7 @@ private fun HomeHeaderRow(navController: NavController, facet: String, onFacet: 
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.clip(CircleShape).background(tone(0xFF2A2A2A)).clickable { onFacet("") }.padding(8.dp),
                 ) {
-                    Icon(androidx.compose.material.icons.Icons.Filled.Close, contentDescription = stringResource(R.string.lbl_filter_all),
+                    Icon(androidx.compose.material.icons.Icons.Filled.Close, contentDescription = stringResource(R.string.filter_chip_all_label),
                         tint = AppText, modifier = Modifier.size(18.dp))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -427,7 +427,7 @@ private fun HomeFeedCard(item: HomeItem, onClick: () -> Unit) {
     val subtitle = when (item) {
         is HomeItem.Album -> item.subtitle
         is HomeItem.Playlist -> item.subtitle
-        is HomeItem.Artist -> stringResource(R.string.lbl_artist)
+        is HomeItem.Artist -> stringResource(R.string.artist_subtitle)
         is HomeItem.Show -> item.subtitle
     }
     Column(
@@ -493,7 +493,7 @@ private fun WhatsNewBell(onClick: () -> Unit) {
     }
 }
 
-/** Profile sheet behind the avatar: settings, recap, extensions, support and about. */
+/** Profile sheet behind the avatar: account name and sign-out (in the Web Player). */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 private fun ProfileSheet(onOpen: (route: String) -> Unit = {}, onDismiss: () -> Unit) {
@@ -525,7 +525,7 @@ private fun ProfileSheet(onOpen: (route: String) -> Unit = {}, onDismiss: () -> 
                 Modifier.fillMaxWidth().clickable { onOpen(com.music.spotui.ui.navigation.Routes.Settings.route) }
                     .padding(horizontal = 20.dp, vertical = 10.dp),
             ) {
-                Text(stringResource(R.string.settings_screen_title), color = AppText, fontSize = 16.sp)
+                Text(stringResource(R.string.settings_title), color = AppText, fontSize = 16.sp)
                 Text(stringResource(R.string.settings_detail), color = AppMuted, fontSize = 12.sp)
             }
             // In-app recap: every listen on this phone, Spotify, downloads and local files.
@@ -542,7 +542,7 @@ private fun ProfileSheet(onOpen: (route: String) -> Unit = {}, onDismiss: () -> 
                 Modifier.fillMaxWidth().clickable { onOpen(com.music.spotui.ui.navigation.Routes.Recent.route) }
                     .padding(horizontal = 20.dp, vertical = 10.dp),
             ) {
-                Text(stringResource(R.string.recent_title), color = AppText, fontSize = 16.sp)
+                Text(stringResource(R.string.recents_title), color = AppText, fontSize = 16.sp)
                 Text(stringResource(R.string.recents_detail), color = AppMuted, fontSize = 12.sp)
             }
             // Third-party extensions (lyrics, audio, scripts): installed, enabled, repositories.
@@ -564,24 +564,24 @@ private fun ProfileSheet(onOpen: (route: String) -> Unit = {}, onDismiss: () -> 
                 androidx.compose.material3.Icon(Icons.Filled.Extension, null, tint = AppMuted,
                     modifier = Modifier.padding(start = 12.dp).size(22.dp))
             }
-            val ctx = androidx.compose.ui.platform.LocalContext.current
-            // Donations (Ko-fi or GitHub Sponsors): always here, never in the way.
-            var support by remember { androidx.compose.runtime.mutableStateOf(false) }
-            if (support) com.music.spotui.ui.components.SupportSheet(onDismiss = { support = false })
+            // The Spotify account page (plan, privacy, devices), in the app's signed-in browser.
             androidx.compose.foundation.layout.Column(
-                Modifier.fillMaxWidth().clickable { support = true }
-                    .padding(horizontal = 20.dp, vertical = 10.dp),
+                Modifier.fillMaxWidth().clickable {
+                    onDismiss()
+                    com.music.spotui.ui.screens.AccountBrowser.open(com.music.spotui.di.Graph.app, com.music.spotui.ui.screens.AccountBrowser.ACCOUNT_URL)
+                }.padding(horizontal = 20.dp, vertical = 10.dp),
             ) {
-                Text(stringResource(R.string.support_title), color = com.music.spotui.ui.theme.AppAccent, fontSize = 16.sp)
-                Text(stringResource(R.string.support_row_detail), color = AppMuted, fontSize = 12.sp)
+                Text(stringResource(R.string.account_page_title), color = AppText, fontSize = 16.sp)
+                Text(stringResource(R.string.account_page_detail), color = AppMuted, fontSize = 12.sp)
             }
-            // About: version, Discord, source code and Ko-fi.
+            val ctx = androidx.compose.ui.platform.LocalContext.current
+            // About: version, source code, update channel.
             var about by remember { androidx.compose.runtime.mutableStateOf(false) }
             if (about) com.music.spotui.ui.components.AboutSheet(onDismiss = { about = false })
             androidx.compose.foundation.layout.Column(
                 Modifier.fillMaxWidth().clickable { about = true }.padding(horizontal = 20.dp, vertical = 10.dp),
             ) {
-                Text(stringResource(R.string.lbl_bio), color = AppText, fontSize = 16.sp)
+                Text(stringResource(R.string.creator_biography_section_title), color = AppText, fontSize = 16.sp)
                 Text(stringResource(R.string.about_detail), color = AppMuted, fontSize = 12.sp)
             }
             var perks by remember { androidx.compose.runtime.mutableStateOf(false) }
@@ -592,6 +592,26 @@ private fun ProfileSheet(onOpen: (route: String) -> Unit = {}, onDismiss: () -> 
                 Text(stringResource(R.string.supporter_perks_title), color = AppText, fontSize = 16.sp)
                 Text(stringResource(R.string.supporter_perks_detail), color = AppMuted, fontSize = 12.sp)
             }
+            // The other Spotify accounts kept on the phone: switch, add, remove.
+            var accounts by remember { androidx.compose.runtime.mutableStateOf(false) }
+            if (accounts) com.music.spotui.ui.components.AccountsSheet(onDismiss = { accounts = false }, onLeave = { accounts = false; onDismiss() })
+            androidx.compose.foundation.layout.Column(
+                Modifier.fillMaxWidth().clickable { accounts = true }.padding(horizontal = 20.dp, vertical = 10.dp),
+            ) {
+                Text(stringResource(R.string.accounts_switch_row), color = AppText, fontSize = 16.sp)
+                Text(com.music.spotui.ui.components.switchAccountDetail(), color = AppMuted, fontSize = 12.sp)
+            }
+            Text(
+                stringResource(R.string.connect_device_menu_logout),
+                color = AppText, fontSize = 16.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onDismiss()
+                        com.music.spotui.di.SessionActions.logout(com.music.spotui.di.Graph.app)
+                    }
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+            )
         }
     }
 }

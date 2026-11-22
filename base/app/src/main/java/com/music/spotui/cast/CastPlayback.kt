@@ -318,7 +318,7 @@ object CastPlayback {
 
     private fun coverUrl(t: LocalTrack): String? {
         val art = t.artUri.toString().takeIf { it.isNotBlank() } ?: return null
-        val large = art
+        val large = runCatching { app.myspoti.host.android.Covers.large(art) }.getOrDefault(art)
         if (large.startsWith("https://") || large.startsWith("http://")) return large
         val u = Uri.parse(large)
         return if (u.scheme == "content" || u.scheme == "file" || u.scheme == "android.resource")

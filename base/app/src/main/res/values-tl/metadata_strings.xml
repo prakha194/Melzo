@@ -7,5 +7,6 @@
     <string name="metadata_asked">Tinatanong</string>
     <string name="metadata_off">Naka-off: hindi kailanman tinatanong</string>
     <string name="metadata_reset">Bumalik sa default na pagkakasunod</string>
+    <string name="metadata_not_on_spotify">Hindi nakita sa Spotify: hindi pa ito mapapatugtog</string>
     <string name="metadata_switch">Tanungin ang %1$s</string>
 </resources>

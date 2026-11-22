@@ -164,7 +164,7 @@ fun rememberImmersivePlayer(navController: NavController): ImmersivePlayerBridge
         artist = outgoing?.song?.artist ?: singer,
         trackId = com.music.spotui.ui.viewmodel.confirmedTrackIdForDisplay(np.uri, songId),
         album = album,
-        coverUrl = cover,
+        coverUrl = app.myspoti.host.android.Covers.large(cover),
         playing = playing,
         buffering = buffering,
         positionMs = remember(outgoing) { outgoing?.let { o -> { o.positionMs() } } ?: { SongPlayer.getCurrentPosition() } },

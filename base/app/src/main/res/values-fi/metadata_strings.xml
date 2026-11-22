@@ -7,5 +7,6 @@
     <string name="metadata_asked">Kysytään</string>
     <string name="metadata_off">Pois: ei koskaan kysytä</string>
     <string name="metadata_reset">Palauta oletusjärjestys</string>
+    <string name="metadata_not_on_spotify">Ei löytynyt Spotifysta: kappaletta ei voi vielä toistaa</string>
     <string name="metadata_switch">Kysy palvelulta %1$s</string>
 </resources>

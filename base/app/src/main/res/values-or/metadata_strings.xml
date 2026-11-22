@@ -7,5 +7,6 @@
     <string name="metadata_asked">ପଚରାଯାଏ</string>
     <string name="metadata_off">ବନ୍ଦ: କେବେ ପଚରାଯାଏ ନାହିଁ</string>
     <string name="metadata_reset">ଡିଫଲ୍ଟ କ୍ରମକୁ ଫେରନ୍ତୁ</string>
+    <string name="metadata_not_on_spotify">Spotify ରେ ମିଳିଲା ନାହିଁ: ଏହି ଗୀତ ଏପର୍ଯ୍ୟନ୍ତ ବଜାଯାଇପାରିବ ନାହିଁ</string>
     <string name="metadata_switch">%1$s କୁ ପଚାରନ୍ତୁ</string>
 </resources>

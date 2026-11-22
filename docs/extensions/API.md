@@ -1,10 +1,11 @@
-# Orpheon extensions: API for authors
+# Myspoti extensions: API for authors
 
 An extension is a small JavaScript file plus a `manifest.json`. Myspoti runs it in a sandbox. What
 it may do is a list of **actions** from a closed catalogue the app defines (section 4): provide
 lyrics, their romanization or song details, add Home sections, search results, menu entries or player buttons (as
 native blocks the app draws itself, section 3), give a song's audio or download files, show its own
-web page, sign in on a website, and react to the song playing. Each action has a fixed icon, a short label, a level (normal or critical) and the
+web page, sign in on a website, react to the song playing, and, if the user allows it, read or change the signed-in
+Spotify account. Each action has a fixed icon, a short label, a level (normal or critical) and the
 API it unlocks; the user sees them as icons, each with your reason, before installing.
 
 This page documents what the build ships (API version 1). Nothing here is a promise about
@@ -13,9 +14,9 @@ anything else.
 Look-only extensions (colours, hidden parts, tab order, text size, fixed Home blocks, all declared
 in the manifest and applied by the app) are described in [UI-LOOKS.md](UI-LOOKS.md).
 
-Concurrent source resolution is described in [SOURCE-PIPELINES.md](SOURCE-PIPELINES.md).
-Providers and recording matching remain extension responsibilities. The app never decrypts media
-for an extension: an answer with a `transform` is refused.
+Feature-gated media transforms and concurrent source resolution are described in
+[SOURCE-PIPELINES.md](SOURCE-PIPELINES.md). Providers and recording matching remain
+extension responsibilities; the host keeps its existing safe media transport.
 
 ## 1. A minimal extension
 
@@ -60,7 +61,7 @@ zip, 1 MB for the script, 256 KB for the icon. The zip is built the same way eve
 order and dates), so anyone can rebuild it and compare the sha256.
 
 How an extension reaches people: its own GitHub repository, found by the store through the topic
-`myspoti-extension` (section 8), the official repository's optional list of verified extensions or a repository the user adds at their own risk. A repository is a folder of packages
+`myspoti-extension` (section 9), the official repository's optional list of verified extensions or a repository the user adds at their own risk. A repository is a folder of packages
 and an `index.json` (`myspoti-ext index <folder> <name>` writes it). The index can also list
 extensions every Myspoti must turn off (`blocked`: an id, optionally some package sha256, a reason).
 
@@ -93,8 +94,8 @@ responsibility", which enables Install. There is no per-action choice: an extens
 action it lists, or is not installed. The official repository is suggested, never added without the user.
 
 **Installed** is organised **by area**: Playback, Lyrics & song info, Audio & downloads, Home &
-search, Menus & player, Library, Pages & more. Each area opens with a **Built-in** row (a
-dropdown of what Orpheon does there by itself, e.g. Lyrics: LRCLIB, NetEase, KuGou,
+search, Menus & player, Library & Spotify, Pages & more. Each area opens with a **Built-in** row (a
+dropdown of what Myspoti does there by itself, e.g. Lyrics: Spotify, LRCLIB, NetEase, KuGou,
 Lyrics+, Genius; built-in sources are not extensions), then the extensions acting there with their
 switch and action icons, in the user's order (arrows). A newly installed extension is placed first in each area and in
 the audio and download source orders it gives; an update keeps the user's order. That order
@@ -125,7 +126,7 @@ extensions did there ("Lyrics of X from Y", "Skipped by Z") with a one-tap Turn 
 | `replaces` | string[] | `[]` | Extension ids this one takes the place of (10 at most): installing it offers to turn them off. |
 | `conflictsWith` | string[] | `[]` | Extension ids that must not run with this one (10 at most): the user picks which to keep. Either side declaring it is enough. |
 | `icon` | string | none | A `.png` at the root of the package (square, 256 px or less). Without it, `icon.png` is used if the package has one, else a tile with the name's first letter. |
-| `category` | string | `other` | Where the store files it, one of a fixed list: `lyrics` (needs `lyrics.provide`, `lyrics.romanize` or `trackinfo.provide`), `playback` (Playback & audio: a `playback.*`, `audio.source` or `player.buttons` action), `discovery` (`home.sections` or `search.provide`), `stats` (`playback.events`), `look` (Look & feel: a blocks action, `webview.page` or `ui.style`), `social` (`network`), `tools`, `other`. A category the actions do not fit, or an unknown one, is filed under `other` (`myspoti-ext check` says so); an extension with `download.source` is always under `tools`. `tags` are shown and found by the search, not filtered on. |
+| `category` | string | `other` | Where the store files it, one of a fixed list: `lyrics` (needs `lyrics.provide`, `lyrics.romanize` or `trackinfo.provide`), `playback` (Playback & audio: a `playback.*`, `audio.source` or `player.buttons` action), `library` (`library.read`, `library.write` or `playlists.write`), `discovery` (`home.sections`, `search.provide` or `spotify.catalog`), `stats` (`playback.events` or `library.read`), `look` (Look & feel: a blocks action, `webview.page` or `ui.style`), `social` (`network`, `library.read` or `spotify.catalog`), `tools`, `other`. A category the actions do not fit, or an unknown one, is filed under `other` (`myspoti-ext check` says so); an extension with `download.source` is always under `tools`. `tags` are shown and found by the search, not filtered on. |
 | `tags` | string[] | `[]` | 8 at most, each 1 to 24 characters: lower case letters, digits, spaces, `-`. The store's search finds them. |
 | `minAppVersion` | string | none | The oldest Myspoti it works on (`"2.0.2"`, `"2.0.2-beta.4"`), compared like semantic versions (a release is newer than its betas). An older Myspoti shows "Requires Myspoti 2.0.2 or newer" and does not install it. |
 | `changelog` | string | `""` | What changed in this version, 2000 characters at most: shown on the store page and before an update. |
@@ -190,7 +191,9 @@ A setting: `{ "key", "type", "label", "description", "default", "options", "sect
   drawn as on your page (same value: changing it in one place changes it in the other). Only the
   **first source** of the user's order shows its settings there:
   - Playback: the first source of the audio order (section 3, `audio-source`), when it is your
-    extension, and turned on.
+    extension, above Spotify, and turned on. Spotify's own Wi-Fi and mobile data quality then leave
+    that screen (they keep their value, and Spotify still uses it for the songs it plays); moving
+    Spotify back to the top brings them back and your settings stay on your page only.
   - Downloads: the first extension of the download order, turned on. The app's own download
     quality leaves that screen only for your `role: quality` setting; the app still sends its own
     value as `quality` to every extension in `download-source`.
@@ -205,7 +208,7 @@ A setting: `{ "key", "type", "label", "description", "default", "options", "sect
 - `perNetwork` (optional, `true`; for `choice`, `toggle`, `number`, `text`): one value on Wi-Fi and
   one on mobile data, both shown ("<label> · Wi-Fi", "<label> · Mobile data").
   `myspoti.settings.get(key)` still gives one plain value: the one of the network the phone is on,
-  by the app's own rule (a metered network is mobile data, Wi-Fi
+  by the app's own rule for Spotify's streaming quality (a metered network is mobile data, Wi-Fi
   otherwise). Until the user sets the mobile data value it is the Wi-Fi one, then `default`. When
   the phone changes network and the value `get` gives changes with it, the `setting` event comes
   with `{ key, network: true }` (section 3). Ignored on `secret` and `button` (check refuses it).
@@ -226,7 +229,7 @@ A downloader with a quality choice and a button (its manifest also lists `settin
 ```
 
 A sound source (actions `audio.source` and `settings.page`) that shows its quality, one per
-network, and a switch in Settings → Playback while it is first:
+network, and a switch in Settings → Playback while it is above Spotify:
 
 ```json
 "settings": [
@@ -300,9 +303,7 @@ The input of every hook, and of the `track` event, is this track:
 { id, uri, title, artist, artists, album, durationMs, isrc?, cover? }
 ```
 
-`id` is the song's id in the app: `<provider>.<id>` for a catalog song (`deezer.3135556`, `uri` then
-`deezer:track:3135556`), empty for a local file; songs saved by an older version may still carry an
-old id. `artist` the first of `artists`. `isrc` and
+`id` is Spotify's track id (empty for a local file), `artist` the first of `artists`. `isrc` and
 `cover` are absent when unknown (`null` inside a `playback` event).
 
 ### `lyrics`
@@ -378,8 +379,9 @@ romanizer calls a server.
 
 ### `audio-source`
 
-Where the audio of a song is. The song then plays in Orpheon's own player, like a download.
-Action: `audio.source` (critical, ordered: the sources are asked in the user's order).
+Where the audio of a song is. The song then plays in Myspoti's own player, like a download;
+Spotify's player does not play it. Action: `audio.source` (critical, ordered: the sources are
+asked in the user's order, Spotify included; the ones under Spotify are not asked).
 
 ```js
 { url: 'https://cdn.example.com/a.m4a',   // http or https, not a local address; required
@@ -398,7 +400,7 @@ file, seekable. Check `myspoti.features.indexOf('audio.manifest') >= 0` first: a
 no `features` and needs a `url`. The song is asked for 10 s after the one before starts, so it starts
 at once.
 
-The song comes with its `isrc` when the catalog knows it,
+The song comes with its `isrc` when Spotify knows it (asked from its catalogue if the list lacked it),
 and `ahead`: `true` when the app asks before the song plays (the next song of the queue, 10 s after
 the one before starts), `false` when it is about to play. An answer given ahead is kept and played as
 it is when the song comes (it is not asked again), so it must be just as playable; only the urgency
@@ -417,15 +419,19 @@ private address is an error. Note the returned `url` is checked for being public
 `network` hosts.
 
 **When it is asked.** Every play of a song goes to the active `audio-source` extension first,
-wherever it starts: a list or an album, a search result, an artist, Home, Recents, shuffle,
-another extension's block. It is asked for the picked song (or,
+wherever it starts: a list or an album, a search result, an artist, Home, Recents, shuffle, a
+Spotify link opened with Myspoti, another extension's block. It is asked for the picked song (or,
 for shuffle, a random one of the list); with an answer, that song plays in Myspoti's own player and
 the rest of the list follows as the queue, each song asked when its turn comes. Without an answer,
-the song is not played and the user is told. A song already downloaded plays from its file.
-Episodes, and plays while offline or with data saver on, never ask.
+the song plays on Spotify as usual. A song already downloaded plays from its file. Episodes, plays
+while offline or with data saver on, and plays while another Spotify Connect device is playing,
+never ask.
 
-**In the player.** Like, lyrics and queue work as usual, and "Play next" / "Add to queue" go into Myspoti's own queue (each song asked when its turn
-comes). Your extension's name, then that quality line, is shown under the output device (a tap opens the sound-quality sheet), and your name beside the artist in the mini player.
+**In the player.** The song stays the Spotify song: like, lyrics, Canvas, clip and queue work as
+usual, and "Play next" / "Add to queue" go into Myspoti's own queue (each song asked when its turn
+comes). Your extension's name, then that quality line, is shown under the output device (a tap opens the sound-quality sheet), and your name beside the artist in the mini player. Picking a
+Spotify Connect device hands the song, its list and its place over to that device, played by
+Spotify.
 
 **An address that expires.** An answer is reused about ten minutes (seeks, replays), or
 `expiresInMs` when it is shorter (milliseconds from your answer; ten minutes at most, `0` or less:
@@ -482,7 +488,7 @@ file. Anything else a service needs (another manifest layout, decryption, an API
 segment, a token refresh) is yours to do: hand over a plain file `url`, or a manifest in that form.
 Myspoti keeps the first file that passes the checks: a FLAC must be
 a real FLAC file (its header is read), an `m4a` or `mp3` must hold an audio track the phone can
-read, and the length must be the song's (the catalog's duration): not shorter by more than 5 s
+read, and the length must be the song's (Spotify's duration): not shorter by more than 5 s
 (previews are refused) nor longer by more than 15 s (another version). `m4a` and `mp3` are kept as
 served. A format outside the list, a private address or a missing `format` is an error. All
 download extensions are asked at once; their files are tried best fit to `quality` first (hi-res:
@@ -512,7 +518,7 @@ myspoti.provide('status', function () {
 - **Budget**: 5 s. Keep it to one cheap request. A call already running for that extension (a
   song's audio) is not interrupted: the probe is skipped and asked again later.
 - **Effect**: `live: false` makes the extension **inactive**: it is skipped for `audio-source` and `download-source` (the next
-  extension in the area's order is asked, or the song is not played), its row and page say
+  extension in the area's order is asked, or the song plays from Spotify), its row and page say
   "Inactive" with your `detail`. It stays on, is not counted as failing and is not turned off; the
   next answer `live: true` makes it active again at once. Its other hooks keep being asked. A
   throw, an answer that is not `{ live }` or no answer in 5 s proves nothing (a busy phone, a slow
@@ -551,7 +557,7 @@ Every field is optional; `detail` is trimmed to 120 characters. An unknown `outc
 Every outcome, the ones the app classifies itself too (`found`, `not-found`, `network` for a timeout
 or an `http` error, `bug` for a throw), is written to your extension's log with its time. Three
 network errors in a row also set a source aside (30 s, doubling up to 15 min). While a source is set
-aside the next one is asked, or the song is not played. The player's sound quality sheet has
+aside the next one is asked, or the song plays from Spotify. The player's sound quality sheet has
 **Why this source?**: for the song playing, each source asked with its outcome and time, the ones
 skipped and why, the one chosen, how its address opened (time, HTTP status, error), the quality it
 announced and the one the player's decoder reports (its input, not proof of a bit-perfect output).
@@ -569,7 +575,8 @@ remove a listener.
 ### `playback` event
 
 `myspoti.on('playback', function (e) { ... })`: what happens to the song playing, in Myspoti's own
-player (downloads, local files, songs from an `audio-source` extension). Same rules as `track` (`playback.events`, 3 s per delivery, errors swallowed). Events arrive in
+player (downloads, local files, songs from an `audio-source` extension) and in the Spotify Web
+Player. Same rules as `track` (`playback.events`, 3 s per delivery, errors swallowed). Events arrive in
 order, one at a time.
 
 ```
@@ -577,16 +584,16 @@ order, one at a time.
   track,         // the track of this section
   positionMs, durationMs,
   timestamp,     // ms since 1970, UTC, when it happened
-  source,        // "local": Orpheon's own player
+  source,        // "local": Myspoti's own player; "spotify": the Web Player
   contextUri,    // the list, album or artist it plays from; "" when unknown (a local file)
   shuffle,       // true or false
   reason,        // see below; null for progress, pause, resume
   playedMs,      // time actually played of this song so far (pauses and seeks excluded)
-  origin,        // where the audio comes from: "download", "audio-source", "local-file"
-  providerId }   // id of the extension that supplied the file or the stream; null when unknown
+  origin,        // where the audio comes from: "spotify", "download", "audio-source", "local-file"
+  providerId }   // id of the extension that supplied the file or the stream; null for Spotify
 ```
 
-`origin`: `download` a song downloaded with a `download-source`
+`origin`: `spotify` is Spotify's own stream; `download` a song downloaded with a `download-source`
 extension (`providerId` is that extension; null for a download made before Myspoti kept it);
 `audio-source` a stream an `audio-source` extension gave (`providerId` is the one that answered);
 `local-file` a file on the phone that is not a download (`providerId: null`). An extension can use it
@@ -616,14 +623,13 @@ that breaks a rule fails the whole answer (a failure, like a throw).
 |---|---|---|
 | `section` | `title`, `subtitle?`, `blocks` (12 at most, no section inside) | Home, search, song details. On Home, loose blocks are gathered in one untitled section. |
 | `card` | `title`, `subtitle?`, `image?`, and `open` or `action` | Home, search, song details |
-| `tracks`, `albums`, `playlists`, `artists` | `title?`, `items`: `[{ uri, title, subtitle?, image? }]` (50 at most; `uri` a catalog item uri of that kind, `deezer:album:302127`) | Home, search, song details. A song plays, the rest opens its page. |
+| `tracks`, `albums`, `playlists`, `artists` | `title?`, `items`: `[{ uri, title, subtitle?, image? }]` (50 at most; `uri` a `spotify:` uri of that kind) | Home, search, song details. A song plays, the rest opens its page. |
 | `button` | `label` (40), `icon`, `action` | Home, search, song details, the player |
 | `menu` | `label` (40), `icon`, `action` | ⋯ menus only |
 | `text` | `text` (1000), `style`: `title`, `body` (default), `caption` | Home, search, song details |
 | `image` | `url`, `ratio?` (0.5 to 3, default 1.78), `open` or `action` | Home, search, song details |
 
-- `open`: the uri of a track, album, playlist or artist of a catalog provider (`deezer`, `itunes`,
-  `musicbrainz`, `ytmusic`, `tidal`: `deezer:album:302127`); the app opens it, a track plays.
+- `open`: a `spotify:` uri of a track, album, playlist, artist, show or episode; the app opens it.
   Nothing else can be opened: no web address, no app screen.
 - `action`: 1 to 64 letters, digits, `_ . : -`. A tap calls your `tap` hook with
   `{ action, surface, context }` (`context`: the place, e.g. the menu's `{ kind, uri, title }`).
@@ -687,7 +693,7 @@ myspoti.on('auth', function (e) {
 `intent:`, `http:` and the like are refused.
 
 The page opens full screen in a web view with its own profile for each extension. Its cookies and
-storage are never the app's, and the extension never gets them. The profile persists
+storage are never the app's or Spotify's, and the extension never gets them. The profile persists
 between sign-ins of the same extension. Cookies, POST forms, redirects and iframes work as in a browser.
 
 The callback is caught on links, on redirects, and on a form POSTed to an https callback. The POST
@@ -758,7 +764,8 @@ myspoti.on('setting', function (e) {
 
 The closed catalogue. The icon is the Material Rounded icon the app draws; the user sees the icon,
 the label and your `why`. **Critical** actions are shown in the warning colour and explained; the
-app frames them at run time (audio and downloads are asked in the user's order; pages are locked down, sign-in pages have their own profile). The sandbox enforces exactly what the manifest
+app frames them at run time (destructive Spotify writes are confirmed one by one, section 6; audio
+and downloads are asked in the user's order; pages are locked down, sign-in pages have their own profile). The sandbox enforces exactly what the manifest
 declares: a call outside it throws (`"x is not in this extension's manifest (actions)"`). The user
 cannot untick single actions: installing grants all of them. An extension installed by an older
 Myspoti that let the user untick some stays off, with a "Waits for your OK" card on its page,
@@ -766,8 +773,9 @@ until the user accepts them all with the same tick.
 
 | Action | Icon | Label | Level | Mode | Unlocks |
 |---|---|---|---|---|---|
-| `playback.control` | PlayCircle | Control playback | normal | shared | `myspoti.player.play/pause/next/previous/seek` |
-| `playback.events` | GraphicEq | Know what you play | normal | shared | `myspoti.player.current()`, `myspoti.on('track' \| 'playback')` |
+| `playback.control` | PlayCircle | Control playback | normal | shared | `myspoti.player.play/pause/next/previous/seek`; `spotify.player` play, pause, resume, seek, next, previous, shuffle, repeat, volume, speed, skipTo; `spotify.devices` transfer, pullHere |
+| `playback.queue` | QueueMusic | Edit the queue | normal | shared | `spotify.player` addToQueue, playNext, moveInQueue, removeFromQueue, clearQueue |
+| `playback.events` | GraphicEq | Know what you play | normal | shared | `myspoti.player.current()`, `myspoti.on('track' \| 'playback')`, `spotify.player` state, queue, volume, media (`myspoti.spotify.media`) |
 | `lyrics.provide` | Lyrics | Provide lyrics | normal | additive, takeover | `lyrics` hook |
 | `lyrics.romanize` | Abc | Romanize lyrics | normal | additive, takeover | `lyrics-romanize` hook |
 | `trackinfo.provide` | Info | Add song details | normal | additive, takeover | `trackinfo` hook |
@@ -779,11 +787,16 @@ until the user accepts them all with the same tick.
 | `player.buttons` | SmartButton | Add player buttons | normal | additive, takeover | `player` hook |
 | `settings.page` | Tune | Its own settings | normal | takeover | manifest `settings`, `myspoti.settings`, `setting` event |
 | `notify` | Notifications | Show short messages | normal | shared | `myspoti.notify` |
+| `library.read` | LibraryMusic | Read your library | normal | shared | `spotify` library, own playlists, users, recents, devices.list, saved episodes, Blends (reads), recent searches, What's new |
+| `library.write` | LibraryAdd | Change your library | **critical** | shared | `spotify` library edits, follows, private session, taste and bans, saved episodes, clear recent searches |
+| `playlists.write` | PlaylistAdd | Edit your playlists | **critical** | shared | `spotify.playlists` edits, `spotify.blends` invite/join/rename/leave |
+| `spotify.catalog` | Album | Browse Spotify | normal | shared | `spotify` search, catalog, public playlists, home, podcasts, extras |
+| `spotify.raw` | Code | Full Spotify access | **critical** | shared | `spotify.raw` (GraphQL, page services, Spotify URLs); `raw.request` writes can be kept with Always allow (section 6) |
 | `network` | Public | Use the internet | normal (`"*"`: **critical**, "Use any website") | shared | `myspoti.http` to the listed hosts; `myspoti.work.whenOnline()` and the `online` event |
 | `webview.page` | Web | Its own web page | **critical** | takeover | `page` and `message` hooks, `myspoti.page.post` |
 | `webview.auth` | Key | Sign in on a website | **critical** | takeover | `myspoti.auth.open`, `auth` event |
 | `storage` | Save | Keep its own data | normal | shared | `myspoti.storage` (512 KB) |
-| `attest` | Fingerprint | Prove this is Myspoti | normal | shared | `myspoti.attest` (section 9) |
+| `attest` | Fingerprint | Prove this is Myspoti | normal | shared | `myspoti.attest` (section 10) |
 | `ui.style` | Palette | Change the look | normal | takeover | manifest `ui`: colours, hidden parts, tab order, text size, Home blocks ([UI-LOOKS.md](UI-LOOKS.md)); never on a protected surface (4.3) |
 
 ### 4.1 Old manifests
@@ -791,7 +804,9 @@ until the user accepts them all with the same tick.
 A manifest with `provides` and `permissions` (before actions) still loads, installs and runs. Its
 keys become actions: `lyrics` → `lyrics.provide`, `audio-source` → `audio.source`,
 `download-source` → `download.source`, `network` → `network`, `notify` → `notify`, `player.read` →
-`playback.events`, `player.control` → `playback.control`; other old keys are refused; `storage`
+`playback.events`, `player.control` → `playback.control`, `spotify.catalog` → `spotify.catalog`,
+`spotify.library.read` → `library.read` + `playback.events`, `spotify.write` → `library.write` +
+`playlists.write` + `playback.control` + `playback.queue`, `spotify.raw` → `spotify.raw`; `storage`
 (and `settings.page` with settings) are added, as every old extension had them. A permission named
 after a hook still gives that action's `why` (cut to 80 characters); a critical one still needs 15
 characters or more. What an installed extension was granted, and the priorities per hook, are
@@ -803,13 +818,17 @@ migrated the same way when the app starts.
   answers are merged in the area's order, duplicates dropped, quotas per extension (section 3).
 - **Ordered** actions (`audio.source`, `download.source`): every source is asked in the order the
   user sets in Settings (Playback, Downloads), each action its own order, until one answers. A new
-  source goes last; installing a second one asks nothing.
+  source goes last; installing a second one asks nothing. For audio, Spotify has its place in the
+  order too (last until moved): the sources under it are not asked.
 - `conflictsWith` / `replaces`: "Incompatible with X (installed)" / "Replaces X (installed)" in the
   store, and the install or turn-on prompt asks which to keep; the one not kept is turned off (or the
   new one installs turned off).
-- **Playback arbiter.** Every playback command from an extension (`myspoti.player.*`) goes through the app. Two extensions' commands of the same kind (play/pause,
+- **Playback arbiter.** Every playback command from an extension (`myspoti.player.*`,
+  `spotify.player` play/pause/resume/seek/next/previous/shuffle/repeat/skipTo, `spotify.devices`
+  transfer) goes through the app. Two extensions' commands of the same kind (play/pause,
   next/previous/skip, seek, shuffle/repeat) within 2 s: the one higher in the Playback area wins
-  (a lower one after it is dropped: `myspoti.player.*` returns `false`). The same two contradicting each other 3 times within 30 s: the lower one's playback
+  (a lower one after it is dropped: `myspoti.player.*` returns `false`, `spotify.player.*` returns
+  `null`). The same two contradicting each other 3 times within 30 s: the lower one's playback
   commands are suspended and the user is told, with a Turn off button. At most 20 commands a minute
   per extension.
 - **Isolation.** Each extension has its own thread, storage, settings, log and sign-in profile; no API names another
@@ -820,10 +839,10 @@ migrated the same way when the app starts.
 
 No extension can hide, delay, cover, restyle or observe these: the owner's donation reminder and
 Support sheets, the "New version" card, the install prompt (warnings, third-party notice), the
-confirmations of critical actions (granting a critical action), the
+confirmations of critical actions (destructive Spotify changes, granting a critical action), the
 Report button (beta logs) and what it opens, About (version, credits, source, legal).
 
-- No action, hook, block or `open` uri targets them (blocks open only the app's own content; a test
+- No action, hook, block or `open` uri targets them (blocks open only `spotify:` content; a test
   checks the names never meet).
 - Extension blocks are drawn inside the app's pages and pages in the app's WebView: these surfaces
   are dialogs and sheets above them, and the Report button is drawn after the app.
@@ -868,6 +887,7 @@ A script that throws while loading fails to load, with `file:line` in the messag
 | `myspoti.player.play()`, `.pause()`, `.next()`, `.previous()`, `.seek(ms)` | Myspoti's own player. `playback.control`, through the arbiter (4.2). Return `true` if it was done. |
 | `myspoti.ui.refresh(place)` | Section 3, blocks. The place's action. |
 | `myspoti.page.post(data)` | Section 3, pages. `webview.page`. |
+| `myspoti.spotify.<area>.<method>(...)` | Section 6. |
 | `myspoti.attest.enroll(challenge)` / `.publicKey()` / `.sign(text)` / `.reset()` | Section 10. A signing key of its own in the phone's hardware keystore, with its key attestation, to prove requests to your own server. Needs `attest`. |
 | `myspoti.notify(text)` | A short message on screen, 200 characters, with your extension's name. `notify`. |
 | `myspoti.log(...)`, `console.log/info/warn/error(...)` | Same thing: arguments joined by spaces, objects as JSON, 2000 characters at most. |
@@ -885,7 +905,9 @@ reader picks apart (section 3, `translationLanguage`). An older Myspoti has no `
 back: `var lang = myspoti.locale || 'en';`. Compare its first part to pick your strings:
 `lang.split('-')[0]`.
 
-`myspoti.player` (needs `playback.events` / `playback.control`) is Orpheon's own player.
+`myspoti.player` (needs `playback.events` / `playback.control`) is Myspoti's own player. The
+Spotify account's player (what the Web Player is playing) is `myspoti.spotify.player`, with the
+playback actions.
 
 ### `myspoti.http`
 
@@ -899,8 +921,6 @@ Rules, all enforced by the app:
   subdomains), or you hold `network` with `*` and the user accepted it.
 - https only. Plain `http` is allowed only to a host the manifest names exactly (never through
   `*.domain` or `*`).
-- Spotify's servers are refused whatever the manifest says (`spotify.com`, `spotifycdn.com`,
-  `scdn.co`, `spotify.net`, `spotify.link`, `spotilocal.com` and their subdomains).
 - Local addresses are refused whatever the manifest says: `localhost`, `*.localhost`, `*.local`,
   IPv4 literals in 0/8, 10/8, 127/8, 169.254/16, 172.16/12, 192.168/16, and every IPv6 literal.
 - No cookies, no cache, no account. Redirects are not followed: you receive the 3xx and its
@@ -938,7 +958,372 @@ myspoti.on('track', function (t) {
 (manifest: `"actions": [{ "name": "playback.events", "why": "Remembers the last 100 songs played" }, { "name": "storage", "why": "Keeps them" }]`,
 and `"provides": []`.)
 
-## 6. Limits
+## 6. Spotify access
+
+`myspoti.spotify.<area>.<method>(...args)` talks to the account signed in to Myspoti. Areas:
+`player`, `search`, `catalog`, `library`, `playlists`, `home`, `podcasts`, `users`, `extras`,
+`devices`, `recents`, `blends`, `raw`. The object is built from the app's own method table, so a
+method that is not in the tables below does not exist (`undefined`). Jam (live shared sessions) is
+not exposed.
+
+```js
+var r = myspoti.spotify.search.tracks('papaoutai');       // needs spotify.catalog
+myspoti.spotify.library.add([r.items[0].uri]);             // needs library.write
+```
+
+**Arguments** are positional. Optional ones may be left out or `null`. Defaults are in the tables.
+
+- URIs are strings (`"spotify:track:..."`). Lists of strings: 1000 entries at most.
+- Numbers: integer arguments accept any number (truncated). Booleans are `true`/`false`. A wrong
+  type is an error that names the argument; a number where a string is expected is wrong too.
+- Enums are given by name, case-insensitive (`'private'`, `'short_term'`); results name them in
+  upper case (`"PRIVATE"`).
+- A queue item is `{ uri, uid? }`, or an item from `player.queue()` as is.
+- The whole argument list may not exceed 256 KB.
+
+**Results** are JSON: the app's models, field by field (section 6.2). A method that returns
+nothing gives `null`. `null` fields are present as `null`. Depth is cut at 12 levels.
+
+**Errors** are thrown as `Error` with a message starting `spotify.<area>.<method>:` :
+`no such method`, `unreadable arguments`, `query (argument 1) must be a string`,
+`the user refused`, or the failure Spotify or the app reported. The right check comes first
+(`"library.write is not in this extension's manifest (actions)"`, `"the user did not grant
+library.write"`). No Spotify account in the host (the desktop runner without `--cdp`): the call
+throws.
+
+**Limits:** 60 Spotify calls per minute (`"more than 60 Spotify calls in a minute"`), an answer over
+2 MB is an error, and the call must finish inside the time limit of the hook (section 7).
+
+**Confirmation.** A call marked "asks" in the tables does not run until the user says yes. They
+see: `<extension name> wants to <what>.` followed by the first 300 characters of your arguments. If
+they refuse, or do not answer within 120 seconds, the call throws `spotify.<method>: the user
+refused`; catch it. The time the user takes does not count against your time limit. A host
+without a screen refuses. Confirmed calls are counted in the per-minute limit only once allowed.
+
+Which calls ask: everything that removes or clears something (the tables), plus:
+
+- `raw.gql`: only when the operation is a mutation. An operation the app does not know counts as a
+  mutation. A query does not ask.
+- `raw.service`: always (a page service call can change the account in ways nothing can describe).
+- `raw.request`: when the method is not `GET` or `HEAD`, whatever the address, unless the user chose Always allow (below).
+- `raw.get` (a GET on a Spotify address, with the account's token; other hosts are refused) and
+  `raw.operations()` never ask.
+- `podcasts.setEpisodeSaved(uri, saved)` asks only when `saved` is `false`.
+
+Everything else runs without asking: the user already accepted the action.
+
+**Declared writes.** The `raw.request` writes an extension always needs are listed under its
+`spotify.raw` action, as `"METHOD https://host/path"` (8 at most):
+
+```json
+{ "name": "spotify.raw", "why": "Sends your listens to Spotify",
+  "writes": ["POST https://spclient.wg.spotify.com/gabo-receiver-service/v3/events/"] }
+```
+
+They are shown before install under the action and allowed with it, as the grants below: they
+never ask while music plays. An update that declares a new one waits for the user's OK.
+
+**Always allow.** For a `raw.request` write (POST, PUT, PATCH, DELETE) the dialog offers **Allow once**,
+**Always allow** and **Refuse**. Always allow keeps a grant for this extension only. The grant is the
+method, the host and a path pattern. In the path, a segment that names one thing becomes `*`, and
+matches exactly one segment. A segment names one thing when it contains a digit and is 8 characters
+or longer, or when it is all digits, or when it contains `:` (an id, a number, a uri). The query is
+ignored. Example: `PUT https://gue1-spclient.spotify.com/playlist/v2/playlist/*/changes`. Covered
+writes then run without asking. Grants are listed on the extension's page under its actions
+("Always allowed"), and each one can be revoked. They are kept across updates and removed on
+uninstall. Other destructive methods (`raw.gql` mutations, `raw.service`, typed removals) are still
+asked every time.
+
+### 6.1 Methods
+
+"Right" is the action needed: `catalog` = `spotify.catalog`; `library.read` = `library.read`,
+except `player.state`, `player.queue`, `player.volume`, `player.media` = `playback.events`; `write` = by area:
+`player` and `devices` = `playback.control` (addToQueue, playNext, moveInQueue, removeFromQueue,
+clearQueue = `playback.queue`), `playlists` and `blends` = `playlists.write`, everything else
+(`library`, `users`, `extras`, `podcasts`, `search`) = `library.write`; `raw` = `spotify.raw`. "Asks the user": empty means it runs directly. `?` after a
+type means optional/nullable. Returns of "—" mean `null`.
+
+#### `player`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `state()` | PlayerState? | library.read |  |
+| `queue()` | Queue? | library.read |  |
+| `volume()` | number | library.read |  |
+| `media(trackUri: string)` | Media? | playback.events |  |
+| `play(contextUri: string, trackUri: string?, index: number?, positionMs: number?, order: string[]?)` | — | write |  |
+| `pause()` | — | write |  |
+| `resume()` | — | write |  |
+| `seek(positionMs: number)` | — | write |  |
+| `next()` | — | write |  |
+| `previous()` | — | write |  |
+| `setShuffle(on: bool)` | — | write |  |
+| `setRepeat(mode: Repeat = 'off')` | — | write |  |
+| `addToQueue(uris: string[])` | — | write |  |
+| `playNext(uris: string[])` | — | write |  |
+| `removeFromQueue(items: {uri,uid?}[])` | — | write | yes |
+| `clearQueue()` | — | write | yes |
+| `skipTo(item: {uri,uid?})` | — | write |  |
+| `moveInQueue(item: {uri,uid?}, target: {uri,uid?}, after = false)` | — | write |  |
+| `setVolume(level: number)` | — | write |  |
+| `setLocalMute(on: boolean)` | `playback.mirror` (critical) | write | Keeps Spotify playing unheard on this phone (`myspoti.features` has `player.localMute` only when the user granted `playback.mirror`). It can keep Spotify playing silently and counts listens on the user's Spotify account, so the user ticks the accept-risk box. Host rules, whatever the script does: honoured only while Myspoti's own local / extension player is playing; one extension at a time; at most one enable per 20 s; cleared by itself on track change, local pause or stop, the local track's duration, and when the extension is disabled, uninstalled, blocked or crashes. Refused while Myspoti's own Connect mirror (Settings, "Count extension plays on Spotify", on by default) plays the song on the page itself, and an extension's mirror ends when that one starts. Both players show "Spotify mirrored by <extension>", and the Activity log and Logbook record each enable and clear. Existing installs do not have it until the user accepts the action through the update / consent flow. |
+| `setSpeed(speed: number)` | — | write |  |
+
+`media(trackUri)` (also `myspoti.spotify.media(trackUri)`) returns the media manifest Spotify sent the
+player for that song: `{ uri, manifest }`, exactly as sent. It has the formats and `file_id`s, for
+example `manifest.file_ids_mp4[0].file_id`. It returns `null` when the player was not sent that song.
+Only songs queued in the player count, and the last 200 are kept. `trackUri` must be a `spotify:track:`
+uri. It never asks and changes nothing.
+
+#### `search`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `all(query: string, limit = 10)` | SearchResults | catalog |  |
+| `tracks(query: string, offset = 0, limit = 30)` | Page<Track> | catalog |  |
+| `artists(query: string, offset = 0, limit = 30)` | Page<Artist> | catalog |  |
+| `albums(query: string, offset = 0, limit = 30)` | Page<Album> | catalog |  |
+| `playlists(query: string, offset = 0, limit = 30)` | Page<Playlist> | catalog |  |
+| `shows(query: string, offset = 0, limit = 30)` | Page<MediaCard> | catalog |  |
+| `episodes(query: string, offset = 0, limit = 30)` | Page<Episode> | catalog |  |
+| `audiobooks(query: string, offset = 0, limit = 30)` | Page<MediaCard> | catalog |  |
+| `users(query: string, offset = 0, limit = 30)` | Page<MediaCard> | catalog |  |
+| `genres(query: string, offset = 0, limit = 30)` | Page<MediaCard> | catalog |  |
+| `suggestions(query: string, limit = 10)` | string[] | catalog |  |
+| `recent()` | MediaCard[] | library.read |  |
+| `clearRecent()` | — | write | yes |
+
+#### `catalog`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `track(uri: string)` | Track | catalog |  |
+| `album(uri: string)` | Album | catalog |  |
+| `albumTracks(uri: string, offset = 0, limit = 50)` | Page<Track> | catalog |  |
+| `artist(uri: string)` | Artist | catalog |  |
+| `artistTopTracks(uri: string)` | Track[] | catalog |  |
+| `artistPage(uri: string)` | ArtistPage | catalog |  |
+| `isrc(trackUri: string)` | string? | catalog |  |
+| `discography(uri: string, offset = 0, limit = 50)` | Page<Album> | catalog |  |
+| `relatedArtists(uri: string)` | Artist[] | catalog |  |
+| `appearsOn(uri: string)` | Album[] | catalog |  |
+| `similarAlbums(trackUri: string, limit = 20)` | Album[] | catalog |  |
+
+#### `library`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `contains(uris: string[])` | bool[] | library.read |  |
+| `items(filter: LibraryFilter = 'all', sort: LibrarySort = 'recents', folderUri: string?, offset = 0, limit = 50)` | Page<LibraryItem> | library.read |  |
+| `likedTracks(offset = 0, limit = 50)` | Page<SavedTrack> | library.read |  |
+| `add(uris: string[])` | — | write |  |
+| `remove(uris: string[])` | — | write | yes |
+| `pin(uri: string)` | — | write |  |
+| `unpin(uri: string)` | — | write |  |
+| `createFolder(name: string, parentFolderUri: string?)` | string | write |  |
+| `renameFolder(folderUri: string, name: string)` | — | write |  |
+| `deleteFolder(folderUri: string)` | — | write | yes |
+| `moveToFolder(uri: string, folderUri: string?)` | — | write |  |
+
+#### `playlists`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `playlist(uri: string)` | Playlist | catalog |  |
+| `tracks(uri: string, offset = 0, limit = 100)` | Page<Track> | catalog |  |
+| `sortedTracks(uri: string, sort: PlaylistSort = 'custom', descending = false)` | Track[] | catalog |  |
+| `recommended(uri: string, limit = 10, skip: string[] = [])` | Track[] | catalog |  |
+| `mine()` | Playlist[] | library.read |  |
+| `editable()` | Playlist[] | library.read |  |
+| `access(uri: string)` | PlaylistAccess | library.read |  |
+| `published(uri: string)` | bool | library.read |  |
+| `members(uri: string)` | PlaylistMember[] | library.read |  |
+| `addedBy(uri: string)` | RowAdder[] | library.read |  |
+| `create(name: string, folderUri: string?)` | string | write |  |
+| `rename(uri: string, name: string)` | — | write |  |
+| `setDescription(uri: string, description: string)` | — | write |  |
+| `setAccess(uri: string, access: PlaylistAccess = 'public')` | — | write |  |
+| `setPublished(uri: string, published: bool)` | — | write |  |
+| `setPublic(uri: string, public: bool)` | — | write |  |
+| `setCollaborative(uri: string, collaborative: bool)` | — | write |  |
+| `setCover(uri: string, jpegBase64: string?)` | — | write |  |
+| `delete(uri: string)` | — | write | yes |
+| `follow(uri: string)` | — | write |  |
+| `unfollow(uri: string)` | — | write | yes |
+| `join(uri: string, invitationToken: string)` | PlaylistAccess | write |  |
+| `collaboratorInvite(uri: string)` | string | write |  |
+| `addTracks(uri: string, trackUris: string[])` | — | write |  |
+| `removeTracks(uri: string, uids: string[])` | — | write | yes |
+| `moveTracks(uri: string, uids: string[], beforeUid: string?)` | — | write |  |
+
+#### `home`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `feed(filter: HomeFilter = 'all', itemsPerShelf = 10)` | HomeFeed | catalog |  |
+| `categories()` | Category[] | catalog |  |
+| `category(uri: string)` | BrowsePage | catalog |  |
+| `whatsNew(offset = 0, limit = 50)` | Page<Album> | library.read |  |
+
+#### `podcasts`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `show(uri: string)` | Show | catalog |  |
+| `episodes(uri: string, offset = 0, limit = 50)` | Page<Episode> | catalog |  |
+| `episode(uri: string)` | Episode | catalog |  |
+| `audioUrl(uri: string)` | EpisodeAudio | catalog |  |
+| `audiobook(uri: string)` | Audiobook | catalog |  |
+| `chapters(uri: string, offset = 0, limit = 50)` | Page<Episode> | catalog |  |
+| `savedEpisodes(offset = 0, limit = 50)` | Page<Episode> | library.read |  |
+| `setEpisodeSaved(uri: string, saved: bool)` | — | write | only when `saved` is false |
+
+#### `users`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `me()` | Account | library.read |  |
+| `profile(userUri: string)` | UserProfile | library.read |  |
+| `followers(userUri: string)` | UserRef[] | library.read |  |
+| `following(userUri: string)` | UserRef[] | library.read |  |
+| `top(range: TimeRange = 'short_term', limit = 10)` | TopContent | library.read |  |
+| `isFollowing(userUris: string[])` | bool[] | library.read |  |
+| `friendActivity()` | FriendActivity[] | library.read |  |
+| `history()` | HistoryEntry[] | library.read |  |
+| `follow(userUris: string[])` | — | write |  |
+| `unfollow(userUris: string[])` | — | write | yes |
+| `setPrivateSession(on: bool)` | — | write |  |
+
+#### `extras`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `lyrics(trackUri: string)` | Lyrics? | catalog |  |
+| `canvas(trackUri: string)` | Canvas? | catalog |  |
+| `credits(trackUri: string)` | Credits | catalog |  |
+| `radio(seedUri: string)` | string? | catalog |  |
+| `isExcludedFromTaste(trackUris: string[])` | bool[] | library.read |  |
+| `isArtistBanned(artistUris: string[])` | bool[] | library.read |  |
+| `setExcludedFromTaste(trackUri: string, excluded: bool)` | — | write |  |
+| `setArtistBanned(artistUri: string, banned: bool)` | — | write |  |
+
+#### `devices`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `list()` | Device[] | library.read |  |
+| `transfer(deviceId: string, play = true)` | — | write |  |
+| `pullHere()` | — | write |  |
+
+#### `recents`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `recentEntries(offset = 0, limit = 50)` | Page<RecentEntry> | library.read |  |
+
+#### `blends`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `invitation(linkOrId: string)` | BlendInvitation | library.read |  |
+| `group(playlist: string)` | BlendGroup | library.read |  |
+| `story(playlist: string)` | BlendStory? | library.read |  |
+| `invite()` | BlendInvite | write |  |
+| `join(linkOrId: string)` | string | write |  |
+| `rename(playlist: string, name: string)` | — | write |  |
+| `leave(playlist: string)` | — | write | yes |
+
+#### `raw`
+
+| Call | Returns | Right | Asks the user |
+|---|---|---|---|
+| `operations()` | string[] | raw |  |
+| `gql(operation: string, variables: object)` | JSON | raw | only if the operation is a mutation |
+| `service(service: string, method: string)` | JSON | raw | always |
+| `get(url: string)` | JSON or null | raw |  |
+| `request(method: string, url: string, body?: string\|object, headers?: object, options?: { encoding })` | `{ status, headers, body }` | raw | if the method is not GET or HEAD |
+
+`raw.request` sends any method (`GET HEAD POST PUT PATCH DELETE`) to `https://*.spotify.com`
+with the account's credentials, as the app's own calls (the Web Player's token, the client token,
+its headers, no `X-Requested-With`), or to `https://*.spotifycdn.com` with none. Any other host or
+plain http throws. A `body` that is not a string is sent as JSON; `Content-Type` defaults to JSON.
+A binary body (a protobuf, say) is given as base64 with `{ encoding: 'base64' }` as the fifth
+argument: its bytes are sent, and a body that is not base64 throws before anything leaves
+(`myspoti.features` lists `raw.base64` where the app can do this).
+Your headers cannot replace the credentials: `authorization`, `client-token`, `cookie`, `origin`,
+`referer`, `app-platform`, `spotify-app-version`, `x-requested-with` and the transport's own are
+dropped. A 4xx or 5xx is returned, not thrown; `body` is text, header names are lower case.
+
+### 6.2 Result shapes
+
+Models as plain JSON objects (`string?` = string or `null`; `T[]` = array). `Page<T>` is
+`{ items: T[], offset, total, nextOffset: number? }`; `nextOffset` is `null` on the last page.
+Enums come as their upper-case names.
+
+```
+Image { url: string, width: number?, height: number? }
+ArtistRef { uri: string, name: string }
+AlbumRef { uri: string, name: string, images: Image[] }
+Track { uri: string, name: string, durationMs: number, artists: ArtistRef[], album: AlbumRef?, explicit: bool, playable: bool, uid: string?, addedAt: string? }
+Album { uri: string, name: string, artists: ArtistRef[], images: Image[], type: string, releaseDate: string?, trackCount: number, label: string? }
+Artist { uri: string, name: string, images: Image[], followers: number?, monthlyListeners: number?, verified: bool }
+Playlist { uri: string, name: string, description: string?, owner: string?, images: Image[], trackCount: number, editable: bool, ownerUri: string?, ownerImages: Image[], followers: number?, isBlend: bool }
+SearchResults { tracks: Page<Track>, artists: Page<Artist>, albums: Page<Album>, playlists: Page<Playlist> }
+NowPlaying { kind: ItemKind, uri: string, uid: string?, name: string, artists: ArtistRef[], album: AlbumRef?, imageUrl: string?, durationMs: number, explicit: bool, provider: string?, mediaType: string? }
+PlayerRestrictions { canPause: bool, canResume: bool, canSeek: bool, canSkipNext: bool, canSkipPrevious: bool }
+PlayerState { item: NowPlaying?, contextUri: string?, contextName: string?, previous: NowPlaying?, next: NowPlaying?, isPaused: bool, isBuffering: bool, positionMs: number, timestampMs: number, speed: number, shuffle: bool, repeat: Repeat, restrictions: PlayerRestrictions }
+Queue { current: NowPlaying?, queued: NowPlaying[], nextUp: NowPlaying[] }
+Media { uri: string, manifest: object }
+TopTrack { track: Track, playcount: number? }
+ArtistPage { artist: Artist, biography: string?, headerImages: Image[], topTracks: TopTrack[], popularReleases: Album[], appearsOn: Album[], related: Artist[] }
+BlendInvite { id: string, link: string }
+BlendMember { username: string, name: string, imageUrl: string? }
+RowAdder { rowUid: string, trackUri: string, username: string }
+PlaylistMember { username: string, name: string, imageUrl: string?, isOwner: bool }
+BlendGroup { title: string?, inviteLabel: string?, link: string?, members: BlendMember[] }
+BlendStory { title: string, subtitle: string?, detail: string?, background: string?, titleColor: string?, textColor: string?, image: string? }
+BlendInvitation { state: BlendInvitationState, title: string?, subtitle: string?, inviter: BlendMember?, members: BlendMember[], playlist: string? }
+MediaCard { uri: string, kind: MediaKind, title: string, subtitle: string?, images: Image[] }
+RecentItem { uri: string, kind: MediaKind, title: string, subtitle: string?, images: Image[], durationMs: number, explicit: bool, playedAtMs: number?, typeLabel: string? }
+Shelf { uri: string?, title: string?, items: MediaCard[], total: number }
+HomeFeed { greeting: string, filters: HomeFilter[], shelves: Shelf[] }
+Category { uri: string, title: string, images: Image[], color: string? }
+BrowsePage { uri: string, title: string, shelves: Shelf[] }
+LibraryItem { uri: string, kind: MediaKind, name: string, subtitle: string?, images: Image[], pinned: bool, addedAt: string?, count: number? }
+SavedTrack { track: Track, addedAt: string? }
+Account { uri: string, username: string, name: string, images: Image[], premium: bool, country: string? }
+UserProfile { uri: string, name: string, images: Image[], followers: number?, following: number?, publicPlaylists: Playlist[] }
+TopContent { artists: Artist[], tracks: Track[] }
+FriendActivity { user: UserRef, track: Track?, contextUri: string?, timestampMs: number }
+UserRef { uri: string, name: string, imageUrl: string? }
+Show { uri: string, name: string, publisher: string, description: string?, images: Image[], saved: bool, rating: number?, topics: string[] }
+Episode { uri: string, name: string, description: string?, durationMs: number, releaseDate: string?, images: Image[], show: AlbumRef?, playedPositionMs: number, played: bool, explicit: bool, playable: bool, previewUrl: string? }
+EpisodeAudio { url: string?, passthrough: string, format: string }
+Audiobook { uri: string, name: string, authors: string[], narrators: string[], description: string?, images: Image[], chapterCount: number }
+LyricsLine { startMs: number, endMs: number?, text: string, words: LyricsWord[]? }
+LyricsWord { startMs: number, text: string }
+Lyrics { lines: LyricsLine[], synced: bool, language: string?, provider: string?, background: number?, text: number?, highlight: number? }
+Canvas { uri: string, videoUrl: string, type: string }
+Credits { roles: CreditRole[] }
+CreditRole { role: string, artists: ArtistRef[] }
+Device { id: string, name: string, type: string, active: bool, volume: number?, local: bool }
+HistoryEntry { uri: string, kind: MediaKind, name: string, images: Image[], playedAtMs: number? }
+RecentEntry { item: RecentItem, childrenGroup: string?, group: string?, groupCount: number?, saved: bool, music: bool }
+```
+
+Enums: `Repeat` OFF CONTEXT TRACK. `ItemKind` TRACK EPISODE AD. `MediaKind` TRACK ALBUM ARTIST
+PLAYLIST SHOW EPISODE AUDIOBOOK CHAPTER USER GENRE COLLECTION FOLDER UNKNOWN. `PlaylistAccess`
+PUBLIC PRIVATE COLLABORATIVE. `PlaylistSort` CUSTOM TITLE ARTIST ALBUM ADDED_AT DURATION.
+`HomeFilter` ALL MUSIC PODCASTS AUDIOBOOKS. `LibraryFilter` ALL PLAYLISTS ARTISTS ALBUMS PODCASTS
+AUDIOBOOKS. `LibrarySort` RECENTS RECENTLY_ADDED ALPHABETICAL CREATOR CUSTOM. `TimeRange` SHORT_TERM
+MEDIUM_TERM LONG_TERM. `BlendInvitationState` WAITING JOINABLE FULL JOINED DELETED UNKNOWN.
+
+Notes: `extras.lyrics` returns Spotify's own `Lyrics` shape (`startMs`), not the hook's shape
+(`time`). `PlayerState.positionMs` is the position at `timestampMs` (epoch ms); add
+`(now - timestampMs) * speed` for a live value while not paused. `raw.*` return Spotify's JSON as it
+is. `playlists.setCover` takes a JPEG as base64.
+
+## 7. Limits
 
 | What | Limit |
 |---|---|
@@ -952,6 +1337,7 @@ and `"provides": []`.)
 | Time spent waiting for the user to confirm | Not counted |
 | `myspoti.util.sleep(ms)` | At most 2000 ms per call, counted in the current hook/event budget; never extends its deadline |
 | `myspoti.http` | 120 requests/min, 5 MB per response, 20 s per request, https only; `http.all`: 4 at once |
+| `myspoti.spotify` | 60 calls/min, 256 KB of arguments, 1000 items per list, 2 MB per answer |
 | `myspoti.attest` | `sign` 120/min and 64 KB of text; `enroll` 5/hour and a challenge of 128 bytes |
 | Storage | 512 KB (keys and values together) |
 | Sign-in page | One at a time |
@@ -962,7 +1348,7 @@ and `"provides": []`.)
 | `notify` / `log` | 200 / 2000 characters |
 | Package | 2 MB zip, 30 files, 1 MB script, 256 KB icon |
 
-## 7. Testing on a computer
+## 8. Testing on a computer
 
 `myspoti-ext` runs an extension the way the app would, without a phone. From `base/`:
 
@@ -987,12 +1373,12 @@ to the confirmation prompt below. Give absolute paths.)
 | `run <folder\|zip> page\|message\|tap ...` | The page hook (prints title and HTML), a page message (`--data JSON`), a tap (`--action ID`). |
 | `run <folder\|zip> status --title T` | Asks `status` as the app does (5 s) and prints live, or inactive and why. |
 | `run <folder\|zip> track ...` | Delivers the `track` event. |
-| `run <folder\|zip> playback ... [--played MS] [--leave skip\|end\|stop]` | Delivers a play of the song as `playback` events, at once, with the times they would have had: `start`, a `progress` every 10 s up to `--played` (default 40000), then `skip` (forward), `end` (finished) or `end` (stop). Also `--context URI`, `--shuffle true`, `--source local`, `--origin download\|audio-source\|local-file` and `--provider ID` (also for `track`). |
+| `run <folder\|zip> playback ... [--played MS] [--leave skip\|end\|stop]` | Delivers a play of the song as `playback` events, at once, with the times they would have had: `start`, a `progress` every 10 s up to `--played` (default 40000), then `skip` (forward), `end` (finished) or `end` (stop). Also `--context URI`, `--shuffle true`, `--source local\|spotify`, `--origin spotify\|download\|audio-source\|local-file` and `--provider ID` (also for `track`). |
 | `pack <folder> [out-folder]` | Checks, builds `<id>-<version>.zip`, prints its sha256 and its index entry. |
 | `index <folder-of-zips> <name>` | Writes `index.json` for a repository (newest version of each extension; keeps the existing `blocked` list). |
 
 `run` options: `--title T` (required), `--artist "A, B"` (comma-separated; the first one is
-`artist`), `--album B`, `--duration MS`, `--id ID` (also sets `uri`), `--isrc ISRC`,
+`artist`), `--album B`, `--duration MS`, `--id SPOTIFY_ID` (also sets `uri`), `--isrc ISRC`,
 `--set key=value` (a setting; repeat; `true`, `false` and numbers are passed as such, anything else
 as text; unset ones use the manifest `default`; `--set key@cell=value` is a `perNetwork` setting's
 mobile data value), `--network cell` (the phone is on mobile data, for `perNetwork` settings; default
@@ -1004,20 +1390,43 @@ an unknown `section` or `role`, or a section the extension's actions can never l
 The app itself never refuses such a package: it shows the setting on its page, as one value.
 
 What the runner does: every right the manifest asks is granted. Each hook and event gets the app's
-own time limit (section 6). An answer `{ outcome }` is printed as the app reads it. Storage is in
+own time limit (section 7). An answer `{ outcome }` is printed as the app reads it. Storage is in
 memory for the run (`test --state` keeps it in a file).
-`myspoti.attest` works with a software key kept between runs (section 9).
+`myspoti.attest` works with a software key kept between runs (section 10).
 `log`, `console`, `notify` and failures go to stderr as `[id] message`. `player` controls print
 `player: <action>` and answer `true`. `myspoti.player.current()` returns the `--title` track.
 `http` is real (same host rules as the app).
 
+**Spotify.** Without `--cdp`, every `myspoti.spotify` call throws, so you can test lyrics and audio
+code but not Spotify code. With `--cdp PORT` (or `--cdp http://host:PORT`) the calls run against
+the account signed in to the Web Player of a Chrome you started yourself:
+
+```
+google-chrome --user-data-dir=$HOME/.myspoti-chrome --remote-debugging-port=9222   # sign in to open.spotify.com once
+myspoti-ext run ./my-ext lyrics --title "Papaoutai" --artist Stromae --cdp 9222
+```
+
+The runner reloads that Web Player page, waits (60 s at most) for it, and stops if nobody is signed
+in. These are real calls on a real account. A call that asks for confirmation (section 6) prints
+the question on stderr and reads one line from stdin:
+
+```
+[io.github.you.x] My Ext wants to remove from the library.
+["spotify:track:1"]
+Allow it? [y/N]
+```
+
+`y` or `yes` allows; anything else, or end of input, refuses (so `echo y | myspoti-ext ...`
+allows every question, a script run with no input refuses them all).
+
 **Limits of `check`.** It never calls a hook or an event and has no account, no current track and
 no network of its own: it only reads the manifest and runs the script's top level once with all
-rights granted. A bug inside `provide('lyrics', ...)`, a wrong response shape or a missing host
-fail only under `run`. `run ... track` prints `delivered` even if the listener threw: read the `failed: ...` line
+rights granted. A bug inside `provide('lyrics', ...)`, a wrong response shape, a missing host,
+or a `myspoti.spotify` call fail only under `run`. A top-level call to `myspoti.spotify` fails in
+`check`. `run ... track` prints `delivered` even if the listener threw: read the `failed: ...` line
 on stderr.
 
-### 7.1 Scenarios (`test`)
+### 8.1 Scenarios (`test`)
 
 A scenario is a JSON file:
 
@@ -1059,9 +1468,9 @@ A scenario is a JSON file:
 - **`--state file.json`**: your storage is read from it before the run and written back after, so
   a run can start where the last one ended (a token, a cache).
 
-## 8. GitHub: install, updates, store, publishing
+## 9. GitHub: install, updates, store, publishing
 
-### 8.1 What the app does with a repository
+### 9.1 What the app does with a repository
 
 **Install.** From the store (a discovered repository, or an index entry with `repo`) or by pasting
 `https://github.com/you/name` in "Install from an address", the app reads the newest release
@@ -1100,7 +1509,7 @@ missing file is an empty list): `{ "blocked": [{ "id": "…", "sha256": ["…"],
 turned off with a notice and cannot be turned on, installed or reverted to; a flagged one (reported
 and confirmed) is hidden from the store.
 
-### 8.2 In the store
+### 9.2 In the store
 
 The store searches GitHub once per visit (cached 6 hours) for public repositories with the topic
 `myspoti-extension`, up to 100, and reads each one's `manifest.json` on the default branch (a
@@ -1119,7 +1528,7 @@ and repositories not updated for 18 months. Every store page has **Report**: it 
 report form (`report-extension.yml`) on `kota-zo/myspoti-extensions` in the browser (the extension's id, version, repository and
 sha256; nothing about the user).
 
-### 8.3 Publish in 5 minutes
+### 9.3 Publish in 5 minutes
 
 Nobody approves an extension: you publish it in your own GitHub repository, and the store finds it
 by its topic. Myspoti does not host, review or endorse third-party extensions; read the
@@ -1142,7 +1551,7 @@ piracy, credential theft, fake plays, malware) before you publish.
    Other files and folders (screenshots, sources, workflows) can live there too: the app keeps only
    the package files above.
 2. Rename the `id` (it never changes afterwards), edit `manifest.json` and `main.js`, and check it:
-   `myspoti-ext check .` (section 7) must print no problem.
+   `myspoti-ext check .` (section 8) must print no problem.
 3. Add the topic **`myspoti-extension`** to the repository (About, Topics). The store finds it
    within 6 hours.
 4. Release: raise `version` and `versionCode`, tag (`git tag v1.0.0 && git push origin v1.0.0`).
@@ -1165,7 +1574,11 @@ list "verified" extensions in its `index.json` (optional, the owner's choice; th
 store only when it lists at least one).
 
 
-## 9. Prove a request comes from a genuine install (`attest`)
+### `raw.request` "Always allow" is per operation
+
+A write the user allows for good is a grant on method + host + path pattern. On a multiplexed endpoint (GraphQL / pathfinder, or any request whose JSON body carries `operationName` or a persisted-query `sha256Hash`) the grant also names that operation: it never covers another one. If no operation can be determined from the body on such an endpoint, "Always allow" is not offered and the user is asked each time. The consent shows the real operation, and the revocation list shows it too (`POST https://host/path [operation name]`). Grants stored before this change on such endpoints without an operation were dropped (the user is asked again). Writes declared in the manifest (`writes`) on a multiplexed path cannot cover operations; the user is asked.
+
+## 10. Prove a request comes from a genuine install (`attest`)
 
 Optional and generic: any extension that talks to **its author's own server** can use it, so that
 the server can tell a request comes from a Myspoti install running that extension, and not from a

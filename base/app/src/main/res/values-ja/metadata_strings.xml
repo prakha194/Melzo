@@ -7,5 +7,6 @@
     <string name="metadata_asked">問い合わせ中</string>
     <string name="metadata_off">オフ：問い合わせません</string>
     <string name="metadata_reset">デフォルトの順序に戻す</string>
+    <string name="metadata_not_on_spotify">Spotify で見つかりません：この曲はまだ再生できません</string>
     <string name="metadata_switch">%1$s に問い合わせる</string>
 </resources>

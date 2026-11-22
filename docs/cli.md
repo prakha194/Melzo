@@ -24,7 +24,7 @@ the defaults (the beta is `-p app.orpheon`).
 
 | Command | Does |
 | --- | --- |
-| `status` | Version, debug/beta, signed in or not, what plays (uri, position, duration), installed extensions, whether the screen is open. `player` says who plays: `local` (the app's own player; `source` is `audio-source`, `download` or `file`, and `extension` the id of the extension that gave the stream); `routing` is true while the extensions are asked for a song; while the local player has a queue, `playWhenReady` says whether it is to play and `playbackState` whether it is `idle` (stopped by an error), `buffering`, `ready` or `ended`. |
+| `status` | Version, debug/beta, signed in or not, what plays (uri, position, duration), installed extensions, whether the screen is open. `player` says who plays: `local` (the app's own player; `source` is `audio-source`, `download` or `file`, and `extension` the id of the extension that gave the stream) or `account` (the account's player: Spotify's Web Player); `routing` is true while the extensions are asked for a song; while the local player has a queue, `playWhenReady` says whether it is to play and `playbackState` whether it is `idle` (stopped by an error), `buffering`, `ready` or `ended`. `mirror` is the listen sync of the account provider (Settings, "Count extension plays on your music account"): `provider`, `on` (the setting), `running`, the song it keeps the page on (`uri`, `paused`, `landed` once the page played it, `webPositionMs`), `handedAway` (playback went to another device), `failedUri` (a song the page would not play), `remoteControl` and `note`, and Spotify's page under it: `pageUri`, `pagePaused`, `pagePositionMs`, `unheard`, `quality` (the level given to the page: `low` while it mirrors), `bitrate` and `codec` of what it streams, `playsElsewhere` (another device has Connect), `activeDevice`. |
 | `ext.list` | Installed extensions: version, enabled, running, last error, actions, settings (secret ones masked), and their last `status` probe: `status` (`live`, `inactive`, `unknown` for no answer, `not probed`), `inactive` (skipped for songs' audio and downloads) and `statusDetail`. |
 | `ext.install <zip>` | Installs a package with all it asks, without the prompt. A zip on the computer is pushed first to `…/files/cli/in/`. |
 | `ext.uninstall <id>` | As its page's Uninstall button. |
@@ -35,7 +35,7 @@ the defaults (the beta is `-p app.orpheon`).
 | `ext.log <id> [lines]` | Its log's last lines (50 by default), masked. |
 | `ext.storage <id>` | Its storage's keys and size, never the values. |
 | `ext.why [n]` | The last `n` (1 by default, 20 at most) plays through the extensions: sources asked, outcome and time, skipped and why, chosen, how its address opened, announced and detected quality, fallback, error. Addresses without query, masked. Debug builds only. |
-| `play <deezer:track:…> [context]`, `pause`, `resume`, `next`, `previous` | The player's own commands. |
+| `play <spotify:…> [context]`, `pause`, `resume`, `next`, `previous` | The player's own commands. |
 | `nav <route>` | The open screen navigates to a route (`settings`, `extensions`, `extension/<id>`, `queue`…). |
 | `automix [on\|off]` | Turns AutoMix on or off (as the setting) and prints where it stands. |
 | `automix.segue [on\|off]` | Turns the plan-based transitions on or off (`docs/automix/segue-design.md`) and prints where they stand. |
@@ -68,7 +68,7 @@ tools/myspoti-cli ext.install /tmp/myspoti-cli/app.myspoti.samples.lrclib-*.zip
 tools/myspoti-cli ext.list
 tools/myspoti-cli ext.call app.myspoti.samples.lrclib lyrics '{"title":"Get Lucky","artist":"Daft Punk","durationMs":369000}'
 tools/myspoti-cli ext.log app.myspoti.samples.lrclib 20
-tools/myspoti-cli play deezer:track:3135556
+tools/myspoti-cli play spotify:track:69kOkLUCkxIZYexIgSG8rq
 tools/myspoti-cli status
 tools/myspoti-cli ext.disable app.myspoti.samples.lrclib
 ```

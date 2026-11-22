@@ -35,7 +35,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.music.spotui.ui.components.imageUrlOf
+import com.music.spotui.ui.components.spotifyImageUrl
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.look.rememberReduceMotion
 
@@ -46,7 +46,7 @@ fun Modifier.immersiveThumbnailBorder(shape: Shape): Modifier =
 /**
  * A cover (album, playlist, artist, show) from [url], clipped to [shape] with the thumbnail
  * hairline and a [Immersive.Raised] fill that shows while it loads. [url] may be a
- * `spotify:image:` uri (see `imageUrlOf`); null or blank draws [placeholderIcon] instead.
+ * `spotify:image:` uri (see `spotifyImageUrl`); null or blank draws [placeholderIcon] instead.
  *
  * The size comes from [modifier]: `ImmersiveCover(url, Modifier.size(52.dp))`,
  * `Modifier.fillMaxWidth().aspectRatio(1f)`. Use `CircleShape` for artists.
@@ -61,7 +61,7 @@ fun ImmersiveCover(
     border: Boolean = true,
     placeholderIcon: ImageVector = Icons.Rounded.MusicNote,
 ) {
-    val model = imageUrlOf(url)
+    val model = spotifyImageUrl(url)
     Box(
         modifier = modifier
             .clip(shape)

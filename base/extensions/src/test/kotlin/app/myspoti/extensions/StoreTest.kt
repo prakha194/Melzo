@@ -111,7 +111,7 @@ class StoreTest {
         // Declared without the action it needs: Other.
         assertEquals(Category.OTHER, entry(provides = listOf("audio-source"), category = "lyrics").category())
         assertEquals(Category.PLAYBACK, entry(provides = listOf("lyrics", "audio-source"), category = "playback").category())
-        assertEquals(Category.OTHER, entry(provides = emptyList(), permissions = listOf("player.read"), category = "library").category())
+        assertEquals(Category.LIBRARY, entry(provides = emptyList(), permissions = listOf("player.read", "spotify.write"), category = "library").category())
         assertEquals(Category.STATS, entry(provides = emptyList(), permissions = listOf("player.read"), category = "stats").category())
         assertEquals(Category.TOOLS, entry(provides = emptyList(), permissions = listOf("player.read"), category = "tools").category())
         // Downloads always go under Tools, whatever is declared; no category is named after them.

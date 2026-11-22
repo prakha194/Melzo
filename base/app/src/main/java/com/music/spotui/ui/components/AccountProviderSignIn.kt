@@ -33,6 +33,7 @@ import com.music.spotui.di.YtmRuntime
 /** The name of an account provider, as the service writes it (never translated), or "None". */
 @Composable
 fun accountProviderLabel(id: String): String = when (id) {
+    AccountProviders.SPOTIFY -> "Spotify"
     AccountProviders.YTMUSIC -> "YouTube Music"
     AccountProviders.DEEZER -> "Deezer"
     else -> stringResource(R.string.settings_account_provider_none)

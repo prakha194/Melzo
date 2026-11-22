@@ -219,7 +219,7 @@ fun ImmersiveLibraryScreen(navController: NavController) {
     val chipError = if (showsFailed) stringResource(R.string.library_podcasts_error) else null
     val retry: () -> Unit = { if (showsFailed) vm.loadFollowedShows(); if (entries !is Response.Success) vm.load() }
 
-    val title = stringResource(R.string.lbl_tab_library)
+    val title = stringResource(R.string.navigationbar_musicappitems_yourlibrary_title)
     val listState = rememberLazyListState()
     val gridState = rememberLazyGridState()
     val header: @Composable () -> Unit = {
@@ -284,12 +284,12 @@ fun ImmersiveLibraryScreen(navController: NavController) {
         ImmersiveTopBar(title, collapse) {
             ImmersiveBarAction(
                 Icons.Rounded.Add,
-                stringResource(R.string.lbl_playlist_create),
+                stringResource(R.string.create_playlist_content_description),
                 onClick = { creating = true },
             )
             ImmersiveBarAction(
                 Icons.Rounded.Search,
-                stringResource(R.string.lbl_library_search_hint),
+                stringResource(R.string.library_search_text_hint),
                 onClick = {
                     searchActive = !searchActive
                     if (!searchActive) searchQuery = ""
@@ -304,7 +304,7 @@ fun ImmersiveLibraryScreen(navController: NavController) {
                 AvatarDisc(
                     url = avatar?.imageUrl,
                     initial = avatar?.name?.trim()?.firstOrNull()?.uppercase() ?: "•",
-                    contentDescription = stringResource(R.string.lbl_account),
+                    contentDescription = stringResource(R.string.account_title),
                     onClick = null,
                 )
             }
@@ -349,10 +349,10 @@ internal fun gridCollapse(state: LazyGridState): () -> Float {
  */
 @Composable
 private fun libraryEntries(entries: Response<List<LibraryEntry>>): Pair<List<LibraryEntry>, Int> {
-    val localName = stringResource(R.string.lbl_local_files)
-    val downloadsName = stringResource(R.string.lbl_downloads)
-    val localSubtitle = stringResource(R.string.lbl_playlist) + " • " + stringResource(R.string.local_playlist_subtitle)
-    val likedName = stringResource(R.string.lbl_liked_songs)
+    val localName = stringResource(R.string.local_files_title)
+    val downloadsName = stringResource(R.string.collection_downloaded)
+    val localSubtitle = stringResource(R.string.assisted_curation_search_playlist) + " • " + stringResource(R.string.local_playlist_subtitle)
+    val likedName = stringResource(R.string.collection_liked_songs_title)
     val radioName = stringResource(R.string.live_radio_title)
     val packageName = LocalContext.current.packageName
     val hasDownloads = com.music.spotui.data.offline.OfflineStore.tracks.isNotEmpty() ||
@@ -450,7 +450,7 @@ private fun LibraryHeader(
                 query = query,
                 onQueryChange = onQuery,
                 onSubmit = {},
-                placeholder = stringResource(R.string.lbl_library_search_hint),
+                placeholder = stringResource(R.string.library_search_text_hint),
                 modifier = Modifier.padding(horizontal = Immersive.Gutter).padding(top = 4.dp, bottom = 4.dp),
             )
         }
@@ -639,7 +639,7 @@ internal fun LibraryList(
             }
             // Artists followed on the account.
             if (artists.isNotEmpty()) {
-                item(key = "library:artists-header") { SectionHeader(stringResource(R.string.lbl_followed_artists)) }
+                item(key = "library:artists-header") { SectionHeader(stringResource(R.string.song_dna_search_chip_followed_artists)) }
                 itemsIndexed(artists, key = { _, a -> "artist:${a.id.ifBlank { a.name }}" }) { _, artist ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -656,7 +656,7 @@ internal fun LibraryList(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
-                            Text(text = stringResource(R.string.lbl_artist), style = Immersive.Subhead)
+                            Text(text = stringResource(R.string.artist_subtitle), style = Immersive.Subhead)
                         }
                     }
                 }
@@ -871,7 +871,7 @@ private fun LibraryGrid(
         }
         if (artists.isNotEmpty()) {
             item(key = "library:artists-header", span = { GridItemSpan(maxLineSpan) }) {
-                Box(Modifier.immersiveBleed(Immersive.Gutter)) { SectionHeader(stringResource(R.string.lbl_followed_artists)) }
+                Box(Modifier.immersiveBleed(Immersive.Gutter)) { SectionHeader(stringResource(R.string.song_dna_search_chip_followed_artists)) }
             }
             itemsIndexed(artists, key = { _, a -> "artist:${a.id.ifBlank { a.name }}" }) { _, artist ->
                 Column(
@@ -887,7 +887,7 @@ private fun LibraryGrid(
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
                     )
-                    Text(text = stringResource(R.string.lbl_artist), style = Immersive.Caption, textAlign = TextAlign.Center)
+                    Text(text = stringResource(R.string.artist_subtitle), style = Immersive.Caption, textAlign = TextAlign.Center)
                 }
             }
         }

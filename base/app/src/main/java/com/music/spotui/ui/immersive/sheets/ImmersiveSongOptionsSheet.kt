@@ -59,7 +59,7 @@ import com.music.spotui.ui.components.SavedInSheet
 import com.music.spotui.ui.components.ShareTarget
 import com.music.spotui.ui.immersive.sheets.ImmersiveSleepTimerSheet as SleepTimerSheet
 import com.music.spotui.ui.components.SpeedSheet
-import com.music.spotui.ui.components.ShareItem
+import com.music.spotui.ui.components.SpotifyCode
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.navigation.albumRoute
 import kotlinx.coroutines.launch
@@ -127,15 +127,15 @@ fun ImmersiveSongOptionsSheet(
 
         ImmersiveSheetRow(
             icon = if (liked) null else Icons.Rounded.AddCircleOutline,
-            label = stringResource(if (liked) R.string.lbl_liked_songs else R.string.lbl_like_add),
+            label = stringResource(if (liked) R.string.collection_liked_songs_title else R.string.aligned_curation_context_menu_item_add_to_liked_songs),
             enabled = hasId,
             leading = if (liked) ({ LikedTick() }) else null,
         ) {
             SongPlayer.setTrackSaved(song.spotifyTrackId, !liked)
-            toast(context.getString(if (liked) R.string.lbl_unliked else R.string.lbl_liked))
+            toast(context.getString(if (liked) R.string.snackbar_removed_from_liked_songs else R.string.snackbar_added_to_liked_songs))
             onDismiss()
         }
-        ImmersiveSheetRow(Icons.AutoMirrored.Rounded.PlaylistAdd, stringResource(R.string.lbl_add_to_playlist), enabled = hasId) { showSavedIn = true }
+        ImmersiveSheetRow(Icons.AutoMirrored.Rounded.PlaylistAdd, stringResource(R.string.context_menu_add_to_playlist), enabled = hasId) { showSavedIn = true }
         ImmersiveSheetRow(Icons.AutoMirrored.Rounded.PlaylistAdd, stringResource(R.string.context_menu_add_to_another_playlist), enabled = hasId) { showAddTo = true }
         if (onRemoveFromPlaylist != null) {
             ImmersiveSheetRow(Icons.Rounded.DeleteOutline, stringResource(R.string.context_menu_remove_from_playlist), enabled = hasId) {
@@ -144,16 +144,16 @@ fun ImmersiveSongOptionsSheet(
             }
         }
         if (!nowPlaying) {
-            ImmersiveSheetRow(Icons.AutoMirrored.Rounded.PlaylistPlay, stringResource(R.string.lbl_play_next), enabled = SongQueue.canQueue(song)) {
+            ImmersiveSheetRow(Icons.AutoMirrored.Rounded.PlaylistPlay, stringResource(R.string.context_menu_play_next), enabled = SongQueue.canQueue(song)) {
                 SongQueue.add(context, song, next = true)
                 onDismiss()
             }
-            ImmersiveSheetRow(Icons.AutoMirrored.Rounded.QueueMusic, stringResource(R.string.lbl_queue_add), enabled = SongQueue.canQueue(song)) {
+            ImmersiveSheetRow(Icons.AutoMirrored.Rounded.QueueMusic, stringResource(R.string.context_menu_add_to_queue), enabled = SongQueue.canQueue(song)) {
                 SongQueue.add(context, song)
                 onDismiss()
             }
         } else if (onOpenQueue != null) {
-            ImmersiveSheetRow(Icons.AutoMirrored.Rounded.QueueMusic, stringResource(R.string.lbl_open_queue), enabled = !isRadio) {
+            ImmersiveSheetRow(Icons.AutoMirrored.Rounded.QueueMusic, stringResource(R.string.context_menu_go_to_queue), enabled = !isRadio) {
                 onDismiss()
                 onOpenQueue()
             }
@@ -161,14 +161,14 @@ fun ImmersiveSongOptionsSheet(
         val offline = com.music.spotui.data.offline.OfflineStore.statusOf(downloadKey)
         when {
             offline == com.music.spotui.data.offline.OfflineStatus.Done -> ImmersiveSheetRow(
-                null, stringResource(R.string.lbl_download_remove),
+                null, stringResource(R.string.context_menu_undownload),
                 leading = { DownloadBadge(offline, size = 22.dp) },
             ) {
                 val gone = if (episodeKey != null) {
                     com.music.spotui.data.offline.PodcastDownloader.remove(downloadKey)
                     true
                 } else com.music.spotui.data.offline.OfflineCollections.removeSong(downloadKey)
-                toast(if (gone) context.getString(R.string.lbl_download_removed) else com.music.spotui.data.offline.OfflineCollections.keptMessage(context, downloadKey))
+                toast(if (gone) context.getString(R.string.toast_undownload) else com.music.spotui.data.offline.OfflineCollections.keptMessage(context, downloadKey))
                 onDismiss()
             }
             offline == com.music.spotui.data.offline.OfflineStatus.Queued ||
@@ -181,7 +181,7 @@ fun ImmersiveSongOptionsSheet(
                 onDismiss()
             }
             else -> ImmersiveSheetRow(
-                Icons.Rounded.ArrowCircleDown, stringResource(R.string.lbl_download),
+                Icons.Rounded.ArrowCircleDown, stringResource(R.string.context_menu_download),
                 enabled = downloadKey.isNotBlank(),
                 leading = if (offline != null) ({ DownloadBadge(offline, size = 22.dp) }) else null,
             ) {
@@ -190,22 +190,22 @@ fun ImmersiveSongOptionsSheet(
                 } else com.music.spotui.ui.components.DownloadAsk.start(context) { q ->
                     com.music.spotui.data.offline.OfflineCollections.downloadSong(song, q)
                     Haptics.confirm()
-                    toast(context.getString(R.string.lbl_downloading))
+                    toast(context.getString(R.string.download_notification_downloading))
                 }
                 onDismiss()
             }
         }
-        ImmersiveSheetRow(Icons.Rounded.Radio, stringResource(R.string.lbl_song_radio), enabled = hasId) {
+        ImmersiveSheetRow(Icons.Rounded.Radio, stringResource(R.string.context_menu_go_to_song_radio), enabled = hasId) {
             onDismiss()
             playerViewModel.goToSongRadio(song.spotifyTrackId, song.title,
                 navigate = { route -> navController.navigate(route) },
                 onFailed = { toast(context.getString(R.string.song_radio_failed)) })
         }
-        ImmersiveSheetRow(Icons.Rounded.Album, stringResource(R.string.lbl_open_album), enabled = !isRadio && (song.album.isNotBlank() || song.albumId.isNotBlank())) {
+        ImmersiveSheetRow(Icons.Rounded.Album, stringResource(R.string.context_menu_browse_album), enabled = !isRadio && (song.album.isNotBlank() || song.albumId.isNotBlank())) {
             onDismiss()
             navController.navigate(albumRoute(song.album, song.singer, song.albumId))
         }
-        ImmersiveSheetRow(Icons.Rounded.Person, stringResource(R.string.lbl_open_artist), enabled = !isRadio && song.singer.isNotBlank()) {
+        ImmersiveSheetRow(Icons.Rounded.Person, stringResource(R.string.context_menu_browse_artist), enabled = !isRadio && song.singer.isNotBlank()) {
             onDismiss()
             playerViewModel.goToArtist(song.spotifyTrackId, song.singer) { route -> navController.navigate(route) }
         }
@@ -233,7 +233,7 @@ fun ImmersiveSongOptionsSheet(
             if (lyrics != null && !sameLanguage) {
                 ImmersiveSheetRow(
                     Icons.Rounded.Translate,
-                    stringResource(if (lyrics.showTranslation) R.string.lbl_lyrics_translate_off else R.string.lbl_lyrics_translate),
+                    stringResource(if (lyrics.showTranslation) R.string.lyrics_fullscreen_translate_button_enabled_readout_value else R.string.lyrics_fullscreen_context_menu_main_page_translate_lyrics_action),
                 ) {
                     lyricsVm.toggleTranslation(target)
                     onDismiss()
@@ -318,15 +318,19 @@ fun ImmersiveSongOptionsSheet(
                 navController.navigate(com.music.spotui.ui.navigation.Routes.Equalizer.route)
             }
         }
-        ImmersiveSheetRow(Icons.Rounded.Share, stringResource(R.string.lbl_share), enabled = hasId || isRadio) {
+        ImmersiveSheetRow(Icons.Rounded.Share, stringResource(R.string.context_menu_share), enabled = hasId || isRadio) {
+            // A station has no Spotify uri: shared as plain text, never through a Spotify Code.
             if (isRadio) com.music.spotui.radio.RadioPlayer.share(context)
-            else ShareItem.show(ShareTarget("spotify:track:${song.spotifyTrackId}", song.title, song.singer, song.coverUri))
+            else SpotifyCode.show(ShareTarget("spotify:track:${song.spotifyTrackId}", song.title, song.singer, song.coverUri))
             onDismiss()
+        }
+        if (hasId && !isRadio) ImmersiveSheetRow(Icons.Rounded.ContentCopy, stringResource(R.string.copy_link)) {
+            SpotifyCode.copyLink(context, "spotify:track:${song.spotifyTrackId}"); onDismiss()
         }
         if (nowPlaying) {
             ImmersiveSheetRow(
                 Icons.Rounded.Bedtime,
-                stringResource(R.string.lbl_sleep_timer),
+                stringResource(R.string.context_menu_sleep_timer),
                 tint = if (SongPlayer.sleepEndsAt.value != null) LocalImmersiveSheetTint.current.accent else null,
             ) { showSleep = true }
             // The player's source line and capsule are turned off: their sheets are here instead.

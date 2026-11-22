@@ -1,5 +1,7 @@
 package com.music.spotui.ui.screens
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -56,7 +58,7 @@ fun EqualizerScreen(navController: NavController) {
     Column(Modifier.fillMaxSize().background(AppBackground).statusBarsPadding()) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(4.dp)) {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lbl_back), tint = AppText)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.accessibility_navigate_back), tint = AppText)
             }
             Text(stringResource(R.string.equalizer_title), color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
@@ -116,6 +118,20 @@ fun EqualizerScreen(navController: NavController) {
                 detail = stringResource(R.string.equalizer_skip_silence_detail),
                 checked = pref.skipSilence,
                 onChecked = { pref.setSkipSilence(ctx, it) },
+            )
+            var level by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(com.music.spotui.di.Leveller.on) }
+            OptionRow(
+                label = stringResource(R.string.leveller_title),
+                detail = stringResource(R.string.leveller_detail),
+                checked = level,
+                onChecked = { level = it; com.music.spotui.di.Leveller.set(ctx, it) },
+            )
+            var upgrade by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(com.music.spotui.di.SourceUpgrade.on) }
+            OptionRow(
+                label = stringResource(R.string.upgrade_source_title),
+                detail = stringResource(R.string.upgrade_source_detail),
+                checked = upgrade,
+                onChecked = { upgrade = it; com.music.spotui.di.SourceUpgrade.set(ctx, it) },
             )
         }
     }

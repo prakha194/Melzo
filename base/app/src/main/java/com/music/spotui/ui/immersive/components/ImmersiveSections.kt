@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import app.myspoti.engine.R
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.music.spotui.ui.components.imageUrlOf
+import com.music.spotui.ui.components.spotifyImageUrl
 import com.music.spotui.ui.immersive.Immersive
 
 /**
@@ -243,7 +243,7 @@ fun ImmersiveLargeAlbumCard(
     playing: Boolean = false,
     onLongClick: (() -> Unit)? = null,
 ) {
-    val model = imageUrlOf(imageUrl)
+    val model = spotifyImageUrl(imageUrl)
     Box(
         modifier = modifier
             .immersiveClickable(onClick = onClick, onLongClick = onLongClick, pressedScale = 0.98f)

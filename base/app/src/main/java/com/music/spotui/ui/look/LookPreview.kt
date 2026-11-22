@@ -352,9 +352,9 @@ private fun ClassicTabs(modifier: Modifier) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         listOf(
-            R.drawable.ic_home_filled to R.string.lbl_tab_home,
-            R.drawable.ic_search_big to R.string.lbl_tab_search,
-            R.drawable.ic_library_big to R.string.lbl_tab_library,
+            R.drawable.ic_home_filled to R.string.navigationbar_musicappitems_home_title,
+            R.drawable.ic_search_big to R.string.navigationbar_musicappitems_search_title,
+            R.drawable.ic_library_big to R.string.navigationbar_musicappitems_yourlibrary_title,
         ).forEachIndexed { i, (icon, label) ->
             val tint = if (i == 0) Color.White else ClassicGrey
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -456,7 +456,7 @@ private fun ClassicLyricsCard(clock: DemoClock, phases: DemoPhases, open: () -> 
     ) {
         // The card's own title while it peeks.
         Text(
-            stringResource(R.string.lbl_lyrics), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, fontFamily = AppSans,
+            stringResource(R.string.lyrics_card_title), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, fontFamily = AppSans,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp).graphicsLayer { alpha = 1f - lyrics() * 2f },
         )
         Column(Modifier.fillMaxSize().padding(horizontal = 24.dp).graphicsLayer { alpha = (lyrics() * 2f - 0.6f).coerceIn(0f, 1f) }) {
@@ -541,7 +541,7 @@ private fun ImmersiveHome() {
     val text = TextStyle(fontFamily = ImmersiveSans, color = Color.White)
     Column(Modifier.fillMaxSize().padding(start = 20.dp, end = 20.dp, top = 54.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.lbl_tab_home), style = text, fontSize = 32.sp, fontWeight = FontWeight.Bold,
+            Text(stringResource(R.string.navigationbar_musicappitems_home_title), style = text, fontSize = 32.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f))
             Box(Modifier.size(34.dp).background(Color(0xFF7E57C2), CircleShape))
         }
@@ -599,8 +599,8 @@ private fun ImmersiveTabs(modifier: Modifier) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             listOf(
-                Icons.Rounded.Home to R.string.lbl_tab_home,
-                Icons.Rounded.LibraryMusic to R.string.lbl_tab_library,
+                Icons.Rounded.Home to R.string.navigationbar_musicappitems_home_title,
+                Icons.Rounded.LibraryMusic to R.string.navigationbar_musicappitems_yourlibrary_title,
             ).forEachIndexed { i, (icon, label) ->
                 val tint = if (i == 0) Color.White else Color.White.copy(alpha = 0.7f)
                 Column(

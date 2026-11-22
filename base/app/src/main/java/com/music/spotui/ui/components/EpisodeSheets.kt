@@ -84,7 +84,7 @@ fun EpisodeDownloadButton(song: SongsModel, size: Dp = 26.dp) {
             when (status) {
                 OfflineStatus.Done -> {
                     PodcastDownloader.remove(key)
-                    Toast.makeText(context, context.getString(R.string.lbl_download_removed), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.toast_undownload), Toast.LENGTH_SHORT).show()
                 }
                 OfflineStatus.Queued, is OfflineStatus.Downloading -> PodcastDownloader.cancel(key)
                 else -> PodcastDownloader.enqueue(song)
@@ -144,7 +144,7 @@ fun EpisodeOptionsSheet(
             when {
                 status == OfflineStatus.Done -> SheetAction(Icons.Outlined.DeleteOutline, stringResource(R.string.episode_download_remove)) {
                     key?.let { PodcastDownloader.remove(it) }
-                    Toast.makeText(context, context.getString(R.string.lbl_download_removed), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.toast_undownload), Toast.LENGTH_SHORT).show()
                     onDismiss()
                 }
                 status == OfflineStatus.Queued || status is OfflineStatus.Downloading ->
@@ -199,11 +199,12 @@ private fun SheetAction(icon: ImageVector, label: String, onClick: () -> Unit) {
     }
 }
 
-/** Shares the episode by its name and its show's. */
+/** Shares the episode's own link (the official app opens the same page). */
 fun shareEpisode(context: Context, song: SongsModel) {
+    val id = song.url.removePrefix("episode:")
     val send = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, if (song.singer.isBlank()) song.title else "${song.title} — ${song.singer}")
+        putExtra(Intent.EXTRA_TEXT, "https://open.spotify.com/episode/$id")
     }
     runCatching { context.startActivity(Intent.createChooser(send, context.getString(R.string.a11y_share))) }
 }

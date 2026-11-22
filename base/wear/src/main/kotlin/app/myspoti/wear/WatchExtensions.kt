@@ -118,6 +118,7 @@ object WatchExtensions : Host {
             val rt = runtime(x)?.takeIf { it.provides(Hook.AUDIO_SOURCE) } ?: continue
             val stream = runCatching { rt.call(Hook.AUDIO_SOURCE, input, HookBudgets.of(Hook.AUDIO_SOURCE))?.let(AudioStream::parse) }
                 .onFailure { Log.d(TAG, "extension ${x.id}: ${it.message}") }.getOrNull() ?: continue
+            if (stream.transform != null) continue
             return@withContext stream to x.pkg.manifest.name
         }
         null

@@ -170,7 +170,7 @@ fun ImmersiveSearchScreen(navController: NavController) {
     }
     val tiles = rememberBrowseTiles()
 
-    val title = stringResource(R.string.lbl_tab_search)
+    val title = stringResource(R.string.navigationbar_musicappitems_search_title)
     val playSong: (SongsModel) -> Unit = { song ->
         // A radio from the tapped track (queue = this song + recommendations), not the list.
         vm.startRadioFromSong(song)
@@ -201,7 +201,7 @@ fun ImmersiveSearchScreen(navController: NavController) {
                             onQueryChange = { vm.search(it) },
                             onSubmit = { vm.search(text) },
                             focusRequester = fieldFocus,
-                            placeholder = stringResource(R.string.lbl_search_hint),
+                            placeholder = stringResource(R.string.search_header_field_hint),
                             modifier = Modifier
                                 .weight(1f)
                                 .onFocusChanged { searchFocused = it.hasFocus },
@@ -328,12 +328,12 @@ private fun LazyListScope.recentSearches(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(R.string.lbl_recent_searches),
+                text = stringResource(R.string.assisted_curation_search_search_history_title),
                 style = Immersive.Title,
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = stringResource(R.string.lbl_clear),
+                text = stringResource(R.string.chat_content_picker_clear_recent_searches),
                 style = Immersive.Subhead.copy(color = Immersive.Accent, fontWeight = FontWeight.Medium),
                 modifier = Modifier
                     .clip(CircleShape)
@@ -345,11 +345,11 @@ private fun LazyListScope.recentSearches(
     items(recents.size, key = { "recent:${recents[it].type}:${recents[it].key}" }) { i ->
         val item = recents[i]
         val subtitle = when (item.type) {
-            "song" -> stringResource(R.string.lbl_song) + " • ${item.singer}"
-            "artist" -> stringResource(R.string.lbl_artist)
-            "album" -> stringResource(R.string.lbl_album) + " • ${item.singer}"
-            "show" -> stringResource(R.string.lbl_podcast) + (if (item.singer.isNotBlank()) " • ${item.singer}" else "")
-            "playlist" -> stringResource(R.string.lbl_playlist) + (if (item.singer.isNotBlank()) " • ${item.singer}" else "")
+            "song" -> stringResource(R.string.assisted_curation_search_song) + " • ${item.singer}"
+            "artist" -> stringResource(R.string.artist_subtitle)
+            "album" -> stringResource(R.string.album) + " • ${item.singer}"
+            "show" -> stringResource(R.string.album_type_podcast) + (if (item.singer.isNotBlank()) " • ${item.singer}" else "")
+            "playlist" -> stringResource(R.string.assisted_curation_search_playlist) + (if (item.singer.isNotBlank()) " • ${item.singer}" else "")
             else -> ""
         }
         val row: @Composable () -> Unit = { ImmersiveListRow(
@@ -361,7 +361,7 @@ private fun LazyListScope.recentSearches(
             trailing = {
                 Icon(
                     imageVector = Icons.Rounded.Close,
-                    contentDescription = stringResource(R.string.lbl_remove),
+                    contentDescription = stringResource(R.string.aligned_curation_first_save_default_row_remove_action_description),
                     tint = Immersive.TextSecondary,
                     modifier = Modifier
                         .size(32.dp)
@@ -471,7 +471,7 @@ private fun LazyListScope.searchResults(
                 )
             }
             else -> item(key = "search:empty") {
-                ImmersiveMessageState(stringResource(R.string.lbl_no_results, text.trim()))
+                ImmersiveMessageState(stringResource(R.string.assisted_curation_search_empty_view_no_result_title, text.trim()))
             }
         }
         return
@@ -482,7 +482,7 @@ private fun LazyListScope.searchResults(
             val card = profiles[i]
             ImmersiveListRow(
                 title = card.title,
-                subtitle = stringResource(R.string.lbl_profile),
+                subtitle = stringResource(R.string.recently_played_user_profile),
                 imageUrl = card.images.firstOrNull()?.url,
                 round = true,
                 onClick = { onProfile(card) },
@@ -502,19 +502,19 @@ private fun LazyListScope.searchResults(
         }
     }
     fun title(res: Int): @Composable () -> String = { stringResource(res) }
-    section("songs", sectioned, title(R.string.lbl_filter_songs), songs.size) { range ->
+    section("songs", sectioned, title(R.string.assisted_curation_search_filter_songs), songs.size) { range ->
         items(range.count(), key = { "song:${songs[range.first + it].id}:${range.first + it}" }) { n ->
             val song = songs[range.first + n]
             SongResultRow(song, currentSongId, playing, onClick = { onSong(song) }, onMore = { onSongMore(song) })
             if (n < range.count() - 1) RowDivider()
         }
     }
-    section("artists", sectioned, title(R.string.lbl_filter_artists), artists.size) { range ->
+    section("artists", sectioned, title(R.string.assisted_curation_search_filter_artists), artists.size) { range ->
         items(range.count(), key = { "artist:${artists[range.first + it].id}:${range.first + it}" }) { n ->
             val artist = artists[range.first + n]
             ImmersiveListRow(
                 title = artist.name,
-                subtitle = stringResource(R.string.lbl_artist),
+                subtitle = stringResource(R.string.artist_subtitle),
                 imageUrl = artist.coverUri,
                 round = true,
                 onClick = { onArtist(artist) },
@@ -522,12 +522,12 @@ private fun LazyListScope.searchResults(
             if (n < range.count() - 1) RowDivider()
         }
     }
-    section("albums", sectioned, title(R.string.lbl_filter_albums), albums.size) { range ->
+    section("albums", sectioned, title(R.string.assisted_curation_search_filter_albums), albums.size) { range ->
         items(range.count(), key = { "album:${albums[range.first + it].spotifyId}:${range.first + it}" }) { n ->
             val album = albums[range.first + n]
             ImmersiveListRow(
                 title = album.name,
-                subtitle = stringResource(R.string.lbl_album) + " • ${album.artists}",
+                subtitle = stringResource(R.string.album) + " • ${album.artists}",
                 imageUrl = album.coverUri,
                 round = false,
                 onClick = { onAlbum(album) },
@@ -535,12 +535,12 @@ private fun LazyListScope.searchResults(
             if (n < range.count() - 1) RowDivider()
         }
     }
-    section("playlists", sectioned, title(R.string.lbl_filter_playlists), playlists.size) { range ->
+    section("playlists", sectioned, title(R.string.assisted_curation_search_filter_playlists), playlists.size) { range ->
         items(range.count(), key = { "playlist:${playlists[range.first + it].spotifyId}:${range.first + it}" }) { n ->
             val playlist = playlists[range.first + n]
             ImmersiveListRow(
                 title = playlist.name,
-                subtitle = stringResource(R.string.lbl_playlist) +
+                subtitle = stringResource(R.string.assisted_curation_search_playlist) +
                     (if (playlist.subtitle.isNotBlank()) " • ${playlist.subtitle}" else ""),
                 imageUrl = playlist.coverUri,
                 round = false,
@@ -550,12 +550,12 @@ private fun LazyListScope.searchResults(
         }
     }
     // Podcasts: shows (open their page) then individual episodes (play).
-    section("shows", sectioned, title(R.string.lbl_filter_podcasts), shows.size) { range ->
+    section("shows", sectioned, title(R.string.assisted_curation_search_filter_podcasts), shows.size) { range ->
         items(range.count(), key = { "show:${shows[range.first + it].id}:${range.first + it}" }) { n ->
             val show = shows[range.first + n]
             ImmersiveListRow(
                 title = show.name,
-                subtitle = stringResource(R.string.lbl_podcast) + (if (show.publisher.isNotBlank()) " • ${show.publisher}" else ""),
+                subtitle = stringResource(R.string.album_type_podcast) + (if (show.publisher.isNotBlank()) " • ${show.publisher}" else ""),
                 imageUrl = show.coverUri,
                 round = false,
                 onClick = { onShow(show) },
@@ -563,7 +563,7 @@ private fun LazyListScope.searchResults(
             if (n < range.count() - 1) RowDivider()
         }
     }
-    section("episodes", sectioned, title(R.string.lbl_filter_episodes), episodes.size) { range ->
+    section("episodes", sectioned, title(R.string.assisted_curation_search_filter_episodes), episodes.size) { range ->
         items(range.count(), key = { "episode:${episodes[range.first + it].id}:${range.first + it}" }) { n ->
             val ep = episodes[range.first + n]
             SongResultRow(ep, currentSongId, playing, onClick = { onSong(ep) }, onMore = { onSongMore(ep) })

@@ -53,7 +53,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.music.spotui.ui.components.pressable
-import com.music.spotui.ui.components.imageUrlOf
+import com.music.spotui.ui.components.spotifyImageUrl
 import com.music.spotui.ui.navigation.playlistRoute
 import com.music.spotui.ui.theme.AppBackground
 import kotlinx.coroutines.launch
@@ -101,7 +101,7 @@ fun ProfileScreen(navController: NavController, userId: String, userName: String
                     }
                 }) { Text(stringResource(R.string.profile_block), color = AppDestructive) }
             },
-            dismissButton = { androidx.compose.material3.TextButton(onClick = { blockAsk = false }) { Text(stringResource(R.string.action_cancel_label), color = AppText) } },
+            dismissButton = { androidx.compose.material3.TextButton(onClick = { blockAsk = false }) { Text(stringResource(R.string.cancel), color = AppText) } },
         )
     }
     LazyColumn(
@@ -111,7 +111,7 @@ fun ProfileScreen(navController: NavController, userId: String, userName: String
         item {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.lbl_back), tint = AppText,
+                    Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.accessibility_navigate_back), tint = AppText,
                     modifier = Modifier.pressable(0.96f) { navController.navigateUp() }.padding(16.dp).size(26.dp),
                 )
                 Spacer(Modifier.weight(1f))
@@ -146,7 +146,7 @@ fun ProfileScreen(navController: NavController, userId: String, userName: String
         item {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 com.music.spotui.ui.components.ProfileAvatar(
-                    url = imageUrlOf(p?.images?.best(300)?.url),
+                    url = spotifyImageUrl(p?.images?.best(300)?.url),
                     name = p?.name ?: userName, size = 150.dp,
                 )
                 Spacer(Modifier.height(14.dp))
@@ -162,7 +162,7 @@ fun ProfileScreen(navController: NavController, userId: String, userName: String
                         }
                         if (p.followers != null && p.following != null) Text("•", color = AppMuted, fontSize = 14.sp)
                         p.following?.let {
-                            Text(stringResource(R.string.profile_follows_count, it), color = AppMuted, fontSize = 14.sp,
+                            Text(stringResource(R.string.profile_following_count, it), color = AppMuted, fontSize = 14.sp,
                                 modifier = Modifier.clip(RoundedCornerShape(6.dp))
                                     .pressable(0.96f) { navController.navigate(followListRoute(userId, followers = false)) }
                                     .padding(horizontal = 6.dp, vertical = 4.dp))
@@ -198,7 +198,7 @@ fun ProfileScreen(navController: NavController, userId: String, userName: String
                 if (!me && f != null && blocked != true) {
                     Spacer(Modifier.height(14.dp))
                     Text(
-                        stringResource(if (f) R.string.lbl_following else R.string.lbl_follow),
+                        stringResource(if (f) R.string.curation_button_following_state_text else R.string.curation_button_follow_state_text),
                         color = AppText, fontSize = 14.sp, fontWeight = FontWeight.Bold,
                         modifier = Modifier.clip(RoundedCornerShape(50))
                             .border(1.dp, if (f) AppText else AppMuted, RoundedCornerShape(50))
@@ -235,7 +235,7 @@ fun ProfileScreen(navController: NavController, userId: String, userName: String
                             .padding(16.dp, 8.dp),
                     ) {
                         GlideImage(
-                            model = imageUrlOf(pl.images.best(160)?.url), contentDescription = null, contentScale = ContentScale.Crop,
+                            model = spotifyImageUrl(pl.images.best(160)?.url), contentDescription = null, contentScale = ContentScale.Crop,
                             failure = placeholder(R.drawable.placeholder), loading = placeholder(R.drawable.placeholder),
                             modifier = Modifier.size(56.dp).clip(RoundedCornerShape(4.dp)),
                         )

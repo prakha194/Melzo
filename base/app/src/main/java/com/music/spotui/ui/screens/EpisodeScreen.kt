@@ -129,7 +129,7 @@ fun EpisodeScreen(navController: NavController, episodeId: String, fallbackName:
                             .clip(CircleShape)
                             .background(Color.Black.copy(alpha = 0.35f)),
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lbl_back), tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.accessibility_navigate_back), tint = Color.White)
                     }
                     GlideImage(
                         model = episode?.coverUri,

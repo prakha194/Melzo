@@ -41,6 +41,7 @@ import app.myspoti.engine.R
 import com.music.spotui.data.api.ProfileCache
 import com.music.spotui.data.api.SupportReminder
 import com.music.spotui.di.Graph
+import com.music.spotui.di.SessionActions
 import com.music.spotui.ui.components.AboutSheet
 import com.music.spotui.ui.components.SupporterBadge
 import com.music.spotui.ui.components.SupporterSheet
@@ -50,6 +51,7 @@ import com.music.spotui.ui.immersive.components.ImmersiveCover
 import com.music.spotui.ui.immersive.components.immersiveClickable
 import com.music.spotui.ui.navigation.Routes
 import com.music.spotui.ui.navigation.profileRoute
+import com.music.spotui.ui.screens.AccountBrowser
 
 /**
  * The profile picture as a disc (the first letter of the name until it loads), opening [onClick];
@@ -62,7 +64,7 @@ internal fun ProfileDisc(onClick: (() -> Unit)?, modifier: Modifier = Modifier) 
     AvatarDisc(
         url = avatar,
         initial = initial,
-        contentDescription = stringResource(R.string.lbl_profile),
+        contentDescription = stringResource(R.string.recently_played_user_profile),
         onClick = onClick,
         modifier = modifier,
     )
@@ -102,7 +104,7 @@ internal fun AvatarDisc(
 
 /**
  * The profile sheet behind the avatar: account name and picture (open the public profile),
- * settings, recap, history, support and about. The same rows and
+ * settings, recap, history, the account page, support, about and sign-out. The same rows and
  * actions as the Classic Home screen's sheet.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -152,13 +154,13 @@ internal fun ImmersiveProfileSheet(onOpen: (route: String) -> Unit, onDismiss: (
                 )
             }
             HorizontalDivider(color = Immersive.Separator, modifier = Modifier.padding(vertical = 8.dp))
-            SheetRow(stringResource(R.string.settings_screen_title), stringResource(R.string.settings_detail)) {
+            SheetRow(stringResource(R.string.settings_title), stringResource(R.string.settings_detail)) {
                 onOpen(Routes.Settings.route)
             }
             SheetRow(stringResource(R.string.recap_title), stringResource(R.string.recap_detail)) {
                 onOpen(Routes.Recap.route)
             }
-            SheetRow(stringResource(R.string.recent_title), stringResource(R.string.recents_detail)) {
+            SheetRow(stringResource(R.string.recents_title), stringResource(R.string.recents_detail)) {
                 onOpen(Routes.Recent.route)
             }
             // Third-party extensions: installed, enabled, repositories.
@@ -171,18 +173,18 @@ internal fun ImmersiveProfileSheet(onOpen: (route: String) -> Unit, onDismiss: (
             ) {
                 onOpen(Routes.Extensions.route)
             }
-            // Donations: always here, never in the way.
-            var support by remember { mutableStateOf(false) }
-            if (support) SupportSheet(onDismiss = { support = false })
+            // The account page (plan, privacy, devices), in the app's signed-in browser.
             SheetRow(
-                stringResource(R.string.support_title),
-                stringResource(R.string.support_row_detail),
-                titleColor = Immersive.Accent,
-            ) { support = true }
-            // About: version, Discord, source code and Ko-fi.
+                stringResource(R.string.immersive_screens_account_page),
+                stringResource(R.string.immersive_screens_account_page_detail),
+            ) {
+                onDismiss()
+                AccountBrowser.open(Graph.app, AccountBrowser.ACCOUNT_URL)
+            }
+            // About: version, source code, update channel.
             var about by remember { mutableStateOf(false) }
             if (about) AboutSheet(onDismiss = { about = false })
-            SheetRow(stringResource(R.string.lbl_bio), stringResource(R.string.about_detail)) {
+            SheetRow(stringResource(R.string.creator_biography_section_title), stringResource(R.string.about_detail)) {
                 about = true
             }
             var perks by remember { mutableStateOf(false) }
@@ -191,6 +193,16 @@ internal fun ImmersiveProfileSheet(onOpen: (route: String) -> Unit, onDismiss: (
                 SheetRow(stringResource(R.string.supporter_perks_title), stringResource(R.string.supporter_perks_detail)) {
                     perks = true
                 }
+            }
+            // The other Spotify accounts kept on the phone: switch, add, remove.
+            var accounts by remember { mutableStateOf(false) }
+            if (accounts) com.music.spotui.ui.components.AccountsSheet(onDismiss = { accounts = false }, onLeave = { accounts = false; onDismiss() })
+            SheetRow(stringResource(R.string.accounts_switch_row), com.music.spotui.ui.components.switchAccountDetail()) {
+                accounts = true
+            }
+            SheetRow(stringResource(R.string.connect_device_menu_logout), null) {
+                onDismiss()
+                SessionActions.logout(Graph.app)
             }
         }
     }

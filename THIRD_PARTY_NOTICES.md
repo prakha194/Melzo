@@ -54,6 +54,11 @@ adapted from BitChord's `app/src/main/java/com/music/bitchord/playback/Equalizer
 `b690dc1`): its state-variable filter sections, their coefficients and the gliding of a change. It
 stays under the GPL-3.0-or-later and says so in its header.
 
+The local player's volume levelling, `base/app/src/main/java/com/music/spotui/di/LoudnessProcessor.kt`,
+is adapted from BitChord's `app/src/main/java/com/music/bitchord/playback/LoudnessProcessor.kt` (commit
+`acf219a`): its per-player gain, glide and peak limiter. It stays under the GPL-3.0-or-later and says
+so in its header.
+
 No BitChord fonts, icons, images or brand are included.
 
 Code that BitChord itself carries from other projects, kept with its own header:
@@ -144,6 +149,26 @@ files, so they can be checked or redone. The texts of the LGPL-3.0 and of the GP
 scripts. The ideas behind `catalog/.../Match.kt` also come from Mornye.
 
 Each script runs as source and can be replaced without rebuilding the application.
+
+## uBlock Origin filter lists (uAssets) — GPL-3.0
+https://github.com/uBlockOrigin/uAssets (`filters/filters-2020.txt`, commit `dbc8ad17eea0d9f2815553c099643995f7a0ae83`)
+
+By Raymond Hill and the uAssets contributors. The ad blocker for Spotify Connect devices
+(`base/api-spotify/.../bridge/AdBlock.kt`) refuses the hosts and paths of
+`base/api-spotify/src/main/resources/bridge/page-filter.txt`; the rules marked "uAssets" there are
+taken from the list's open.spotify.com block (`2mdn.net`, `adxcel.com`, `amillionads.com`,
+`adstudio-assets.scdn.co`, the `scdn.co/mp3-ad/` path), reduced to a host or a host and path. No
+filter engine, cosmetic rule or scriptlet is taken.
+
+## EasyList / EasyPrivacy — GPL-3.0 or CC BY-SA 3.0
+https://github.com/easylist/easylist (`easyprivacy/easyprivacy_specific.txt`, commit `876bb4a29090827868d93ab8d00960f959e16028`)
+
+By the EasyList authors. The tracker rule marked "EasyPrivacy" in the same list
+(`spotifycdn.com/cdn/js/retargeting-pixels.`) comes from it, used under the GPL-3.0.
+
+## Hush — GPL-3.0
+
+By coldMEW. The ad host `s0.2mdn.net` came from its list; it is now covered by uAssets' `2mdn.net`.
 
 ## Horologist and Wear Compose Material3 — Apache-2.0
 https://github.com/google/horologist

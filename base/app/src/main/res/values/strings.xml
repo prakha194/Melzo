@@ -17,5 +17,8 @@
     <string name="energy_saver_title" tools:ignore="MissingTranslation">Battery saver</string>
     <string name="energy_saver_summary" tools:ignore="MissingTranslation">Canvas off, lighter videos and animations</string>
     <string name="playback_seek_description" tools:ignore="MissingTranslation">Playback position</string>
+    <string name="account_page_title">Spotify account</string>
+    <string name="account_page_detail">Plan, privacy and devices, on spotify.com</string>
     <string name="player_source_downloaded">Downloaded</string>
+    <string name="extension_change_write">Now also allowed to send to Spotify: %1$s</string>
 </resources>

@@ -53,6 +53,7 @@
     <string name="extensions_cat_all">Wszystkie</string>
     <string name="extensions_cat_lyrics">Teksty</string>
     <string name="extensions_cat_playback">Odtwarzanie i dźwięk</string>
+    <string name="extensions_cat_library">Biblioteka</string>
     <string name="extensions_cat_discovery">Odkrywanie</string>
     <string name="extensions_cat_stats">Statystyki</string>
     <string name="extensions_cat_look">Wygląd</string>
@@ -63,6 +64,7 @@
     <string name="extensions_browse_store">Przeglądaj sklep</string>
     <string name="extensions_other_ways">Inne sposoby instalacji</string>
     <string name="extensions_empty_title">Czym są rozszerzenia?</string>
+    <string name="extensions_empty_body">Rozszerzenia dodają do Spoon to, czego aplikacja sama nie robi: teksty z innych źródeł, skąd pochodzi dźwięk lub plik do pobrania danego utworu, narzędzia korzystające z Twojego konta Spotify. Każde działa w piaskownicy i pyta, zanim do czegokolwiek sięgnie. Dodaj repozytorium, aby je przeglądać, albo zainstaluj paczkę, której ufasz.</string>
     <string name="extensions_official_badge">Oficjalne</string>
     <string name="extensions_repo_yours">Dodane przez Ciebie</string>
     <string name="extensions_repo_community">Społeczność</string>
@@ -106,6 +108,8 @@
     <string name="action_library_read">Czytać Twoją bibliotekę</string>
     <string name="action_library_write">Zmieniać Twoją bibliotekę</string>
     <string name="action_playlists_write">Edytować Twoje playlisty</string>
+    <string name="action_spotify_catalog">Przeglądać Spotify</string>
+    <string name="action_spotify_raw">Pełny dostęp do Spotify</string>
     <string name="action_network">Korzystać z internetu</string>
     <string name="action_network_any">Korzystać z dowolnej strony</string>
     <string name="action_webview_page">Własna strona internetowa</string>
@@ -121,6 +125,7 @@
     <string name="area_audio">Dźwięk i pobieranie</string>
     <string name="area_home">Strona główna i wyszukiwanie</string>
     <string name="area_menus">Menu i odtwarzacz</string>
+    <string name="area_library">Biblioteka i Spotify</string>
     <string name="area_other">Strony i inne</string>
     <string name="area_activity">Ostatnia aktywność</string>
     <string name="area_turn_off">Wyłącz</string>
@@ -129,6 +134,7 @@
     <string name="area_make_active">Ustaw jako główne dla: %1$s</string>
     <!-- Install prompt -->
     <string name="ext_third_party_notice">Rozszerzenie innej firmy lub osoby, niesprawdzone przez Spoon, na odpowiedzialność autora.</string>
+    <string name="ext_risk_accept">Rozumiem, że to rozszerzenie pochodzi od strony trzeciej, i instaluję je na własną odpowiedzialność</string>
     <string name="ext_clash_exclusive">Zastępuje %1$s, które obecnie zapewnia %2$s</string>
     <string name="ext_clash_conflict">Niezgodne z %1$s (zainstalowanym)</string>
     <string name="ext_clash_replaces">Zastępuje %1$s (zainstalowane)</string>
@@ -194,9 +200,14 @@
     <string name="extension_change_replaces">Wyłącza %1$s po zainstalowaniu</string>
     <string name="extension_change_conflicts">Odmawia działania razem z %1$s</string>
     <string name="action_webview_auth">Zaloguj się na stronie internetowej</string>
+    <string name="extension_confirm_once">Zezwól jednorazowo</string>
+    <string name="extension_confirm_always">Zawsze zezwalaj na %1$s</string>
     <string name="ext_auth_title">%1$s: logowanie</string>
     <string name="ext_auth_close">Zamknij</string>
     <string name="ext_auth_notice">Własna strona: to, co wpiszesz, i jej pliki cookie zostają w Spoon. Rozszerzenie dostaje tylko końcowy adres strony.</string>
+    <string name="ext_grants_title">Zawsze dozwolone</string>
+    <string name="ext_grants_note">Zmiany w Spotify, które to rozszerzenie wykonuje bez pytania. Cofnij jedną, by znów być pytanym.</string>
+    <string name="ext_grant_revoke">Cofnij</string>
     <string name="extensions_unreadable_file">Nie udało się odczytać pliku</string>
     <string name="ext_welcome_title">Zainstalowano: %1$s</string>
     <string name="ext_welcome_steps">Na koniec</string>

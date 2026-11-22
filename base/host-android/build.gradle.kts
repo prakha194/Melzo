@@ -1,4 +1,4 @@
-// Android host: the app's neutral music platform, plus the
+// Android host: runs the Web Player in a WebView and exposes it as a MyspotiApi, plus the
 // playback service (media session, notification, Android Auto browsing).
 plugins {
     alias(libs.plugins.android.library)
@@ -18,9 +18,11 @@ android {
 }
 
 dependencies {
-    api(project(":api"))
+    api(project(":api-spotify"))
     // The hidden page of the other account providers (HiddenPageHost).
     api(project(":api-web"))
+    // NativeTokens: the page's tokens as the native engine's TokenSource (pure Kotlin, no Android code).
+    implementation(project(":engine"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.media)
@@ -28,6 +30,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.brotli)
     implementation(libs.okhttp.zstd)
+    implementation(libs.play.services.cronet)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 
     testImplementation("junit:junit:4.13.2")

@@ -26,6 +26,8 @@ object DataSaver {
     var metered by mutableStateOf(false)
         private set
     private var context: Context? = null
+    private val main by lazy { android.os.Handler(android.os.Looper.getMainLooper()) }
+    @Volatile private var wasActive = false
 
     /** The saver is on and applies right now. */
     val active: Boolean get() = enabled && metered
@@ -41,6 +43,16 @@ object DataSaver {
     /** For OkHttp clients. */
     val interceptor = okhttp3.Interceptor { chain -> check(); chain.proceed(chain.request()) }
 
+    /** Shuts the hidden Spotify player down when the saver starts applying, rebuilds it when it stops. */
+    private fun changed() {
+        val now = active
+        if (now == wasActive) return
+        wasActive = now
+        main.post {
+            if (now) app.myspoti.host.android.MyspotiRuntime.suspendPlayer()
+            else app.myspoti.host.android.MyspotiRuntime.resume()
+        }
+    }
 
     fun init(c: Context) {
         if (context != null) return
@@ -49,19 +61,22 @@ object DataSaver {
         enabled = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY, false)
         val cm = app.getSystemService(ConnectivityManager::class.java) ?: return
         metered = cm.isActiveNetworkMetered
+        wasActive = active
         runCatching {
             cm.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
                 override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
                     val was = metered
                     metered = !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
                     if (was && !metered) com.music.spotui.data.offline.OfflineCollections.onUnmetered(app)
-                    // Wi-Fi and mobile data each have their own extension settings.
-                    if (was != metered) { com.music.spotui.extensions.Extensions.networkChanged() }
+                    // Wi-Fi and mobile data each have their own streaming level.
+                    if (was != metered) { com.music.spotui.data.preferences.applyStreamingQuality(app); com.music.spotui.extensions.Extensions.networkChanged() }
+                    changed()
                 }
                 override fun onLost(network: Network) {
                     val was = metered
                     metered = cm.isActiveNetworkMetered
-                    if (was != metered) { com.music.spotui.extensions.Extensions.networkChanged() }
+                    if (was != metered) { com.music.spotui.data.preferences.applyStreamingQuality(app); com.music.spotui.extensions.Extensions.networkChanged() }
+                    changed()
                 }
             })
         }
@@ -69,6 +84,7 @@ object DataSaver {
 
     fun set(on: Boolean) {
         enabled = on
+        changed()
         context?.getSharedPreferences(PREFS, Context.MODE_PRIVATE)?.edit()?.putBoolean(KEY, on)?.apply()
     }
 }

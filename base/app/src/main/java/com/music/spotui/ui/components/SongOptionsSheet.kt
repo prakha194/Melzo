@@ -177,15 +177,15 @@ fun SongOptionsSheet(
 
             MenuRow(
                 icon = if (liked) null else Icons.Outlined.AddCircleOutline,
-                label = stringResource(if (liked) R.string.lbl_liked_songs else R.string.lbl_like_add),
+                label = stringResource(if (liked) R.string.collection_liked_songs_title else R.string.aligned_curation_context_menu_item_add_to_liked_songs),
                 enabled = hasId,
                 leading = if (liked) ({ LikedBadge() }) else null,
             ) {
                 SongPlayer.setTrackSaved(song.spotifyTrackId, !liked)
-                toast(context.getString(if (liked) R.string.lbl_unliked else R.string.lbl_liked))
+                toast(context.getString(if (liked) R.string.snackbar_removed_from_liked_songs else R.string.snackbar_added_to_liked_songs))
                 onDismiss()
             }
-            MenuRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.lbl_add_to_playlist), enabled = hasId) { showSavedIn = true }
+            MenuRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.context_menu_add_to_playlist), enabled = hasId) { showSavedIn = true }
             // Copy into another playlist: one tap, one target, said out loud by the toast.
             MenuRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.context_menu_add_to_another_playlist), enabled = hasId) { showAddTo = true }
             // Only where a playlist is on screen (A11): the row disappears at once, the
@@ -197,16 +197,16 @@ fun SongOptionsSheet(
                 }
             }
             if (!nowPlaying) {
-                MenuRow(Icons.AutoMirrored.Filled.PlaylistPlay, stringResource(R.string.lbl_play_next), enabled = SongQueue.canQueue(song)) {
+                MenuRow(Icons.AutoMirrored.Filled.PlaylistPlay, stringResource(R.string.context_menu_play_next), enabled = SongQueue.canQueue(song)) {
                     SongQueue.add(context, song, next = true)
                     onDismiss()
                 }
-                MenuRow(Icons.AutoMirrored.Filled.QueueMusic, stringResource(R.string.lbl_queue_add), enabled = SongQueue.canQueue(song)) {
+                MenuRow(Icons.AutoMirrored.Filled.QueueMusic, stringResource(R.string.context_menu_add_to_queue), enabled = SongQueue.canQueue(song)) {
                     SongQueue.add(context, song)
                     onDismiss()
                 }
             } else if (onOpenQueue != null) {
-                MenuRow(Icons.AutoMirrored.Filled.QueueMusic, stringResource(R.string.lbl_open_queue), enabled = !isRadio) {
+                MenuRow(Icons.AutoMirrored.Filled.QueueMusic, stringResource(R.string.context_menu_go_to_queue), enabled = !isRadio) {
                     onDismiss()
                     onOpenQueue()
                 }
@@ -214,7 +214,7 @@ fun SongOptionsSheet(
             val offline = com.music.spotui.data.offline.OfflineStore.statusOf(downloadKey)
             when {
                 offline == com.music.spotui.data.offline.OfflineStatus.Done -> MenuRow(
-                    null, stringResource(R.string.lbl_download_remove),
+                    null, stringResource(R.string.context_menu_undownload),
                     leading = { DownloadBadge(offline, size = 22.dp) },
                 ) {
                     // An episode is kept by its own key (no list holds it): it goes straight.
@@ -222,7 +222,7 @@ fun SongOptionsSheet(
                         com.music.spotui.data.offline.PodcastDownloader.remove(downloadKey)
                         true
                     } else com.music.spotui.data.offline.OfflineCollections.removeSong(downloadKey)
-                    toast(if (gone) context.getString(R.string.lbl_download_removed) else com.music.spotui.data.offline.OfflineCollections.keptMessage(context, downloadKey))
+                    toast(if (gone) context.getString(R.string.toast_undownload) else com.music.spotui.data.offline.OfflineCollections.keptMessage(context, downloadKey))
                     onDismiss()
                 }
                 offline == com.music.spotui.data.offline.OfflineStatus.Queued ||
@@ -237,7 +237,7 @@ fun SongOptionsSheet(
                 // Enabled for episodes too: refused ones keep the error badge, and a tap tries
                 // again (the audio URL is resolved at that moment, so a retry can succeed).
                 else -> MenuRow(
-                    Icons.Outlined.ArrowCircleDown, stringResource(R.string.lbl_download),
+                    Icons.Outlined.ArrowCircleDown, stringResource(R.string.context_menu_download),
                     enabled = downloadKey.isNotBlank(),
                     leading = if (offline != null) ({ DownloadBadge(offline, size = 22.dp) }) else null,
                 ) {
@@ -247,22 +247,22 @@ fun SongOptionsSheet(
                     } else com.music.spotui.ui.components.DownloadAsk.start(context) { q ->
                         com.music.spotui.data.offline.OfflineCollections.downloadSong(song, q)
                         com.music.spotui.di.Haptics.confirm()
-                        toast(context.getString(R.string.lbl_downloading))
+                        toast(context.getString(R.string.download_notification_downloading))
                     }
                     onDismiss()
                 }
             }
-            MenuRow(Icons.Outlined.Radio, stringResource(R.string.lbl_song_radio), enabled = hasId) {
+            MenuRow(Icons.Outlined.Radio, stringResource(R.string.context_menu_go_to_song_radio), enabled = hasId) {
                 onDismiss()
                 playerViewModel.goToSongRadio(song.spotifyTrackId, song.title,
                     navigate = { route -> navController.navigate(route) },
                     onFailed = { toast(context.getString(R.string.song_radio_failed)) })
             }
-            MenuRow(Icons.Default.Album, stringResource(R.string.lbl_open_album), enabled = !isRadio && (song.album.isNotBlank() || song.albumId.isNotBlank())) {
+            MenuRow(Icons.Default.Album, stringResource(R.string.context_menu_browse_album), enabled = !isRadio && (song.album.isNotBlank() || song.albumId.isNotBlank())) {
                 onDismiss()
                 navController.navigate(albumRoute(song.album, song.singer, song.albumId))
             }
-            MenuRow(Icons.Outlined.Person, stringResource(R.string.lbl_open_artist), enabled = !isRadio && song.singer.isNotBlank()) {
+            MenuRow(Icons.Outlined.Person, stringResource(R.string.context_menu_browse_artist), enabled = !isRadio && song.singer.isNotBlank()) {
                 onDismiss()
                 playerViewModel.goToArtist(song.spotifyTrackId, song.singer) { route -> navController.navigate(route) }
             }
@@ -332,16 +332,20 @@ fun SongOptionsSheet(
                     navController.navigate(com.music.spotui.ui.navigation.Routes.Equalizer.route)
                 }
             }
-            MenuRow(Icons.Outlined.Share, stringResource(R.string.lbl_share), enabled = hasId || isRadio) {
+            MenuRow(Icons.Outlined.Share, stringResource(R.string.context_menu_share), enabled = hasId || isRadio) {
+                // A station has no Spotify uri: shared as plain text, never through a Spotify Code.
                 if (isRadio) com.music.spotui.radio.RadioPlayer.share(context)
-                else ShareItem.show(ShareTarget("spotify:track:${song.spotifyTrackId}", song.title, song.singer, song.coverUri))
+                else SpotifyCode.show(ShareTarget("spotify:track:${song.spotifyTrackId}", song.title, song.singer, song.coverUri))
                 onDismiss()
+            }
+            if (hasId && !isRadio) MenuRow(Icons.Outlined.ContentCopy, stringResource(R.string.copy_link)) {
+                SpotifyCode.copyLink(context, "spotify:track:${song.spotifyTrackId}"); onDismiss()
             }
             if (nowPlaying) {
                 val active = SongPlayer.sleepEndsAt.value != null
                 MenuRow(
                     Icons.Default.Bedtime,
-                    stringResource(R.string.lbl_sleep_timer),
+                    stringResource(R.string.context_menu_sleep_timer),
                     tint = if (active) MenuGreen else MenuIconColor,
                 ) { showSleep = true }
                 // The source line of the player is turned off: its sheet is here instead.

@@ -89,7 +89,7 @@ object NewReleaseNotifier {
         val compat = NotificationManagerCompat.from(context)
         releases.forEach { a ->
             val id = a.uri.substringAfterLast(':')
-            val open = Intent().setClassName(context, "app.myspoti.MainActivity")
+            val open = Intent(Intent.ACTION_VIEW, Uri.parse("https://open.spotify.com/album/$id")).setClassName(context, "app.myspoti.MainActivity")
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             val tap = PendingIntent.getActivity(context, id.hashCode(), open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
             val artist = a.artists.joinToString { it.name }

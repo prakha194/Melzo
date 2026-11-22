@@ -4,7 +4,7 @@
     <string name="sources_download_title">Sources de téléchargement</string>
     <string name="sources_audio_footer">Demandées de haut en bas pour chaque titre : la première qui l\'a le joue. Les flèches changent l\'ordre.</string>
     <string name="sources_download_footer">Demandées de haut en bas : la première qui a le titre fournit le fichier. Les flèches changent l\'ordre.</string>
-    <string name="sources_account">Compte musical</string>
+    <string name="sources_account">Spotify</string>
     <string name="sources_account_detail">Joue quand aucune source au-dessus n\'a le titre</string>
     <string name="sources_account_player">Le lecteur de votre compte</string>
     <string name="sources_ready">Prête</string>
@@ -14,7 +14,7 @@
     <string name="sources_last_used">Dernière : %1$s, %2$s</string>
     <string name="sources_open">Ouvrir l\'extension</string>
     <string name="sources_order_hint">Les sources sont demandées dans l\'ordre réglé dans les Paramètres (Lecture, Téléchargements).</string>
-    <string name="sources_below_account">Pas demandée : le compte musical est au-dessus</string>
+    <string name="sources_below_account">Pas demandée : Spotify est au-dessus</string>
     <string name="source_pick_title">Source</string>
     <string name="source_pick_detail">Joue ce titre et les suivants depuis la source choisie, jusqu\'au redémarrage de Spoon. Ton ordre dans les Paramètres reste inchangé.</string>
     <string name="source_pick_playing">En cours de lecture</string>

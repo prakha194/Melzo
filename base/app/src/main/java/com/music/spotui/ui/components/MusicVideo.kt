@@ -149,13 +149,13 @@ private fun SwitchPill(on: Boolean) {
     ) {
         Icon(
             if (on) Icons.Default.MusicNote else Icons.Default.OndemandVideo,
-            contentDescription = stringResource(R.string.av_toggle_desc),
+            contentDescription = stringResource(R.string.av_content_desc),
             tint = Color.White,
             modifier = Modifier.size(16.dp),
         )
         Spacer(Modifier.width(8.dp))
         Text(
-            stringResource(if (on) R.string.av_to_audio else R.string.av_to_video),
+            stringResource(if (on) R.string.av_switch_to_audio else R.string.av_switch_to_video),
             color = Color.White,
             fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
@@ -227,7 +227,7 @@ fun VideoFullscreenOverlay() {
                     horizontalArrangement = Arrangement.spacedBy(40.dp),
                     modifier = Modifier.align(Alignment.Center),
                 ) {
-                    RoundIcon(R.drawable.ic_player_skip, stringResource(R.string.lbl_previous), 30, flip = true) { touch++; SongPlayer.previous() }
+                    RoundIcon(R.drawable.ic_player_skip, stringResource(R.string.np_content_desc_prev), 30, flip = true) { touch++; SongPlayer.previous() }
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
@@ -238,12 +238,12 @@ fun VideoFullscreenOverlay() {
                     ) {
                         PlayPauseIcon(
                             playing = playing,
-                            contentDescription = if (playing) stringResource(R.string.lbl_pause) else stringResource(R.string.lbl_play),
+                            contentDescription = if (playing) stringResource(R.string.content_description_pause_button) else stringResource(R.string.content_description_play_button),
                             tint = Color.Black,
                             modifier = Modifier.size(30.dp),
                         )
                     }
-                    RoundIcon(R.drawable.ic_player_skip, stringResource(R.string.lbl_next), 30) { touch++; SongPlayer.next() }
+                    RoundIcon(R.drawable.ic_player_skip, stringResource(R.string.np_content_desc_next), 30) { touch++; SongPlayer.next() }
                 }
                 Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp)) {
                     SpotifySeekBar(

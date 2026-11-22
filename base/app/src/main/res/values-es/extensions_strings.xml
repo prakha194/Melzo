@@ -53,6 +53,7 @@
     <string name="extensions_cat_all">Todas</string>
     <string name="extensions_cat_lyrics">Letras</string>
     <string name="extensions_cat_playback">Reproducción y audio</string>
+    <string name="extensions_cat_library">Biblioteca</string>
     <string name="extensions_cat_discovery">Descubrir</string>
     <string name="extensions_cat_stats">Estadísticas</string>
     <string name="extensions_cat_look">Aspecto</string>
@@ -63,6 +64,7 @@
     <string name="extensions_browse_store">Explorar la tienda</string>
     <string name="extensions_other_ways">Otras formas de instalar</string>
     <string name="extensions_empty_title">¿Qué son las extensiones?</string>
+    <string name="extensions_empty_body">Las extensiones añaden a Spoon lo que no hace por sí mismo: letras de otras fuentes, de dónde viene el audio o la descarga de una canción, herramientas que usan tu cuenta de Spotify. Cada una se ejecuta en un entorno aislado y pregunta antes de acceder a nada. Añade un repositorio para explorarlas o instala un paquete en el que confíes.</string>
     <string name="extensions_official_badge">Oficial</string>
     <string name="extensions_repo_yours">Añadido por ti</string>
     <string name="extensions_repo_community">Comunidad</string>
@@ -106,6 +108,8 @@
     <string name="action_library_read">Leer tu biblioteca</string>
     <string name="action_library_write">Modificar tu biblioteca</string>
     <string name="action_playlists_write">Editar tus listas</string>
+    <string name="action_spotify_catalog">Explorar Spotify</string>
+    <string name="action_spotify_raw">Acceso completo a Spotify</string>
     <string name="action_network">Usar internet</string>
     <string name="action_network_any">Usar cualquier sitio web</string>
     <string name="action_webview_page">Su propia página web</string>
@@ -121,6 +125,7 @@
     <string name="area_audio">Audio y descargas</string>
     <string name="area_home">Inicio y búsqueda</string>
     <string name="area_menus">Menús y reproductor</string>
+    <string name="area_library">Biblioteca y Spotify</string>
     <string name="area_other">Páginas y más</string>
     <string name="area_activity">Actividad reciente</string>
     <string name="area_turn_off">Desactivar</string>
@@ -129,6 +134,7 @@
     <string name="area_make_active">Usarla para %1$s</string>
     <!-- Install prompt -->
     <string name="ext_third_party_notice">Extensión de terceros, sin revisar por Spoon, bajo la responsabilidad de su autor.</string>
+    <string name="ext_risk_accept">Entiendo que esta extensión la hace un tercero y la instalo bajo mi propia responsabilidad</string>
     <string name="ext_clash_exclusive">Sustituye a %1$s, que ahora proporciona %2$s</string>
     <string name="ext_clash_conflict">Incompatible con %1$s (instalada)</string>
     <string name="ext_clash_replaces">Sustituye a %1$s (instalada)</string>
@@ -195,9 +201,14 @@
     <string name="extension_change_replaces">Desactiva %1$s al instalarse</string>
     <string name="extension_change_conflicts">Se niega a funcionar con %1$s</string>
     <string name="action_webview_auth">Iniciar sesión en un sitio web</string>
+    <string name="extension_confirm_once">Permitir una vez</string>
+    <string name="extension_confirm_always">Permitir siempre %1$s</string>
     <string name="ext_auth_title">%1$s: inicio de sesión</string>
     <string name="ext_auth_close">Cerrar</string>
     <string name="ext_auth_notice">Una página propia: lo que se escribe y sus cookies se quedan en Spoon. La extensión solo recibe la dirección final de la página.</string>
+    <string name="ext_grants_title">Siempre permitido</string>
+    <string name="ext_grants_note">Cambios en Spotify que esta extensión hace sin preguntar. Revocar uno hace que vuelva a pedir confirmación.</string>
+    <string name="ext_grant_revoke">Revocar</string>
     <string name="extensions_unreadable_file">No se pudo leer el archivo</string>
     <string name="ext_welcome_title">%1$s está instalada</string>
     <string name="ext_welcome_steps">Para terminar</string>

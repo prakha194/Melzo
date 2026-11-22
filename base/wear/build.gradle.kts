@@ -13,15 +13,14 @@ android {
     val version = (findProperty("appVersionName") as String?) ?: "1.0.0"
     val beta = findProperty("appVersionName") == null || version.contains("-beta")
     defaultConfig {
-        // As the phone's app (base/app): betas "app.orpheon.beta", releases "app.orpheon", debug builds ".dev".
-        applicationId = if (beta) "app.orpheon.beta" else "app.orpheon"
+        // As the phone's app (base/app): one package for every channel.
+        applicationId = "app.myspoti"
         minSdk = 30
         targetSdk = 36
         versionCode = (findProperty("appVersionCode") as String?)?.toIntOrNull() ?: 200
         versionName = version
     }
     buildTypes {
-        debug { applicationIdSuffix = ".dev" }
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -43,7 +42,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":engine-android"))
     // The listen mirror on the watch: the sync's rules on the native engine (EngineSyncPage).
+    implementation(project(":api-spotify"))
     // The phone's extensions run on the watch too, and the Wi-Fi link to the phone.
     implementation(project(":extensions"))
     implementation(project(":pass"))
@@ -74,7 +75,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("io.github.takahirom.roborazzi:roborazzi:1.40.1")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.40.1")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.79.0")
     testImplementation(platform(libs.compose.bom))
     testImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

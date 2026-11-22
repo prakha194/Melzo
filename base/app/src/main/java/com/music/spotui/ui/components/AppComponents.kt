@@ -187,7 +187,7 @@ fun MiniPlayer() {
     val route = rememberAudioRoute()
     val routeLabel = when (route.kind) {
         AudioRoute.Kind.SPEAKER -> null
-        AudioRoute.Kind.BLUETOOTH -> route.name.ifBlank { stringResource(R.string.lbl_bluetooth) }
+        AudioRoute.Kind.BLUETOOTH -> route.name.ifBlank { stringResource(R.string.label_bluetooth) }
         AudioRoute.Kind.WIRED -> stringResource(R.string.headphones)
     }
 
@@ -317,7 +317,7 @@ fun MiniPlayer() {
                         .graphicsLayer { alpha = if (page == 1) blend?.wordsAlpha() ?: 1f else 1f }) {
                         if (remote == null) {
                             Text(
-                                text = if (adPlaying) stringResource(R.string.ad_now) else (m.title), color = Color.White, fontSize = 13.sp, lineHeight = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                text = if (adPlaying) stringResource(R.string.ad_playing) else (m.title), color = Color.White, fontSize = 13.sp, lineHeight = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                 // Once per song then rests: the mini player is always on screen.
                                 modifier = Modifier.titleMarquee(iterations = 1),
                             )
@@ -385,13 +385,13 @@ fun MiniPlayer() {
                     .wrapContentSize()
                     .size(22.dp)
                     ,
-                contentDescription = stringResource(R.string.lbl_devices),
+                contentDescription = stringResource(R.string.mr_user_route_category_name),
             )
             if (SongPlayer.canLike) com.music.spotui.ui.screens.AddButton(song = { com.music.spotui.ui.screens.nowPlayingSong(vm) }, liked = liked, size = 24.dp, touch = MINI_TOUCH) { vm.updateLikeState(true) }
             Spacer(modifier = Modifier.width(1.dp))
             com.music.spotui.ui.components.PlayPauseIcon(
                 playing = songPlayingState,
-                contentDescription = if (songPlayingState) stringResource(R.string.lbl_pause) else stringResource(R.string.lbl_play),
+                contentDescription = if (songPlayingState) stringResource(R.string.content_description_pause_button) else stringResource(R.string.content_description_play_button),
                 tint = Color.White,
                 modifier = Modifier.size(MINI_TOUCH).pressable(0.96f) {
                         if (songPlayingState) {

@@ -53,6 +53,7 @@
     <string name="extensions_cat_all">全部</string>
     <string name="extensions_cat_lyrics">歌词</string>
     <string name="extensions_cat_playback">播放与音频</string>
+    <string name="extensions_cat_library">音乐库</string>
     <string name="extensions_cat_discovery">发现</string>
     <string name="extensions_cat_stats">统计</string>
     <string name="extensions_cat_look">外观</string>
@@ -63,6 +64,7 @@
     <string name="extensions_browse_store">浏览商店</string>
     <string name="extensions_other_ways">其他安装方式</string>
     <string name="extensions_empty_title">什么是扩展？</string>
+    <string name="extensions_empty_body">扩展为 Spoon 增添其自身不具备的功能：来自其他来源的歌词、歌曲音频或下载的来源、使用你 Spotify 账号的工具。每个扩展都在沙盒中运行，访问任何内容之前都会先征求你的同意。添加仓库即可浏览扩展，也可以安装你信任的安装包。</string>
     <string name="extensions_official_badge">官方</string>
     <string name="extensions_repo_yours">由你添加</string>
     <string name="extensions_repo_community">社区</string>
@@ -106,6 +108,8 @@
     <string name="action_library_read">读取你的音乐库</string>
     <string name="action_library_write">修改你的音乐库</string>
     <string name="action_playlists_write">编辑你的播放列表</string>
+    <string name="action_spotify_catalog">浏览 Spotify</string>
+    <string name="action_spotify_raw">完整访问 Spotify</string>
     <string name="action_network">使用互联网</string>
     <string name="action_network_any">使用任何网站</string>
     <string name="action_webview_page">自有网页</string>
@@ -121,6 +125,7 @@
     <string name="area_audio">音频与下载</string>
     <string name="area_home">首页与搜索</string>
     <string name="area_menus">菜单与播放器</string>
+    <string name="area_library">音乐库与 Spotify</string>
     <string name="area_other">页面及其他</string>
     <string name="area_activity">最近活动</string>
     <string name="area_turn_off">关闭</string>
@@ -129,6 +134,7 @@
     <string name="area_make_active">设为「%1$s」的首选</string>
     <!-- Install prompt -->
     <string name="ext_third_party_notice">第三方扩展，未经 Spoon 审核，由其作者负责。</string>
+    <string name="ext_risk_accept">我了解此扩展由第三方制作，并自行承担安装责任</string>
     <string name="ext_clash_exclusive">替换 %1$s（目前由 %2$s 提供）</string>
     <string name="ext_clash_conflict">与 %1$s（已安装）不兼容</string>
     <string name="ext_clash_replaces">替换 %1$s（已安装）</string>
@@ -195,9 +201,14 @@
     <string name="extension_change_replaces">安装后会关闭 %1$s</string>
     <string name="extension_change_conflicts">拒绝与 %1$s 同时运行</string>
     <string name="action_webview_auth">在网站上登录</string>
+    <string name="extension_confirm_once">仅允许一次</string>
+    <string name="extension_confirm_always">始终允许 %1$s</string>
     <string name="ext_auth_title">%1$s：登录</string>
     <string name="ext_auth_close">关闭</string>
     <string name="ext_auth_notice">独立的网页：您输入的内容及其 Cookie 保留在 Spoon 中。扩展程序只获取网页最终停留的地址。</string>
+    <string name="ext_grants_title">始终允许</string>
+    <string name="ext_grants_note">此扩展无需询问即可对 Spotify 进行的更改。撤销某项后将重新询问。</string>
+    <string name="ext_grant_revoke">撤销</string>
     <string name="extensions_unreadable_file">无法读取该文件</string>
     <string name="ext_welcome_title">已安装 %1$s</string>
     <string name="ext_welcome_steps">最后一步</string>

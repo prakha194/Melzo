@@ -7,5 +7,6 @@
     <string name="metadata_asked">सोधिन्छ</string>
     <string name="metadata_off">बन्द: कहिल्यै सोधिँदैन</string>
     <string name="metadata_reset">पूर्वनिर्धारित क्रममा फर्कनुहोस्</string>
+    <string name="metadata_not_on_spotify">Spotify मा भेटिएन: यो गीत अझै बजाउन सकिँदैन</string>
     <string name="metadata_switch">%1$s लाई सोध्नुहोस्</string>
 </resources>

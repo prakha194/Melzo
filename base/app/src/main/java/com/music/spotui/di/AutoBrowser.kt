@@ -146,7 +146,7 @@ object AutoBrowser {
     }
 
     private fun libraryTab(context: Context): List<MediaItem> = listOf(
-        browsable("liked", context.getString(R.string.lbl_liked_songs), resource(context, "aa_ic_liked"), grid = false),
+        browsable("liked", context.getString(R.string.collection_liked_songs_title), resource(context, "aa_ic_liked"), grid = false),
         browsable("playlists", context.getString(R.string.aa_playlists), resource(context, "aa_ic_playlists"), grid = false),
         browsable("albums", context.getString(R.string.aa_albums), resource(context, "aa_ic_albums"), grid = false),
         browsable("artists", context.getString(R.string.aa_artists), resource(context, "aa_ic_artists"), grid = false),
@@ -494,14 +494,13 @@ object AutoBrowser {
 }
 
 /**
- * Cover art for Android Auto, which only shows local (content://) artwork: serves an image of
- * the catalog providers' image hosts through Glide's disk cache. Other hosts are refused.
+ * Cover art for Android Auto, which only shows local (content://) artwork: serves an
+ * image from Spotify's image CDN through Glide's disk cache. Other hosts are refused.
  */
 class ArtworkProvider : android.content.ContentProvider() {
     companion object {
         private val AUTHORITY = app.myspoti.engine.BuildConfig.APPLICATION_ID + ".artwork"
-        /** The image hosts of the catalog providers (Deezer, iTunes, MusicBrainz's cover archive, YouTube Music), and their subdomains. */
-        private val allowedDomains = listOf("dzcdn.net", "mzstatic.com", "coverartarchive.org", "archive.org", "ytimg.com", "googleusercontent.com")
+        private val allowedHosts = setOf("i.scdn.co", "mosaic.scdn.co", "image-cdn-ak.spotifycdn.com", "image-cdn-fa.spotifycdn.com", "thisis-images.spotifycdn.com", "seeded-session-images.scdn.co", "pickasso.spotifycdn.com")
 
         /** A downloaded song's cover: its file (the car is offline), else the CDN image. */
         fun uriForDownloaded(t: com.music.spotui.data.offline.OfflineTrack): Uri? {
@@ -516,15 +515,14 @@ class ArtworkProvider : android.content.ContentProvider() {
         }
 
         /**
-         * Only https URLs on the image hosts: a `file:` URL whose authority happens to be
-         * an allowed host (`file://cdn-images.dzcdn.net/data/data/...`) must never reach Glide,
+         * Only https URLs on the CDN hosts: a `file:` URL whose authority happens to be
+         * an allowed host (`file://i.scdn.co/data/data/...`) must never reach Glide,
          * which would open the local path and hand this app's private files to any caller
          * (the provider is exported, for Android Auto).
          */
         private fun allowed(url: String): Boolean {
             val u = Uri.parse(url)
-            val host = u.host?.lowercase() ?: return false
-            return u.scheme == "https" && allowedDomains.any { host == it || host.endsWith(".$it") }
+            return u.scheme == "https" && u.host in allowedHosts
         }
     }
 

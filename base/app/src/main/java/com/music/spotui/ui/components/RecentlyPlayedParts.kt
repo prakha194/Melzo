@@ -62,11 +62,11 @@ internal fun dayLabel(dayMs: Long?): String {
 
 @Composable
 internal fun kindLabel(kind: MediaKind): String = when (kind) {
-    MediaKind.PLAYLIST -> stringResource(R.string.lbl_playlist)
-    MediaKind.ALBUM -> stringResource(R.string.lbl_type_album)
-    MediaKind.ARTIST -> stringResource(R.string.lbl_artist)
-    MediaKind.SHOW -> stringResource(R.string.lbl_podcasts)
-    MediaKind.EPISODE -> stringResource(R.string.saved_episodes_title)
+    MediaKind.PLAYLIST -> stringResource(R.string.assisted_curation_search_playlist)
+    MediaKind.ALBUM -> stringResource(R.string.album_type_album)
+    MediaKind.ARTIST -> stringResource(R.string.artist_subtitle)
+    MediaKind.SHOW -> stringResource(R.string.ad_category_title_podcasts)
+    MediaKind.EPISODE -> stringResource(R.string.your_episodes_title)
     else -> ""
 }
 

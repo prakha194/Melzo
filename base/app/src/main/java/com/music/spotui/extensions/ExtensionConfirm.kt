@@ -20,6 +20,8 @@ import com.music.spotui.ui.theme.AppAccent
 import com.music.spotui.ui.theme.AppMuted
 import com.music.spotui.ui.theme.AppText
 import com.music.spotui.ui.theme.tone
+import app.myspoti.extensions.Consent
+import app.myspoti.extensions.RawGrant
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -30,24 +32,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * replacing it: refused.
  */
 object ExtensionConfirm {
-    class Question(val extensionId: String, val text: String, internal val answer: CompletableDeferred<Boolean>)
+    /** [offer]: a `raw.request` write, which may be allowed for good ("Always"). */
+    class Question(val extensionId: String, val text: String, val offer: RawGrant?, internal val answer: CompletableDeferred<Consent>)
 
     /** The questions waiting, oldest first; the first one is shown. */
     val waiting = MutableStateFlow<List<Question>>(emptyList())
 
-    suspend fun ask(extensionId: String, text: String): Boolean {
-        val q = Question(extensionId, text, CompletableDeferred())
+    suspend fun ask(extensionId: String, text: String): Boolean = ask(extensionId, text, null) != Consent.REFUSE
+
+    suspend fun ask(extensionId: String, text: String, offer: RawGrant?): Consent {
+        val q = Question(extensionId, text, offer, CompletableDeferred())
         synchronized(this) { waiting.value = waiting.value + q }
         return try {
             q.answer.await()
         } finally {
-            q.answer.complete(false)
+            q.answer.complete(Consent.REFUSE)
             synchronized(this) { waiting.value = waiting.value - q }
         }
     }
 
-    fun answer(q: Question, allow: Boolean) {
-        q.answer.complete(allow)
+    fun answer(q: Question, allow: Boolean) = answer(q, if (allow) Consent.ONCE else Consent.REFUSE)
+
+    fun answer(q: Question, consent: Consent) {
+        q.answer.complete(consent)
         synchronized(this) { waiting.value = waiting.value - q }
     }
 }
@@ -70,9 +77,14 @@ fun ExtensionConfirmHost() {
                 val rest = q.text.substringAfter('\n', "")
                 if (rest.isNotBlank()) Text(rest, color = AppMuted, fontSize = 12.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(top = 8.dp))
                 Text(stringResource(R.string.extension_confirm_detail), color = AppMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
+                q.offer?.let { g ->
+                    TextButton(onClick = { ExtensionConfirm.answer(q, Consent.ALWAYS) }, modifier = Modifier.padding(top = 8.dp)) {
+                        Text(stringResource(R.string.extension_confirm_always, g.toString()), color = AppAccent, fontSize = 13.sp)
+                    }
+                }
             }
         },
-        confirmButton = { TextButton(onClick = { ExtensionConfirm.answer(q, true) }) { Text(stringResource(R.string.extension_confirm_allow), color = AppAccent) } },
+        confirmButton = { TextButton(onClick = { ExtensionConfirm.answer(q, true) }) { Text(stringResource(if (q.offer != null) R.string.extension_confirm_once else R.string.extension_confirm_allow), color = AppAccent) } },
         dismissButton = { TextButton(onClick = { ExtensionConfirm.answer(q, false) }) { Text(stringResource(R.string.extension_confirm_refuse), color = AppText) } },
     )
 }

@@ -68,6 +68,7 @@ data class InstalledExtension(
     /** Its repository answered 404: it keeps running from the copy on the phone, marked "source gone". */
     val sourceGone: Boolean = false,
     /** The `raw.request` writes the user allowed for good, listed with its rights and revocable there. */
+    val rawGrants: List<app.myspoti.extensions.RawGrant> = emptyList(),
 )
 
 /** A version kept on disk to revert to, or waiting in staging. */

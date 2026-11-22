@@ -79,7 +79,7 @@ fun QueueScreen(navController: NavController) {
         ) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
-                contentDescription = stringResource(R.string.lbl_close),
+                contentDescription = stringResource(R.string.bottom_actions_close),
                 tint = AppText,
                 modifier = Modifier
                     .size(28.dp)
@@ -89,7 +89,7 @@ fun QueueScreen(navController: NavController) {
                     ) { navController.navigateUp() }
             )
             Spacer(modifier = Modifier.width(12.dp))
-            Text(stringResource(R.string.lbl_queue), color = AppText, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.action_queue_label), color = AppText, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         LazyColumn(
@@ -100,7 +100,7 @@ fun QueueScreen(navController: NavController) {
         ) {
             q.current?.let {
                 item(key = "now") {
-                    QueueHeader(stringResource(R.string.lbl_channel_playback))
+                    QueueHeader(stringResource(R.string.default_notification_channel_name))
                     QueueRow(song = it, highlight = true, onClick = {})
                 }
             }
@@ -168,7 +168,7 @@ private fun SwipeRemove(item: SongPlayer.QueueItem, content: @Composable () -> U
                     .background(Color(0xFF7A1F1F))
                     .padding(horizontal = 24.dp),
             ) {
-                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.lbl_remove), tint = AppText)
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.aligned_curation_first_save_default_row_remove_action_description), tint = AppText)
             }
         },
         content = { content() }

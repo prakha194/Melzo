@@ -7,5 +7,6 @@
     <string name="metadata_asked">Gevra</string>
     <string name="metadata_off">Af: word nooit gevra nie</string>
     <string name="metadata_reset">Terug na die verstekvolgorde</string>
+    <string name="metadata_not_on_spotify">Nie op Spotify gevind nie: hierdie liedjie kan nog nie speel nie</string>
     <string name="metadata_switch">Vra %1$s</string>
 </resources>

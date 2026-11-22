@@ -7,6 +7,7 @@
     <string name="metadata_asked">Asked</string>
     <string name="metadata_off">Off: never asked</string>
     <string name="metadata_reset">Back to the default order</string>
-    <string name="metadata_spotify_no_answer">The catalog didn\'t answer: tap the song again</string>
+    <string name="metadata_not_on_spotify">Not found on Spotify: this song can\'t play yet</string>
+    <string name="metadata_spotify_no_answer">Spotify didn\'t answer: tap the song again</string>
     <string name="metadata_switch">Ask %1$s</string>
 </resources>

@@ -7,5 +7,6 @@
     <string name="metadata_asked">يُسأل</string>
     <string name="metadata_off">معطّل: لا يُسأل أبدًا</string>
     <string name="metadata_reset">العودة إلى الترتيب الافتراضي</string>
+    <string name="metadata_not_on_spotify">غير موجودة على Spotify: لا يمكن تشغيل هذه الأغنية بعد</string>
     <string name="metadata_switch">اسأل %1$s</string>
 </resources>

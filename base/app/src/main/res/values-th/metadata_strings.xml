@@ -7,5 +7,6 @@
     <string name="metadata_asked">ถูกถาม</string>
     <string name="metadata_off">ปิด: ไม่ถูกถามเลย</string>
     <string name="metadata_reset">กลับไปใช้ลำดับเริ่มต้น</string>
+    <string name="metadata_not_on_spotify">ไม่พบใน Spotify: ยังเล่นเพลงนี้ไม่ได้</string>
     <string name="metadata_switch">ถาม %1$s</string>
 </resources>

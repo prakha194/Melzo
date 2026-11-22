@@ -4,6 +4,7 @@
     <string name="sources_download_title">Источники загрузки</string>
     <string name="sources_audio_footer">Опрашиваются сверху вниз для каждой песни: первый, у которого она есть, воспроизводит её. Стрелками меняется порядок.</string>
     <string name="sources_download_footer">Опрашиваются сверху вниз: первый источник, у которого есть песня, отдаёт файл. Стрелками меняется порядок.</string>
+    <string name="sources_account">Spotify</string>
     <string name="sources_account_detail">Воспроизводится, когда ни один источник выше не содержит песню</string>
     <string name="sources_account_player">Плеер вашего аккаунта</string>
     <string name="sources_ready">Готово</string>
@@ -13,6 +14,7 @@
     <string name="sources_last_used">Последнее: %1$s, %2$s</string>
     <string name="sources_open">Открыть расширение</string>
     <string name="sources_order_hint">Источники опрашиваются в порядке, заданном в Настройках (Воспроизведение, Загрузки).</string>
+    <string name="sources_below_account">Не запрашивается: Spotify выше</string>
     <string name="source_pick_title">Источник</string>
     <string name="source_pick_detail">Воспроизводит эту песню и следующие из выбранного источника, пока Spoon не перезапустится. Ваш порядок в Настройках остаётся прежним.</string>
     <string name="source_pick_playing">Играет сейчас</string>

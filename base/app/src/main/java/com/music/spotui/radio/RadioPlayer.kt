@@ -56,7 +56,7 @@ object RadioPlayer {
         val homepage = station.homepage.takeIf { it.startsWith("https://") || it.startsWith("http://") }
         val text = listOfNotNull(station.name, homepage).joinToString("\n")
         val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
-        context.startActivity(Intent.createChooser(send, context.getString(app.myspoti.engine.R.string.lbl_share_action)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.startActivity(Intent.createChooser(send, context.getString(app.myspoti.engine.R.string.action_share_label)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
     /** The synthetic song id LocalPlayer/SongPlayer show [station] under, to match against Graph.currentSongState. */

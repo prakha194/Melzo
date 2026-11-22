@@ -7,5 +7,6 @@
     <string name="metadata_asked">Ερωτάται</string>
     <string name="metadata_off">Ανενεργό: δεν ερωτάται ποτέ</string>
     <string name="metadata_reset">Επαναφορά στην προεπιλεγμένη σειρά</string>
+    <string name="metadata_not_on_spotify">Δεν βρέθηκε στο Spotify: αυτό το τραγούδι δεν μπορεί να παίξει ακόμα</string>
     <string name="metadata_switch">Ερώτηση στο %1$s</string>
 </resources>

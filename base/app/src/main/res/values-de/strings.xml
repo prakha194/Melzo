@@ -15,5 +15,8 @@
     <string name="energy_saver_title">Energiesparmodus</string>
     <string name="energy_saver_summary">Canvas aus, leichtere Videos und Animationen</string>
     <string name="playback_seek_description">Wiedergabeposition</string>
+    <string name="account_page_title">Spotify-Konto</string>
+    <string name="account_page_detail">Abo, Datenschutz und Geräte, auf spotify.com</string>
     <string name="player_source_downloaded">Heruntergeladen</string>
+    <string name="extension_change_write">Darf jetzt auch an Spotify senden: %1$s</string>
 </resources>

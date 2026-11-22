@@ -72,7 +72,7 @@ private val SpotifyGreen: Color get() = com.music.spotui.ui.theme.AppAccent
 /**
  * Spotify's "Saved in" sheet: Liked Songs plus every user playlist, each row
  * toggling the track in/out of it (mirrored to the real Spotify account), and a
- * stringResource(R.string.lbl_new_playlist) action that creates one on Spotify with the track in it.
+ * stringResource(R.string.add_to_playlist_new_playlist_button_text) action that creates one on Spotify with the track in it.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
@@ -127,11 +127,11 @@ fun SavedInSheet(
                         Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = AppText,
                         modifier = Modifier.padding(end = 12.dp).size(24.dp).clickable { folders.removeAt(folders.lastIndex) },
                     )
-                    Text(folder?.second ?: stringResource(R.string.lbl_already_in), color = AppText,
+                    Text(folder?.second ?: stringResource(R.string.add_to_playlist_saved_in_section_header), color = AppText,
                         fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Text(
-                    stringResource(R.string.lbl_new_playlist),
+                    stringResource(R.string.add_to_playlist_new_playlist_button_text),
                     color = SpotifyGreen,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -166,7 +166,7 @@ fun SavedInSheet(
                 )
                 Row(modifier = Modifier.padding(20.dp, 0.dp, 20.dp, 8.dp)) {
                     Text(
-                        stringResource(R.string.lbl_create),
+                        stringResource(R.string.create_playlist_create_button),
                         color = SpotifyGreen,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
@@ -177,7 +177,7 @@ fun SavedInSheet(
                     )
                     Spacer(Modifier.width(24.dp))
                     Text(
-                        stringResource(R.string.lbl_cancel),
+                        stringResource(R.string.add_to_playlist_button_cancel),
                         color = Color.Gray,
                         fontSize = 14.sp,
                         modifier = Modifier.clickable(
@@ -190,7 +190,7 @@ fun SavedInSheet(
 
             // ── Liked Songs ──
             if (folder == null) SavedInRow(
-                name = stringResource(R.string.lbl_liked_songs),
+                name = stringResource(R.string.collection_liked_songs_title),
                 subtitle = "",
                 saved = liked,
                 cover = {
@@ -220,7 +220,7 @@ fun SavedInSheet(
                     items(list.size) { i ->
                         val pl = list[i]
                         if (pl.isFolder) {
-                            FolderRow(pl.name, pluralStringResource(R.plurals.lbl_n_playlists, pl.trackCount, pl.trackCount.toString())) {
+                            FolderRow(pl.name, pluralStringResource(R.plurals.add_to_playlist_folder_subtitle_playlists_count, pl.trackCount, pl.trackCount.toString())) {
                                 folders.add(pl.folderUri!! to pl.name)
                             }
                             return@items
@@ -236,7 +236,7 @@ fun SavedInSheet(
                         val saved = membership[pl.id] == true
                         SavedInRow(
                             name = pl.name,
-                            subtitle = pluralStringResource(R.plurals.lbl_n_songs, pl.trackCount, pl.trackCount),
+                            subtitle = pluralStringResource(R.plurals.liked_songs_header_metadata_text, pl.trackCount, pl.trackCount),
                             saved = saved,
                             cover = {
                                 GlideImage(
@@ -335,9 +335,9 @@ private fun SavedInRow(
             }
         }
         if (saved) {
-            Icon(Icons.Default.CheckCircle, contentDescription = stringResource(R.string.lbl_saved), tint = SpotifyGreen, modifier = Modifier.size(26.dp))
+            Icon(Icons.Default.CheckCircle, contentDescription = stringResource(R.string.curation_button_saved_text), tint = SpotifyGreen, modifier = Modifier.size(26.dp))
         } else {
-            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.lbl_new_playlist), tint = AppMuted, modifier = Modifier.size(26.dp))
+            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_to_playlist_new_playlist_button_text), tint = AppMuted, modifier = Modifier.size(26.dp))
         }
     }
 }

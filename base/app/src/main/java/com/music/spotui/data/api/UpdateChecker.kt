@@ -1,5 +1,7 @@
 package com.music.spotui.data.api
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import android.content.Context
 import app.myspoti.engine.BuildConfig
 import kotlinx.coroutines.Dispatchers
@@ -101,8 +103,8 @@ object UpdateChecker {
             if (!r.isSuccessful) return@use Fetch.Err(r.code == 429 || (r.code == 403 && r.header("x-ratelimit-remaining") == "0"))
             val text = r.body.string()
             val list = org.json.JSONArray(text).let { a -> (0 until a.length()).map { a.getJSONObject(it) } }
-            // Betas and releases are two apps (different package names, one cannot update the
-            // other): each one is offered its own channel only.
+            // One app for both channels: the stable channel takes releases only, the beta channel
+            // the newest of releases and pre-releases (see [setBetaChannel]).
             // A pre-release that is not a version of the app (a test build's tag) is never offered.
             Fetch.Ok(newest(list))
         }
@@ -115,8 +117,9 @@ object UpdateChecker {
      * this app cannot install): read as this app's, they were offered as updates opening their page.
      */
     internal fun newest(releases: List<JSONObject>, beta: Boolean = isBeta, abis: List<String> = deviceAbis, name: String = BuildConfig.APK_NAME): Release? =
-        releases.filter { !it.optBoolean("draft") && it.optBoolean("prerelease") == beta && isVersionTag(it.optString("tag_name")) }
-            .map { Release(it.getString("tag_name").removePrefix("v"), it.getString("html_url"), cleanNotes(it.optString("body")), apkAsset(it, beta, abis, name)) }
+        releases.filter { !it.optBoolean("draft") && (beta || !it.optBoolean("prerelease")) && isVersionTag(it.optString("tag_name")) }
+            // Each release's APKs are named after its own kind (a pre-release's "Myspoti-Beta-...").
+            .map { Release(it.getString("tag_name").removePrefix("v"), it.getString("html_url"), cleanNotes(it.optString("body")), apkAsset(it, it.optBoolean("prerelease"), abis, name)) }
             .filter { it.apkUrl.isNotEmpty() }
             .reduceOrNull { best, next -> if (isNewer(next.version, best.version)) next else best }
 
@@ -179,8 +182,34 @@ object UpdateChecker {
         }
         .trim()
 
-    /** This build is a beta ("2.0.0-beta.1"). */
-    val isBeta get() = BuildConfig.VERSION_NAME.contains("-beta")
+    /** This build itself is a beta ("2.0.0-beta.1") or a dev build: the beta channel is its default. */
+    val isBetaBuild get() = BuildConfig.VERSION_NAME.contains("-beta") || BuildConfig.DEBUG
+
+    /**
+     * The update channel chosen in About: beta also receives pre-releases, and shows the beta tools
+     * (the log button). Observable, so a change shows at once.
+     */
+    var isBeta by androidx.compose.runtime.mutableStateOf(isBetaBuild)
+        private set
+
+    private const val KEY_CHANNEL = "channel"
+
+    /** Reads the chosen channel; called once at startup. */
+    fun init(context: Context) {
+        val saved = context.getSharedPreferences("updates", Context.MODE_PRIVATE).getString(KEY_CHANNEL, null)
+        isBeta = when (saved) { "beta" -> true; "stable" -> false; else -> isBetaBuild }
+    }
+
+    /** Switches channel; the next check asks GitHub again instead of reusing the other channel's answer. */
+    fun setBetaChannel(context: Context, beta: Boolean) {
+        if (beta == isBeta) return
+        isBeta = beta
+        context.getSharedPreferences("updates", Context.MODE_PRIVATE).edit()
+            .putString(KEY_CHANNEL, if (beta) "beta" else "stable")
+            .putLong("checked_at", 0L).putLong("tried_at", 0L)
+            .remove("version").remove("url").remove("notes").remove("apk").remove("dismissed")
+            .apply()
+    }
 
     /**
      * "1.10.0" > "1.9.2". A release is newer than its betas ("2.0.0" > "2.0.0-beta.3"), and

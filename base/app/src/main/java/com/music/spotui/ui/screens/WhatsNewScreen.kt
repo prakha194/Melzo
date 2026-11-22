@@ -193,12 +193,12 @@ internal fun WhatsNewOptionsSheet(item: WhatsNewItem, saved: Boolean, onDismiss:
                 SongPlayer.setSaved(item.uri, !saved)
                 onDismiss()
             }
-            com.music.spotui.ui.components.OptionRow(Icons.AutoMirrored.Outlined.QueueMusic, stringResource(R.string.lbl_queue_add)) {
+            com.music.spotui.ui.components.OptionRow(Icons.AutoMirrored.Outlined.QueueMusic, stringResource(R.string.context_menu_add_to_queue)) {
                 if (episode) SongPlayer.addEpisodeToQueue("episode:" + item.uri.substringAfterLast(':'))
                 else com.music.spotui.di.CollectionQueue.queue(item.uri, next = false)
                 onDismiss()
             }
-            if (!episode) com.music.spotui.ui.components.OptionRow(Icons.AutoMirrored.Outlined.PlaylistAdd, stringResource(R.string.lbl_add_to_playlist)) {
+            if (!episode) com.music.spotui.ui.components.OptionRow(Icons.AutoMirrored.Outlined.PlaylistAdd, stringResource(R.string.context_menu_add_to_playlist)) {
                 adding = true
             }
         }
@@ -230,10 +230,10 @@ internal val WhatsNewItem.coverUrl: String?
 internal fun whatsNewSubtitle(item: WhatsNewItem): String {
     val album = item.album ?: return item.episode?.show?.name.orEmpty()
     val type = when (album.type.uppercase()) {
-        "SINGLE" -> stringResource(R.string.lbl_type_single)
-        "EP" -> stringResource(R.string.lbl_type_ep)
-        "COMPILATION" -> stringResource(R.string.lbl_type_compilation)
-        else -> stringResource(R.string.lbl_type_album)
+        "SINGLE" -> stringResource(R.string.album_type_single)
+        "EP" -> stringResource(R.string.album_type_ep)
+        "COMPILATION" -> stringResource(R.string.album_type_compilation)
+        else -> stringResource(R.string.album_type_album)
     }
     return listOf(type, album.artists.joinToString(", ") { it.name }).filter { it.isNotBlank() }.joinToString(" • ")
 }
@@ -271,7 +271,7 @@ fun WhatsNewScreen(navController: NavController) {
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.lbl_back),
+                contentDescription = stringResource(R.string.accessibility_navigate_back),
                 tint = AppText,
                 modifier = Modifier.wideClickable(horizontal = 8.dp, vertical = 10.dp) { navController.popBackStack() }
                     .size(40.dp).padding(8.dp),
@@ -359,7 +359,7 @@ private fun WhatsNewRow(item: WhatsNewItem, onClick: () -> Unit) {
                 LikeButton(liked = saved, size = 24.dp) { SongPlayer.setSaved(item.uri, !saved) }
                 Icon(
                     Icons.Filled.MoreHoriz,
-                    contentDescription = stringResource(R.string.lbl_more),
+                    contentDescription = stringResource(R.string.content_description_context_menu),
                     tint = AppMuted,
                     modifier = Modifier.padding(start = 12.dp).clip(CircleShape).clickable { menu = true }.padding(8.dp).size(24.dp),
                 )
@@ -370,7 +370,7 @@ private fun WhatsNewRow(item: WhatsNewItem, onClick: () -> Unit) {
                 ) {
                     Icon(
                         if (playback.playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = stringResource(if (playback.playing) R.string.lbl_pause else R.string.lbl_play),
+                        contentDescription = stringResource(if (playback.playing) R.string.content_description_pause_button else R.string.content_description_play_button),
                         tint = Color.Black,
                         modifier = Modifier.size(24.dp),
                     )

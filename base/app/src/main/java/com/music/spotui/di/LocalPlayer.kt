@@ -68,6 +68,9 @@ object LocalPlayer {
     /** Each player's automation stage, set as its renderers are built (see [AudioRenderers]). */
     private val segueStages = java.util.WeakHashMap<ExoPlayer, com.music.spotui.automix.SegueProcessor>()
     private var lastSegueStage: com.music.spotui.automix.SegueProcessor? = null
+    /** Each player's levelling stage (see [LoudnessProcessor]), set as its renderers are built. */
+    private val loudnessStages = java.util.WeakHashMap<ExoPlayer, LoudnessProcessor>()
+    private var lastLoudnessStage: LoudnessProcessor? = null
 
     private fun build(main: Boolean, deck: Boolean = false): ExoPlayer = ExoPlayer.Builder(Graph.app, if (deck) DeckRenderers else Renderers)
         // The fading-out copy of a crossfade owns neither the audio focus nor the noisy-audio pause:
@@ -81,7 +84,7 @@ object LocalPlayer {
         .build()
         // The speed and the silence skipping of the settings (the fading-out copy too: both are heard).
         .also(::tune)
-        .also { p -> lastSegueStage?.let { segueStages[p] = it } }
+        .also { p -> lastSegueStage?.let { segueStages[p] = it }; lastLoudnessStage?.let { loudnessStages[p] = it } }
 
     /**
      * The default renderers, with the equalizer and the spatial stage after it in the audio chain
@@ -99,7 +102,10 @@ object LocalPlayer {
                 .setAudioTrackBufferSizeProvider(PCM_BUFFER)
             val stage = com.music.spotui.automix.SegueProcessor()
             lastSegueStage = stage
-            return com.music.spotui.automix.SegueSink(builder.setAudioProcessors(arrayOf(stage, EqualizerProcessor(), SpatialProcessor())).build(), stage)
+            // Levelling last: it sees the song as the equalizer and the spatial stage left it.
+            val loudness = LoudnessProcessor()
+            lastLoudnessStage = loudness
+            return com.music.spotui.automix.SegueSink(builder.setAudioProcessors(arrayOf(stage, EqualizerProcessor(), SpatialProcessor(), loudness)).build(), stage)
         }
     }
     /**
@@ -153,7 +159,7 @@ object LocalPlayer {
         val on = LocalOffload.allowed(
             eqFlat = Equalizer.current?.flat ?: true, spatialWidth = Spatial.current, autoMix = com.music.spotui.automix.AutoMix.on,
             crossfadeSeconds = CrossfadePref.seconds, speed = pref.speed, skipSilence = pref.skipSilence,
-        )
+        ) && !Leveller.on // Offload skips the audio chain, and with it the levelling.
         val mode = if (on) androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED
             else androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED
         if (p.trackSelectionParameters.audioOffloadPreferences.audioOffloadMode == mode) return
@@ -181,6 +187,25 @@ object LocalPlayer {
         log("speed ${rate()}×, skip silences ${if (com.music.spotui.data.preferences.EqualizerPref.skipSilence) "on" else "off"}")
         // Duration bounds are elapsed listener time, so a pending plan must use the new rate.
         autoMixSettingsChanged()
+    }
+
+    /**
+     * Points [p]'s levelling stage at the song it plays now and, with levelling on, asks for the
+     * measurement of that song and the next (AutoMix's analysis, kept on disk; AutoMix asks for
+     * them itself when it is on).
+     */
+    private fun level(p: ExoPlayer) {
+        val cur = tracks.getOrNull(p.currentMediaItemIndex)
+        loudnessStages[p]?.uri = cur?.uri
+        if (!Leveller.on || com.music.spotui.automix.AutoMix.on || cur == null || cur.isRadio) return
+        val next = if (p.nextMediaItemIndex != C.INDEX_UNSET) tracks.getOrNull(p.nextMediaItemIndex) else null
+        com.music.spotui.automix.AutoMix.request(listOfNotNull(cur.uri, next?.takeUnless { it.isRadio }?.uri)) {}
+    }
+
+    /** Levelling turned on or off: offload follows, and the song playing is measured if it needs to be. */
+    fun levellerChanged() {
+        applyOffload()
+        android.os.Handler(android.os.Looper.getMainLooper()).post { exo?.let(::level) }
     }
 
     /** The speed the local player plays at (the settings', 1 by default). */
@@ -240,6 +265,8 @@ object LocalPlayer {
             log("isPlaying $isPlaying at ${p.currentPosition} ms")
             if (isPlaying) errors.played()
             if (isPlaying) tick.run()
+            // A song from a source below a better one that did not get to answer: asked again now (see SongPlayer.upgradeSource).
+            if (isPlaying && exo === p) SongPlayer.upgradeSource()
             // A station that plays on for a while has its reconnect tries back (see reconnectRadio).
             handler.removeCallbacks(radioSteady)
             if (isPlaying && current()?.isRadio == true) handler.postDelayed(radioSteady, RADIO_STEADY_MS)
@@ -261,6 +288,7 @@ object LocalPlayer {
             // A song to play again that the player went past by itself: put back, never followed.
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO && wentPastRepeat(p, p.previousMediaItemIndex)) return
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) startsAtZero(p)
+            level(p)
             if (skipHidden(p, reason)) return
             prefetchNext(p); continueIfLast(p)
         }
@@ -502,19 +530,22 @@ object LocalPlayer {
         // A station is a queue of its own: no Spotify songs after it, and its reconnect tries start afresh.
         val isStation = list.singleOrNull()?.isRadio == true
         radioRetries = 0; handler.removeCallbacks(radioSteady)
-        tracks.clear(); tracks.addAll(list); unshuffled = null
+        // Spotify's queued songs (the account's: maybe queued on another device or install) play first.
+        val (all, fromSpotify) = if (isStation) list to emptyList<LocalTrack>() else AccountSync.withRemoteQueue(list, index.coerceIn(0, list.lastIndex))
+        tracks.clear(); tracks.addAll(all); unshuffled = null
         // An index kept from fading belonged to the list before: this one fades from its first song.
         noFadeFor = -1
         queued.clear(); playingQueued = null; radioSongs.clear()
+        queued += fromSpotify
         // Shuffle on: the picked song, then every other song of the list shuffled, those above it
         // too, as Spotify's shuffle does. Shuffling only the songs after the pick left the rest of
         // the list out (B6: 5 to 10 songs of a 40-song playlist queued, the shuffle button picks
         // a random song first). The list's order is kept for shuffle off.
         val start = index.coerceIn(0, list.lastIndex)
-        val whole = shuffle && !isStation && list.size > 1
-        val order = if (whole) LocalQueueOrder.shuffledWhole(list, start, isQueued) { it.shuffled() } else list
-        if (whole) { tracks.clear(); tracks.addAll(order); unshuffled = list.filterNot(isQueued) }
-        listName = context ?: Graph.app.getString(app.myspoti.engine.R.string.lbl_local_files)
+        val whole = shuffle && !isStation && all.size > 1
+        val order = if (whole) LocalQueueOrder.shuffledWhole(all, start, isQueued) { it.shuffled() } else all
+        if (whole) { tracks.clear(); tracks.addAll(order); unshuffled = all.filterNot(isQueued) }
+        listName = context ?: Graph.app.getString(app.myspoti.engine.R.string.local_files_title)
         listUri = contextUri
         active.value = true
         endFade()
@@ -534,6 +565,7 @@ object LocalPlayer {
         if (took >= 50) log("setMediaItems: ${order.size} songs in $took ms")
         p.prepare()
         if (shuffle && !whole) setShuffle(true)
+        level(p)
         if (!paused) p.play()
         continueIfLast(p)
     }
@@ -545,6 +577,8 @@ object LocalPlayer {
         endFade()
         active.value = false
         com.music.spotui.automix.AutoMix.cancelRequests()
+        // A page left muted by an extension's mirror must not stay silent once Spotify plays again.
+        SongPlayer.unmuteMirror()
         forgetRadio(); continues = false; deletedDownloads.clear()
         handler.removeCallbacks(radioSteady)
         exo?.let { it.stop(); it.clearMediaItems() }
@@ -648,6 +682,8 @@ object LocalPlayer {
     ) { val provisional get() = analysisA == null || analysisB == null }
     @Volatile private var planned: Planned? = null
     private var mix: MixRun? = null
+    /** An AutoMix blend is planned or under way: nothing reopens the song meanwhile. */
+    val mixing: Boolean get() = mix != null
     /** The main player's EQ (a deck's once it took over). */
     private var deckEq: com.music.spotui.automix.DeckEq? = null
     private var asking: String? = null
@@ -1036,6 +1072,7 @@ object LocalPlayer {
     private fun prepareDeck(p: ExoPlayer, next: Int, nextId: String, plan: app.myspoti.automix.MixPlan, skip: Boolean = false) {
         val t = tracks.getOrNull(next) ?: return
         val deck = build(false, deck = true)
+        loudnessStages[deck]?.uri = t.uri
         deck.volume = 0f
         deck.skipSilenceEnabled = false
         deck.playbackParameters = mixParameters(plan, (plan.speedBStart * rate()).toFloat())
@@ -1961,7 +1998,7 @@ object LocalPlayer {
 
     private fun item(t: LocalTrack) = MediaItem.Builder().setUri(t.uri).setMediaId(t.id.toString()).setMimeType(t.mimeType)
         .setMediaMetadata(MediaMetadata.Builder().setTitle(t.title).setArtist(t.artist).setAlbumTitle(t.album)
-            .setArtworkUri(android.net.Uri.parse(t.artUri.toString())).setDurationMs(t.durationMs.takeIf { it > 0 }).build()).build()
+            .setArtworkUri(android.net.Uri.parse(app.myspoti.host.android.Covers.large(t.artUri.toString()))).setDurationMs(t.durationMs.takeIf { it > 0 }).build()).build()
     /** SongPlayer.repeatMode as this player has it (0 off, 1 the queue, 2 the song for good, 3 the song once; see LocalRepeat). */
     private var repeat = LocalRepeat.OFF
 
@@ -2057,6 +2094,7 @@ object LocalPlayer {
         p.seekTo(index, 0L)
         p.play()
         log("repeat: ${current()?.title} plays again from ${p.currentPosition} ms (it ended at $endedAt ms)")
+        AccountSync.listen.onLocalRepeat()
     }
 
     /**
@@ -2273,6 +2311,7 @@ object LocalPlayer {
         if (CastPlayback.active) CastPlayback.follow(t, exo?.currentPosition ?: 0L)
         SongPlayer.onLocalState(t, playWhenReady(), position(), duration())
         SongPlayer.onLocalQueue(t, upcoming(), queuedCount())
+        AccountSync.localQueueChanged()
         updateCue()
     }
 }

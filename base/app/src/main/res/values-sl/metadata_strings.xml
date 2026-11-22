@@ -7,5 +7,6 @@
     <string name="metadata_asked">Vprašano</string>
     <string name="metadata_off">Izklopljeno: nikoli vprašano</string>
     <string name="metadata_reset">Nazaj na privzeti vrstni red</string>
+    <string name="metadata_not_on_spotify">Ni najdeno na Spotifyju: te skladbe še ni mogoče predvajati</string>
     <string name="metadata_switch">Vprašaj %1$s</string>
 </resources>

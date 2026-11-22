@@ -3,6 +3,7 @@ package com.music.spotui.wear
 import android.content.Context
 import app.myspoti.host.android.Logbook
 import app.myspoti.host.android.MyspotiRuntime
+import app.myspoti.host.android.NativeTokens
 import app.myspoti.pass.PassCrypto
 import app.myspoti.pass.PassExtension
 import app.myspoti.pass.PassInvite
@@ -38,23 +39,36 @@ object WatchAnswers {
     const val LIBRARY = "/orpheon/library"
     const val TRACKS = "/orpheon/tracks"
     const val EXTENSIONS = "/orpheon/extensions"
+    const val LISTEN = "/orpheon/listen"
     private const val MAX_LISTS = 60
     private const val MAX_TRACKS = 500
 
-    private fun platform() = MyspotiRuntime.api
+    private fun spotify() = MyspotiRuntime.takeIf { it.isStarted }?.spotify ?: error("the phone's app is not started")
 
     suspend fun answer(context: Context, path: String, body: String): String = when (path) {
-        SESSION -> link(context)
+        SESSION -> session(context, body == "fresh")
         LIBRARY -> library(context)
         TRACKS -> tracks(body)
         EXTENSIONS -> extensions(context)
+        LISTEN -> { com.music.spotui.di.AccountSync.watchReport(body); "ok" }
         else -> error("unknown question")
     }
 
-    /** How the watch reaches this phone over the Wi-Fi when the Data Layer is down. No account token goes to the watch. */
-    private fun link(context: Context): String {
+    private suspend fun session(context: Context, fresh: Boolean): String {
+        val c = spotify().http.credentials(fresh)
+        // The identity this install already shows the service (NativeTokens.config): the watch presents the same.
+        val id = NativeTokens.config(spotify().http)
+        // How the watch reaches this phone over the Wi-Fi when the Data Layer is down.
         val lan = WatchLan.ensure(context)
+        Logbook.log("watch: session given (the web token ends in ${(c.accessExpiresAtMs - System.currentTimeMillis()) / 60_000} min)")
         return buildJsonObject {
+            put("accessToken", c.accessToken); put("accessExpiresAtMs", c.accessExpiresAtMs); put("clientId", c.clientId)
+            put("clientToken", c.clientToken); put("clientDeviceId", c.clientDeviceId); put("appVersion", c.appVersion)
+            put("userAgent", id.userAgent); put("browserVersion", id.browserVersion); put("secChUa", id.clientHints["sec-ch-ua"].orEmpty())
+            put("acceptLanguage", id.acceptLanguage)
+            // "Count extension plays on your account", Spotify chosen: the watch mirrors its own extension plays.
+            put("listenSync", com.music.spotui.data.preferences.ConnectMirrorPref.on &&
+                com.music.spotui.data.preferences.AccountProviderPref.id == app.myspoti.api.account.AccountProviders.SPOTIFY)
             if (lan != null) {
                 put("lanSecret", lan.secret); put("lanPort", lan.port); put("lanId", lan.id)
                 PassInvite.localAddress()?.let { put("lanHost", it) }
@@ -63,22 +77,22 @@ object WatchAnswers {
     }
 
     private suspend fun library(context: Context): String {
-        val lists = platform().playlists.mine().filter { it.name.isNotBlank() }.take(MAX_LISTS)
+        val lists = spotify().playlists.mine().filter { it.name.isNotBlank() }.take(MAX_LISTS)
         return buildJsonArray {
-            add(buildJsonObject { put("uri", "spotify:collection:tracks"); put("name", context.getString(app.myspoti.engine.R.string.lbl_liked_songs)); put("subtitle", "") })
+            add(buildJsonObject { put("uri", "spotify:collection:tracks"); put("name", context.getString(app.myspoti.engine.R.string.collection_liked_songs_title)); put("subtitle", "") })
             lists.forEach { p -> add(buildJsonObject { put("uri", p.uri); put("name", p.name); put("subtitle", p.owner.orEmpty()) }) }
         }.toString()
     }
 
     /** The songs of the list [uri] (Liked Songs: `spotify:collection:tracks`), at most [MAX_TRACKS]. */
     private suspend fun tracks(uri: String): String {
-        val s = platform()
+        val s = spotify()
         val tracks = buildList {
             var offset: Int? = 0
             while (offset != null && size < MAX_TRACKS) {
                 val page = if (uri == "spotify:collection:tracks") s.library.likedTracks(offset, 50).let { p -> p.items.map { it.track } to p.nextOffset }
                     else s.playlists.tracks(uri, offset, 100).let { p -> p.items to p.nextOffset }
-                addAll(page.first.filter { it.playable })
+                addAll(page.first.filter { it.playable && it.uri.startsWith("spotify:track:") })
                 offset = page.second
             }
         }

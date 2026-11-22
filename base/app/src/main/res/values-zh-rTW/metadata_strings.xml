@@ -7,5 +7,6 @@
     <string name="metadata_asked">查詢中</string>
     <string name="metadata_off">已關閉：絕不查詢</string>
     <string name="metadata_reset">恢復預設順序</string>
+    <string name="metadata_not_on_spotify">在 Spotify 上找不到：這首歌暫時無法播放</string>
     <string name="metadata_switch">查詢 %1$s</string>
 </resources>

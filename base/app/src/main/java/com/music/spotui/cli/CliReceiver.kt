@@ -68,6 +68,8 @@ class CliReceiver : BroadcastReceiver() {
 
     private suspend fun run(ctx: Context, c: CliCommand): JsonElement = when (c) {
         CliCommand.Status -> {
+          // What the page streams now (bitrate, codec): one bridge call, for the mirror's quality check.
+          val audio = withContext(Dispatchers.Main) { if (MyspotiRuntime.isStarted) MyspotiRuntime.spotify.player.audioInfo() else 0 to "" }
           onMain {
             val np = SongPlayer.nowPlaying.value
             buildJsonObject {
@@ -98,7 +100,27 @@ class CliReceiver : BroadcastReceiver() {
                 }
                 put("extensions", if (Extensions.isReady) Extensions.registry.value.extensions.size else 0)
                 put("ui", nav.subscriptionCount.value > 0)
-                SongPlayer.activeDevice.value?.let { put("activeDevice", it.name) }
+                // The listen sync of the account provider and the page under it (Spotify's, when it runs).
+                put("mirror", buildJsonObject {
+                    val m = com.music.spotui.di.AccountSync.listen.status()
+                    put("provider", m.provider)
+                    put("on", m.on); put("running", m.running); put("handedAway", m.handedAway); put("landed", m.landed)
+                    m.uri?.let { put("uri", it) }; m.paused?.let { put("paused", it) }
+                    m.remotePositionMs?.let { put("webPositionMs", it) }; m.failedUri?.let { put("failedUri", it) }
+                    put("remoteControl", m.remoteControl); m.note?.let { put("note", it) }
+                    if (MyspotiRuntime.isStarted) {
+                        val page = MyspotiRuntime.spotify.player
+                        val s = page.state.value
+                        put("pageUri", s?.item?.uri ?: "")
+                        put("pagePaused", s?.isPaused ?: true)
+                        put("pagePositionMs", s?.positionAt(System.currentTimeMillis()) ?: 0L)
+                        put("unheard", page.localMute)
+                        put("quality", page.streamingLevel)
+                        put("bitrate", audio.first); put("codec", audio.second)
+                        put("playsElsewhere", page.playsElsewhere.value)
+                    }
+                    SongPlayer.activeDevice.value?.let { put("activeDevice", it.name) }
+                })
             }
           }
         }
@@ -188,9 +210,7 @@ class CliReceiver : BroadcastReceiver() {
             val songs = page?.tracks?.takeIf { it.isNotEmpty() }
             onMain {
                 page?.let { SongPlayer.registerContextName(it.uri, it.name) }
-                // A catalog song plays from the extensions, as a search hit does.
-                if (com.music.spotui.data.catalog.CatalogRuntime.isCatalogUri(c.uri)) SongPlayer.playSong(com.music.spotui.data.catalog.CatalogRuntime.PLAY_PREFIX + c.uri)
-                else SongPlayer.playSong(c.uri, contextUri = c.context, songs = songs)
+                SongPlayer.playSong(c.uri, contextUri = c.context, songs = songs)
             }
             val id = c.uri.substringAfterLast(':')
             if (c.context == null) JsonNull else buildJsonObject { put("songs", songs?.takeIf { l -> l.any { it.spotifyTrackId == id } }?.size ?: 0) }
@@ -203,9 +223,14 @@ class CliReceiver : BroadcastReceiver() {
             c.on?.let { com.music.spotui.automix.AutoMix.changeSegue(it) }
             JsonPrimitive(com.music.spotui.automix.AutoMix.segue)
         }
+        is CliCommand.JamJoin -> jamJson(MyspotiRuntime.api.jam.join(c.token))
+        CliCommand.JamStatus -> { MyspotiRuntime.api.jam.refresh(); jamJson(MyspotiRuntime.api.jam.session.value) }
+        CliCommand.JamLeave -> { MyspotiRuntime.api.jam.leave(); JsonNull }
         CliCommand.CatalogStatus -> com.music.spotui.data.catalog.CatalogRuntime.status()
         is CliCommand.Search -> {
             val t0 = android.os.SystemClock.elapsedRealtime()
+            val pageReady = MyspotiRuntime.isStarted && MyspotiRuntime.spotify.ready.value
+            val token = MyspotiRuntime.isStarted && MyspotiRuntime.spotify.http.hasToken()
             val steps = ArrayList<String>()
             var first = -1L
             com.music.spotui.data.api.Api(ctx).searchEverything(c.query).collect { r ->
@@ -217,8 +242,10 @@ class CliReceiver : BroadcastReceiver() {
                 }
             }
             buildJsonObject {
+                put("pageReadyAtStart", pageReady); put("tokenAtStart", token)
                 put("firstResultsMs", first); put("totalMs", android.os.SystemClock.elapsedRealtime() - t0)
                 put("steps", kotlinx.serialization.json.JsonArray(steps.map { kotlinx.serialization.json.JsonPrimitive(it) }))
+                put("httpFellBack", MyspotiRuntime.spotify.httpGql.fellBack.get())
             }
         }
         CliCommand.CatalogUpdate -> {
@@ -303,7 +330,7 @@ class CliReceiver : BroadcastReceiver() {
         is CliCommand.AutoMixSeek -> onMain { com.music.spotui.di.LocalPlayer.seekTo(c.ms); JsonNull }
         CliCommand.Pause -> onMain { SongPlayer.pause(by = "cli"); JsonNull }
         CliCommand.Devices -> {
-            val d = MyspotiRuntime.api.devices
+            val d = MyspotiRuntime.spotify.devices
             runCatching { d.refresh() }
             buildJsonArray {
                 for (x in d.devices.value) add(buildJsonObject {
@@ -312,7 +339,7 @@ class CliReceiver : BroadcastReceiver() {
                 })
             }
         }
-        is CliCommand.Transfer -> { MyspotiRuntime.api.devices.transfer(c.deviceId); JsonNull }
+        is CliCommand.Transfer -> { MyspotiRuntime.spotify.devices.transfer(c.deviceId); JsonNull }
         is CliCommand.Volume -> onMain { SongPlayer.setRemoteVolume(c.level); JsonPrimitive(c.level) }
         CliCommand.Resume -> onMain { SongPlayer.play(by = "cli"); JsonNull }
         CliCommand.Next -> onMain { SongPlayer.next(); JsonNull }
@@ -356,6 +383,11 @@ class CliReceiver : BroadcastReceiver() {
         return read
     }
 
+    private fun jamJson(s: app.myspoti.api.JamSession?): JsonElement = if (s == null) JsonNull else buildJsonObject {
+        put("id", s.id); put("token", s.joinToken ?: ""); put("host", s.isHost); put("queueOnly", s.queueOnly); put("listensHere", s.listensHere)
+        put("members", JsonArray(s.members.map { m -> JsonPrimitive(m.name + if (m.host) " (host)" else "") }))
+    }
+
     private suspend fun <T> onMain(block: () -> T): T = withContext(Dispatchers.Main) { block() }
 
     companion object {
@@ -368,7 +400,7 @@ class CliReceiver : BroadcastReceiver() {
         private const val READ_MS = 15_000L
 
         /** Debug and beta builds; the manifest leaves the receiver off in the others too. */
-        val enabled: Boolean get() = app.myspoti.engine.BuildConfig.DEBUG || com.music.spotui.data.api.UpdateChecker.isBeta
+        val enabled: Boolean get() = app.myspoti.engine.BuildConfig.DEBUG || com.music.spotui.data.api.UpdateChecker.isBetaBuild
 
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 

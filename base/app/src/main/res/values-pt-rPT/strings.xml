@@ -15,5 +15,8 @@
     <string name="energy_saver_title">Poupança de bateria</string>
     <string name="energy_saver_summary">Canvas desligado, vídeos e animações mais leves</string>
     <string name="playback_seek_description">Posição de reprodução</string>
+    <string name="account_page_title">Conta Spotify</string>
+    <string name="account_page_detail">Plano, privacidade e dispositivos, em spotify.com</string>
     <string name="player_source_downloaded">Baixada</string>
+    <string name="extension_change_write">Agora também pode enviar ao Spotify: %1$s</string>
 </resources>

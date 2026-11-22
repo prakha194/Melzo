@@ -18,5 +18,8 @@
     <string name="energy_saver_title" tools:ignore="MissingTranslation">Εξοικονόμηση ενέργειας</string>
     <string name="energy_saver_summary" tools:ignore="MissingTranslation">Χωρίς Canvas, ελαφρύτερα βίντεο και κινούμενα σχέδια</string>
     <string name="playback_seek_description" tools:ignore="MissingTranslation">Θέση αναπαραγωγής</string>
+    <string name="account_page_title">Λογαριασμός Spotify</string>
+    <string name="account_page_detail">Πρόγραμμα, απόρρητο και συσκευές, στο spotify.com</string>
     <string name="player_source_downloaded">Έχει ληφθεί</string>
+    <string name="extension_change_write">Μπορεί πλέον να στέλνει και στο Spotify: %1$s</string>
 </resources>

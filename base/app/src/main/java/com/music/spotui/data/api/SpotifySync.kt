@@ -157,7 +157,7 @@ object SpotifySync {
         val placeholderId = LibraryEdits.PENDING_PREFIX + pendingIds.incrementAndGet()
         val edit = LibraryEdits.Add(folderUri, LibraryEntry(
             spotifyId = placeholderId, name = title,
-            subtitle = app.getString(R.string.lbl_playlist) + ProfileCache.name?.let { " • $it" }.orEmpty(),
+            subtitle = app.getString(R.string.assisted_curation_search_playlist) + ProfileCache.name?.let { " • $it" }.orEmpty(),
             coverUri = "", isPlaylist = true, uri = placeholderId,
             addedAt = java.time.Instant.now().toString(),
         ))

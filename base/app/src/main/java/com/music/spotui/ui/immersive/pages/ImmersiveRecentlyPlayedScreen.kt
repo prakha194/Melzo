@@ -156,7 +156,7 @@ fun ImmersiveRecentlyPlayedScreen(navController: NavController) {
         }
     }
 
-    val title = stringResource(R.string.recent_title)
+    val title = stringResource(R.string.recents_title)
     ImmersivePageFrame {
         LazyColumn(
             state = listState,
@@ -330,7 +330,7 @@ private fun RecentCover(context: RecentItem, round: Boolean) {
             ) {
                 Icon(
                     Icons.Rounded.Favorite,
-                    contentDescription = stringResource(R.string.lbl_liked_songs),
+                    contentDescription = stringResource(R.string.collection_liked_songs_title),
                     tint = Color.White,
                     modifier = Modifier.size(13.dp),
                 )

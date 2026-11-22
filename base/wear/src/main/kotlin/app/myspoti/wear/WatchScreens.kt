@@ -159,7 +159,7 @@ internal fun WatchPlayer(
             },
             buttons = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Top, modifier = Modifier.fillMaxSize()) {
-                    // A failure takes the volume button's room (the crown still sets the volume).
+                    // The engine's failure takes the volume button's room (the crown still sets the volume).
                     if (error != null) {
                         Text(
                             stringResource(R.string.wear_failed, error), maxLines = 3, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,

@@ -294,7 +294,7 @@ class ContextViewModel(
                     val current = (_page.value as? Response.Success)?.data ?: return
                     val updated = Response.Success(current.copy(
                         tracks = songs,
-                        metaLine = Graph.app.resources.getQuantityString(R.plurals.lbl_n_songs, songs.size, songs.size),
+                        metaLine = Graph.app.resources.getQuantityString(R.plurals.liked_songs_header_metadata_text, songs.size, songs.size),
                     ))
                     _page.value = updated
                     recent[key!!] = updated
@@ -696,7 +696,7 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
                 navController.navigateUp()
             }) { Text(stringResource(R.string.playlist_leave_button), color = AppDestructive) }
         },
-        dismissButton = { androidx.compose.material3.TextButton(onClick = { leaveAsk = false }) { Text(stringResource(R.string.action_cancel_label), color = AppText) } },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = { leaveAsk = false }) { Text(stringResource(R.string.cancel), color = AppText) } },
     )
     if (addingSongs) com.music.spotui.ui.components.AddSongsScreen(p) { added -> addingSongs = false; if (added) vm.reload() }
     if (albumMenu) com.music.spotui.ui.components.AlbumOptionsSheet(p.uri, p.name, known = p) { albumMenu = false }
@@ -712,18 +712,18 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
     if (askRemoveDownloads) androidx.compose.material3.AlertDialog(
         onDismissRequest = { askRemoveDownloads = false },
         containerColor = tone(0xFF282828),
-        title = { Text(stringResource(R.string.lbl_download_remove_q), color = AppText) },
-        text = { Text(stringResource(R.string.lbl_download_remove_note), color = AppMuted) },
+        title = { Text(stringResource(R.string.playlist_entity_remove_download_dialog_title), color = AppText) },
+        text = { Text(stringResource(R.string.playlist_entity_remove_download_dialog_description), color = AppMuted) },
         confirmButton = {
             androidx.compose.material3.TextButton(onClick = {
                 askRemoveDownloads = false
                 com.music.spotui.data.offline.OfflineCollections.remove(p.uri)
-                android.widget.Toast.makeText(context, context.getString(R.string.lbl_download_removed), android.widget.Toast.LENGTH_SHORT).show()
-            }) { Text(stringResource(R.string.lbl_delete_confirm), color = SpotifyGreen) }
+                android.widget.Toast.makeText(context, context.getString(R.string.toast_undownload), android.widget.Toast.LENGTH_SHORT).show()
+            }) { Text(stringResource(R.string.playlist_entity_remove_download_dialog_positive_button), color = SpotifyGreen) }
         },
         dismissButton = {
             androidx.compose.material3.TextButton(onClick = { askRemoveDownloads = false }) {
-                Text(stringResource(R.string.lbl_cancel), color = AppText)
+                Text(stringResource(R.string.add_to_playlist_button_cancel), color = AppText)
             }
         },
     )
@@ -834,7 +834,7 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
                         .clip(CircleShape)
                         .background(Color.Black.copy(alpha = 0.35f))
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lbl_back), tint = AppText)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.accessibility_navigate_back), tint = AppText)
                 }
                 // The cover: two thirds of the width as on phones, but never more than 40 % of the
                 // window's height nor 360 dp (it grew to 686 dp on a landscape tablet, the whole
@@ -981,12 +981,12 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
                                 com.music.spotui.ui.components.DownloadAsk.start(context) { q ->
                                     com.music.spotui.di.Haptics.confirm()
                                     com.music.spotui.data.offline.OfflineCollections.download(p, q)
-                                    android.widget.Toast.makeText(context, context.getString(R.string.lbl_downloading), android.widget.Toast.LENGTH_SHORT).show()
+                                    android.widget.Toast.makeText(context, context.getString(R.string.download_notification_downloading), android.widget.Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
                         if (onSpotify && (p.type == "playlist" || p.type == "album" || p.type == "liked" || p.type == "liked-artist")) {
-                            Icon(Icons.Default.MoreVert, stringResource(R.string.lbl_more), tint = AppText.copy(alpha = 0.8f),
+                            Icon(Icons.Default.MoreVert, stringResource(R.string.content_description_context_menu), tint = AppText.copy(alpha = 0.8f),
                                 modifier = Modifier.size(com.music.spotui.ui.components.MinTouch).pressable(0.9f) { if (p.type == "playlist") playlistMenu = true else albumMenu = true }
                                     .wrapContentSize().size(26.dp))
                         }
@@ -997,7 +997,7 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
                         // "Move": a handle on each song, to put them in another order (again: done).
                         if (canMove) {
                             Icon(Icons.Default.DragHandle,
-                                contentDescription = stringResource(if (moving) R.string.done else R.string.lbl_move),
+                                contentDescription = stringResource(if (moving) R.string.done else R.string.edit_playlist_items_move_chip),
                                 tint = if (moving) SpotifyGreen else AppText.copy(alpha = 0.8f),
                                 modifier = Modifier.size(com.music.spotui.ui.components.MinTouch).pressable(0.9f) { moving = !moving }.wrapContentSize().size(26.dp))
                         }
@@ -1020,7 +1020,7 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
                         Box {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_player_shuffle),
-                            contentDescription = stringResource(if (smart) R.string.smart_shuffle_title else R.string.lbl_shuffle),
+                            contentDescription = stringResource(if (smart) R.string.smart_shuffle_title else R.string.play_mode_item_shuffle_title),
                             tint = shuffleTint,
                             modifier = Modifier
                                 .size(com.music.spotui.ui.components.MinTouch)
@@ -1075,7 +1075,7 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
                         ) {
                             com.music.spotui.ui.components.PlayPauseIcon(
                                 playing = isThisContext && playing,
-                                contentDescription = if (isThisContext && playing) stringResource(R.string.lbl_pause) else stringResource(R.string.lbl_play),
+                                contentDescription = if (isThisContext && playing) stringResource(R.string.content_description_pause_button) else stringResource(R.string.content_description_play_button),
                                 tint = Color.Black,
                                 modifier = Modifier.size(24.dp),
                             )
@@ -1135,7 +1135,7 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)) {
                 com.music.spotui.ui.components.FindInListField(
                     find, { find = it },
-                    stringResource(if (p.type == "liked") R.string.lbl_find_liked else R.string.lbl_find_playlist),
+                    stringResource(if (p.type == "liked") R.string.find_in_context_edit_text_liked_songs_hint else R.string.find_in_context_edit_text_playlist_hint),
                     Modifier.weight(1f),
                     onFocused = { findFocused = it },
                 )
@@ -1143,7 +1143,7 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
             }
         }
         if (shown.first.isEmpty() && find.isNotBlank()) item(key = "find-empty") {
-            com.music.spotui.ui.components.FindInListEmpty(stringResource(R.string.lbl_no_results, find.trim()))
+            com.music.spotui.ui.components.FindInListEmpty(stringResource(R.string.assisted_curation_search_empty_view_no_result_title, find.trim()))
         }
         if (reordering) item(key = "reorder-hint") {
             Text(stringResource(R.string.playlist_reorder_hint), color = AppMuted, fontSize = 13.sp,
@@ -1218,11 +1218,43 @@ private fun ContextContent(navController: NavController, vm: ContextViewModel, p
             contentAlignment = Alignment.Center,
             modifier = Modifier.padding(horizontal = 8.dp).wideClickable(horizontal = 8.dp, vertical = 8.dp) { navController.navigateUp() }.size(40.dp),
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lbl_back), tint = AppText)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.accessibility_navigate_back), tint = AppText)
         }
         // Centred, as on the artist page.
         Text(p.name, color = AppText, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.weight(1f).padding(end = 56.dp).titleMarquee(iterations = 3))
+    }
+    // Opened from a collaborative-playlist invitation (…?pt=): the playlist is joined from here.
+    val invite by com.music.spotui.data.api.InviteLinks.pending.collectAsState()
+    var joining by remember { mutableStateOf(false) }
+    val offered = invite?.takeIf { p.type == "playlist" && it.uri == p.uri && !vm.editableContext.value }
+    if (offered != null) Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(start = 16.dp, end = 16.dp, bottom = com.music.spotui.ui.components.bottomBarsSpace())
+            .clip(RoundedCornerShape(12.dp))
+            .background(tone(0xFF282828))
+            .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+    ) {
+        Text(stringResource(R.string.playlist_invite_banner), color = AppText, fontSize = 14.sp, modifier = Modifier.weight(1f).padding(end = 12.dp))
+        androidx.compose.material3.Button(
+            enabled = !joining,
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = SpotifyGreen, contentColor = Color.Black),
+            onClick = {
+                joining = true
+                com.music.spotui.data.api.InviteLinks.join(context, offered, p) { ok ->
+                    joining = false
+                    if (ok) {
+                        vm.editableContext.value = true
+                        vm.contextSaved.value = true
+                        SongPlayer.library[p.uri] = true
+                        vm.reload()
+                        android.widget.Toast.makeText(context, context.getString(R.string.playlist_invite_joined), android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+        ) { Text(stringResource(R.string.playlist_invite_join), fontWeight = FontWeight.Bold) }
     }
     androidx.compose.material3.SnackbarHost(
         hostState = snackbar,
@@ -1487,7 +1519,7 @@ private fun TrackRow(
         }
         Icon(
             Icons.Default.MoreVert,
-            contentDescription = stringResource(R.string.lbl_more),
+            contentDescription = stringResource(R.string.content_description_context_menu),
             tint = AppText.copy(alpha = 0.7f),
             modifier = Modifier.size(com.music.spotui.ui.components.MinTouch).pressable(0.96f) { onMore() }
                 .wrapContentSize()
@@ -1497,7 +1529,7 @@ private fun TrackRow(
         handle?.let { h ->
             Icon(
                 Icons.Default.DragHandle,
-                contentDescription = stringResource(R.string.lbl_move),
+                contentDescription = stringResource(R.string.edit_playlist_items_move_chip),
                 tint = AppText.copy(alpha = 0.7f),
                 modifier = h.size(28.dp),
             )
@@ -1543,7 +1575,7 @@ object SmartShuffle {
         if (!list.startsWith("spotify:playlist:")) {
             if (SongPlayer.currentTrackId == id) SongPlayer.setLiked(true)
             else keepScope.launch { runCatching { MyspotiRuntime.api.library.add(listOf("spotify:track:$id")) } }
-            android.widget.Toast.makeText(context, context.getString(R.string.lbl_liked), android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(context, context.getString(R.string.snackbar_added_to_liked_songs), android.widget.Toast.LENGTH_SHORT).show()
             return
         }
         com.music.spotui.data.api.SpotifySync.addTrackToPlaylist(context, list.substringAfterLast(':'), id) { ok ->
@@ -1628,7 +1660,7 @@ private val textOrder = ThreadLocal.withInitial {
 }
 
 enum class TrackSort(val label: Int) {
-    CUSTOM(R.string.lbl_sort_custom),
+    CUSTOM(R.string.your_library_sort_order_custom),
     TITLE(R.string.track_sort_title),
     ARTIST(R.string.track_sort_artist),
     ALBUM(R.string.track_sort_album),
@@ -1682,11 +1714,11 @@ private fun TrackSortButton(sort: TrackOrder, onSort: (TrackOrder) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         Icon(androidx.compose.material.icons.Icons.Default.SwapVert,
-            contentDescription = stringResource(R.string.lbl_sort),
+            contentDescription = stringResource(R.string.filter_and_sort_sort_section_title),
             tint = if (sort.isCustom) AppText.copy(alpha = 0.8f) else SpotifyGreen,
             modifier = Modifier.size(com.music.spotui.ui.components.MinTouch).pressable(0.9f) { open = true }.wrapContentSize().size(26.dp))
         androidx.compose.material3.DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = tone(0xFF282828)) {
-            Text(stringResource(R.string.lbl_sort), color = AppMuted, fontSize = 13.sp,
+            Text(stringResource(R.string.filter_and_sort_sort_section_title), color = AppMuted, fontSize = 13.sp,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
             TrackSort.entries.forEach { option ->
                 androidx.compose.material3.DropdownMenuItem(
@@ -1724,7 +1756,7 @@ private fun SimilarAlbums(navController: NavController, firstTrackId: String, al
                 val a = albums[i]
                 val artists = a.artists.joinToString(", ") { it.name }
                 Column(Modifier.width(140.dp).pressable(0.96f) {
-                    navController.navigate(com.music.spotui.ui.navigation.albumRoute(a.name, artists, com.music.spotui.ui.navigation.pageIdOf(a.uri)))
+                    navController.navigate(com.music.spotui.ui.navigation.albumRoute(a.name, artists, a.uri.substringAfterLast(':')))
                 }) {
                     GlideImage(model = a.images.maxByOrNull { it.width ?: 0 }?.url, contentDescription = null, contentScale = ContentScale.Crop,
                         modifier = Modifier.size(140.dp).clip(RoundedCornerShape(4.dp)))

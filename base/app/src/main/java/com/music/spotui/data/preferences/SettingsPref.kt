@@ -104,6 +104,38 @@ object AppShufflePref {
 }
 
 /**
+ * "Count extension plays on your music account": a song an extension streams live is played by the
+ * chosen account provider's web player too ([AccountProviderPref]: Spotify's Web Player, YouTube
+ * Music's web app), unheard, so the provider counts it (and Spotify Connect sees and controls it; see
+ * [com.music.spotui.di.AccountSync]). Off: the extension's stream alone. Off for a new install; an
+ * install from before this default keeps what it had (on, the earlier default, when never changed),
+ * and the value read the first time is stored so a later update keeps it. Downloads are never
+ * synced (the earlier "Sync downloaded songs with Spotify" key, `download_spotify_sync`, is no
+ * longer read).
+ */
+object ConnectMirrorPref {
+    private const val KEY = "connect_mirror"
+    var on by androidx.compose.runtime.mutableStateOf(initial(com.music.spotui.di.Graph.app))
+        private set
+
+    private fun initial(c: Context): Boolean {
+        val p = prefs(c)
+        if (p.contains(KEY)) return p.getBoolean(KEY, false)
+        // Never set: an update of an older install had it on by default, a new install starts off.
+        val updated = runCatching { c.packageManager.getPackageInfo(c.packageName, 0).let { it.lastUpdateTime > it.firstInstallTime } }
+            .getOrDefault(false)
+        p.edit().putBoolean(KEY, updated).apply()
+        return updated
+    }
+
+    fun set(c: Context, value: Boolean) {
+        on = value
+        prefs(c).edit().putBoolean(KEY, value).apply()
+        com.music.spotui.di.AccountSync.listen.refresh()
+    }
+}
+
+/**
  * The automatic update check at launch (on by default: the app behaved that way before this
  * option existed). Off means no check when the app starts — a check asked for in Settings still
  * works, it reads the same release list.
@@ -242,6 +274,10 @@ fun getCrossfadeSeconds(c: Context): Int =
 fun applyCrossfade(seconds: Int) {
     // The local player: its audio offload is allowed only without a crossfade, its fade timer follows.
     com.music.spotui.di.LocalPlayer.crossfadeChanged()
+    val runtime = app.myspoti.host.android.MyspotiRuntime
+    if (!runtime.isStarted) return
+    // AutoMix on: the crossfade length is only kept for later, the Spotify songs get a short fade.
+    runtime.spotify.player.crossfadeSeconds = if (com.music.spotui.automix.AutoMix.on) TransitionPref.SPOTIFY_FADE_SECONDS else seconds
 }
 
 fun getLyricTranslateLang(c: Context): String =

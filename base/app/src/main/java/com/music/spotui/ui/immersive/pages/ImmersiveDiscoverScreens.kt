@@ -1,5 +1,6 @@
 package com.music.spotui.ui.immersive.pages
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,7 +43,7 @@ import com.music.spotui.data.api.TopStats
 import com.music.spotui.data.local.ListenHistory
 import com.music.spotui.di.Graph
 import com.music.spotui.di.SongPlayer
-import com.music.spotui.ui.components.imageUrlOf
+import com.music.spotui.ui.components.spotifyImageUrl
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.immersive.components.ImmersiveListRow
 import com.music.spotui.ui.immersive.components.ImmersiveMessageState
@@ -116,7 +117,7 @@ fun ImmersiveNewReleasesScreen(navController: NavController) {
 fun ImmersiveEpisodesScreen(navController: NavController) {
     val episodes by produceState<List<com.music.spotui.data.entity.SongsModel>?>(null) { value = Graph.api.getSavedEpisodes() }
     var filter by remember { mutableStateOf(com.music.spotui.data.preferences.PodcastPrefs.libraryFilter()) }
-    ImmersivePage(title = stringResource(R.string.saved_episodes_title), onBack = { navController.popBackStack() }) {
+    ImmersivePage(title = stringResource(R.string.your_episodes_title), onBack = { navController.popBackStack() }) {
         val list = episodes
         when {
             list == null -> immersiveSongListSkeleton(count = 7)
@@ -171,7 +172,7 @@ fun ImmersiveEpisodesScreen(navController: NavController) {
 @Composable
 fun ImmersiveNewEpisodesScreen(navController: NavController) {
     val episodes by produceState<List<com.music.spotui.data.entity.SongsModel>?>(null) { value = Graph.api.getNewEpisodes() }
-    ImmersivePage(title = stringResource(R.string.episodes_new_title), onBack = { navController.popBackStack() }) {
+    ImmersivePage(title = stringResource(R.string.new_episodes_title), onBack = { navController.popBackStack() }) {
         val list = episodes
         when {
             list == null -> immersiveSongListSkeleton(count = 7)
@@ -253,8 +254,8 @@ private fun SpotifyStatsBlock(navController: NavController) {
                         itemsIndexed(top.artists, key = { _, a -> a.uri }) { i, a ->
                             ImmersiveShelfCard(
                                 title = "${i + 1}. ${a.name}", subtitle = null,
-                                imageUrl = imageUrlOf(a.images.best(300)?.url), round = true,
-                                onClick = { navController.navigate(artistRoute(a.name, com.music.spotui.ui.navigation.pageIdOf(a.uri))) },
+                                imageUrl = spotifyImageUrl(a.images.best(300)?.url), round = true,
+                                onClick = { navController.navigate(artistRoute(a.name, a.uri.substringAfterLast(':'))) },
                                 modifier = Modifier.width(120.dp),
                             )
                         }
@@ -266,7 +267,7 @@ private fun SpotifyStatsBlock(navController: NavController) {
                         ImmersiveListRow(
                             title = "${i + 1}  ${t.name}",
                             subtitle = t.artists.joinToString(", ") { it.name },
-                            imageUrl = imageUrlOf(t.album?.images?.best(160)?.url),
+                            imageUrl = spotifyImageUrl(t.album?.images?.best(160)?.url),
                             round = false,
                             onClick = { SongPlayer.playSong(t.uri) },
                         )
@@ -302,6 +303,17 @@ private fun androidx.compose.foundation.lazy.LazyListScope.phoneStats(
                 stringResource(R.string.recap_sources, src[ListenHistory.Source.SPOTIFY] ?: 0, src[ListenHistory.Source.DOWNLOAD] ?: 0, src[ListenHistory.Source.LOCAL] ?: 0),
                 style = Immersive.Caption, modifier = Modifier.padding(top = 8.dp),
             )
+            if (recap.listens > 0) {
+                var story by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+                val label = stringResource(periodLabels[period])
+                androidx.compose.foundation.layout.Box(
+                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                    modifier = Modifier.padding(top = 16.dp).fillMaxWidth().height(48.dp)
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(50)).background(Immersive.Accent)
+                        .then(Modifier.clickable { story = true }),
+                ) { Text(stringResource(R.string.recap_story_play), color = androidx.compose.ui.graphics.Color.Black, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) }
+                if (story) com.music.spotui.ui.components.RecapStory(recap, label) { story = false }
+            }
         }
     }
     item(key = "weekly") { ImmersiveWeeklyChart() }

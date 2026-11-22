@@ -7,5 +7,6 @@
     <string name="metadata_asked">विचारले जाते</string>
     <string name="metadata_off">बंद: कधीच विचारले जात नाही</string>
     <string name="metadata_reset">डीफॉल्ट क्रमावर परत जा</string>
+    <string name="metadata_not_on_spotify">Spotify वर सापडले नाही: हे गाणे अजून वाजवता येत नाही</string>
     <string name="metadata_switch">%1$s ला विचारा</string>
 </resources>

@@ -36,11 +36,11 @@ fun DownloadBadge(status: OfflineStatus?, size: Dp = 16.dp, modifier: Modifier =
             contentAlignment = Alignment.Center,
             modifier = modifier.size(size).clip(CircleShape).background(Green),
         ) {
-            Icon(Icons.Default.ArrowDownward, stringResource(R.string.lbl_downloaded_desc),
+            Icon(Icons.Default.ArrowDownward, stringResource(R.string.download_badge_downloaded_content_description),
                 tint = Color.Black, modifier = Modifier.size(size * 0.7f))
         }
         OfflineStatus.Queued -> Icon(Icons.Outlined.ArrowCircleDown,
-            stringResource(R.string.lbl_downloading_desc),
+            stringResource(R.string.download_badge_downloading_content_description),
             tint = AppText.copy(alpha = 0.5f), modifier = modifier.size(size))
         is OfflineStatus.Downloading -> Box(contentAlignment = Alignment.Center, modifier = modifier.size(size)) {
             if (status.progress < 0f) CircularProgressIndicator(color = Green, strokeWidth = 2.dp, modifier = Modifier.size(size))
@@ -48,7 +48,7 @@ fun DownloadBadge(status: OfflineStatus?, size: Dp = 16.dp, modifier: Modifier =
                 strokeWidth = 2.dp, modifier = Modifier.size(size))
         }
         OfflineStatus.Failed, OfflineStatus.Unavailable -> Icon(Icons.Outlined.ErrorOutline,
-            stringResource(R.string.lbl_download_failed),
+            stringResource(R.string.download_badge_error_content_description),
             tint = Color(0xFFE22134), modifier = modifier.size(size))
     }
 }
@@ -69,10 +69,10 @@ fun DownloadListButton(
     Box(contentAlignment = Alignment.Center, modifier = modifier.size(maxOf(touch, 28.dp)).pressable(0.92f, onClick = onClick)
         .wrapContentSize().size(28.dp)) {
         when {
-            all -> Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.lbl_download_remove),
+            all -> Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.context_menu_undownload),
                 tint = AppText.copy(alpha = 0.8f), modifier = Modifier.size(28.dp))
             busy -> DownloadBadge(OfflineStatus.Downloading(if (total > 0) downloaded.toFloat() / total else -1f), size = 24.dp)
-            else -> Icon(Icons.Outlined.ArrowCircleDown, stringResource(R.string.lbl_download),
+            else -> Icon(Icons.Outlined.ArrowCircleDown, stringResource(R.string.context_menu_download),
                 tint = AppText.copy(alpha = 0.8f), modifier = Modifier.size(28.dp))
         }
     }

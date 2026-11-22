@@ -1,6 +1,7 @@
 package app.myspoti.wear
 
 import android.content.Context
+import app.myspoti.api.sync.LocalNow
 import android.net.Uri
 import android.util.Log
 import androidx.media3.common.MediaItem
@@ -47,17 +48,25 @@ object WatchLocal {
     val now: StateFlow<Now?> = _now
     val active: Boolean get() = _now.value != null
 
+    /** The list being played ([play]'s), for the account's view of the song's context. */
+    private var listUri = ""
+
     /** Plays [list] (the list [uri]) from [start], whose audio [first] was already found, from [positionMs]. */
     fun play(context: Context, list: List<WatchTrack>, start: Int, first: Pair<AudioStream, String>, uri: String = "", positionMs: Long = 0L) {
         app = context.applicationContext
-        tracks = list; index = start
+        WatchSync.init(app)
+        tracks = list; index = start; listUri = uri
         load(first, positionMs)
     }
 
     private fun ensurePlayer(): ExoPlayer = player ?: ExoPlayer.Builder(app).build().also { p ->
         p.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) { if (state == Player.STATE_ENDED) move(1) }
-            override fun onIsPlayingChanged(isPlaying: Boolean) { publish() }
+            override fun onPlaybackStateChanged(state: Int) { if (state == Player.STATE_ENDED) move(1) else WatchSync.onLocal() }
+            override fun onIsPlayingChanged(isPlaying: Boolean) { publish(); report(); WatchSync.onLocal() }
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) { WatchSync.onLocal() }
+            override fun onPositionDiscontinuity(old: Player.PositionInfo, new: Player.PositionInfo, reason: Int) {
+                if (reason == Player.DISCONTINUITY_REASON_SEEK) { report(); WatchSync.onLocal() }
+            }
             override fun onPlayerError(error: androidx.media3.common.PlaybackException) { Log.w(TAG, "watch player: ${error.message}"); move(1) }
         })
         player = p
@@ -70,6 +79,8 @@ object WatchLocal {
         p.setMediaSource(sourceOf(stream), positionMs)
         p.prepare(); p.play()
         publish(playing = true)
+        report()
+        WatchSync.onLocal()
         WatchPlaybackService.follow(app, true)
         // The next song's audio, asked while this one plays.
         aheadIndex = index + 1
@@ -118,20 +129,64 @@ object WatchLocal {
         if (_now.value != null) {
             _now.value = null
             if (::app.isInitialized) WatchPlaybackService.follow(app, false)
+            report(stopped = true)
+            WatchSync.stopped("the watch's player stopped")
         }
     }
 
-    /** Where the song is now, for the screen's ring; null with nothing loaded. */
-    fun position(): WatchPosition? {
+    /** The song and its state as the listen mirror sees it ([WatchSync]); null with nothing loaded. */
+    fun localNow(): LocalNow? {
         val p = player ?: return null
         val t = tracks.getOrNull(index) ?: return null
-        return WatchPosition(p.currentPosition, p.duration.takeIf { it > 0 } ?: t.durationMs, p.playbackState == Player.STATE_BUFFERING)
+        val duration = p.duration.takeIf { it > 0 } ?: t.durationMs
+        return LocalNow(
+            track = WatchSync.trackOf(t), live = true,
+            playing = p.playWhenReady, positionMs = p.currentPosition, durationMs = duration,
+            knownLengthMs = p.duration.takeIf { it > 0 }, buffering = p.playbackState == Player.STATE_BUFFERING, audible = p.isPlaying,
+            previous = tracks.getOrNull(index - 1)?.let(WatchSync::trackOf), next = tracks.getOrNull(index + 1)?.let(WatchSync::trackOf),
+            contextUri = listUri,
+        )
     }
 
     /** The songs after the current one, in order. */
     fun queued(): List<WatchTrack> = tracks.drop(index + 1)
 
+    /**
+     * The song and its state told to the phone, on each change only (the latest wins; a phone out of
+     * reach is simply not told): the phone's listen mirror counts it on the account when it is on.
+     */
+    private fun report(stopped: Boolean = false) {
+        if (!::app.isInitialized) return
+        // The watch counts its songs itself ([WatchSync]); the phone only while the engine cannot.
+        val relay = WatchSync.relays
+        if (!relay && !relayed) return
+        // Relayed before and not now: the phone is told the song stopped, once.
+        val stop = stopped || !relay
+        relayed = !stop
+        val p = player
+        val t = tracks.getOrNull(index)
+        val body = if (stop || p == null || t == null) "{\"stopped\":true}" else kotlinx.serialization.json.buildJsonObject {
+            put("uri", kotlinx.serialization.json.JsonPrimitive(t.uri)); put("name", kotlinx.serialization.json.JsonPrimitive(t.name))
+            put("artists", kotlinx.serialization.json.JsonArray(t.artists.map { kotlinx.serialization.json.JsonPrimitive(it) }))
+            put("durationMs", kotlinx.serialization.json.JsonPrimitive(p.duration.takeIf { it > 0 } ?: t.durationMs))
+            put("positionMs", kotlinx.serialization.json.JsonPrimitive(p.currentPosition))
+            put("playing", kotlinx.serialization.json.JsonPrimitive(p.playWhenReady))
+        }.toString()
+        pending = body
+        if (reporting) return
+        reporting = true
+        scope.launch(Dispatchers.IO) {
+            try {
+                while (true) {
+                    val next = pending ?: break
+                    pending = null
+                    runCatching { PhoneLink(app).listen(next) }.onFailure { Log.d(TAG, "listen not told to the phone: ${it.message}") }
+                }
+            } finally { reporting = false }
+        }
+    }
+    /** The phone was told of a song and has not been told it stopped. */
+    private var relayed = false
+    @Volatile private var pending: String? = null
+    @Volatile private var reporting = false
 }
-
-/** Where the watch's song is: position, length, and whether it waits for data. */
-data class WatchPosition(val positionMs: Long, val durationMs: Long, val buffering: Boolean)

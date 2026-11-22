@@ -113,6 +113,14 @@ data class Manifest(
 
     fun declares(a: Action): Boolean = declared().any { it.name == a.key }
 
+    /**
+     * The writes `spotify.raw` lists, as the grants they become at install ([RawRequest.offer]):
+     * the same kind of request on another song or playlist is covered, nothing else.
+     */
+    fun declaredWrites(): List<RawGrant> = declared().firstOrNull { it.name == Action.SPOTIFY_RAW.key }?.writes.orEmpty()
+        .mapNotNull { w -> runCatching { w.trim().split(Regex("\\s+"), 2).let { (m, u) -> RawRequest.offer(RawRequest.check(m, u), u) } }.getOrNull() }
+        .distinct()
+
     /** The hosts `media` lists, or null when the manifest has no `media` (an older one: see [media]). */
     fun mediaHosts(): List<String>? = media?.hosts
 
@@ -123,7 +131,7 @@ data class Manifest(
     fun asks(): List<Ask> = declared().mapNotNull { r ->
         val a = Action.of(r.name) ?: return@mapNotNull null
         if (a == Action.NETWORK && r.hosts.any { it == "*" }) Ask(Action.NETWORK_ANY, Level.CRITICAL, r.why, r.hosts, a)
-        else Ask(a.key, a.level, r.why, r.hosts + (if (a == Action.AUDIO_SOURCE || a == Action.DOWNLOAD_SOURCE) media?.hosts.orEmpty() else emptyList()), a)
+        else Ask(a.key, a.level, r.why, r.hosts + (if (a == Action.AUDIO_SOURCE || a == Action.DOWNLOAD_SOURCE) media?.hosts.orEmpty() else emptyList()) + if (a == Action.SPOTIFY_RAW) declaredWrites().map { it.toString() } else emptyList(), a)
     }
 
     /**
@@ -252,13 +260,23 @@ data class Manifest(
             if (a == Action.NETWORK) {
                 if (r.hosts.isEmpty()) add("network: list the hosts it calls (\"api.example.com\", \"*.example.com\", or \"*\" for any)")
                 r.hosts.filterNot { HOST.matches(it) }.forEach { add("network host \"$it\": a host name, *.domain, or *") }
-                r.hosts.filter { it != "*" && SpotifyHosts.isSpotify(it.removePrefix("*.")) }.forEach { add("network host \"$it\": Spotify's servers are not open to extensions") }
             } else if (a != null && r.hosts.isNotEmpty()) add("action \"${r.name}\": only network takes hosts")
+            if (a != null && a != Action.SPOTIFY_RAW && r.writes.isNotEmpty()) add("action \"${r.name}\": only spotify.raw takes writes")
+            if (a == Action.SPOTIFY_RAW) {
+                if (r.writes.size > MAX_WRITES) add("spotify.raw: $MAX_WRITES writes at most")
+                r.writes.forEach { w ->
+                    val parts = w.trim().split(Regex("\\s+"), 2)
+                    val why = if (parts.size != 2) "\"METHOD https://host/path\""
+                        else runCatching { RawRequest.check(parts[0], parts[1]) }.fold(
+                            { m -> if (m in RawRequest.READS) "a write (POST, PUT, PATCH, DELETE): reads never ask" else null },
+                            { it.message })
+                    why?.let { add("spotify.raw write \"$w\": $it") }
+                }
+            }
         }
         media?.let { m ->
             if (m.hosts.size > 20) add("media: 20 hosts at most")
             m.hosts.filter { it == "*" || !HOST.matches(it) }.forEach { add("media host \"$it\": a host name or *.domain (not *)") }
-            m.hosts.filter { SpotifyHosts.isSpotify(it.removePrefix("*.")) }.forEach { add("media host \"$it\": Spotify's servers are not open to extensions") }
         }
         if (actions.size != actions.map { it.name }.toSet().size) add("actions: an action listed twice")
         if (settings.isNotEmpty() && actions.none { it.name == Action.SETTINGS_PAGE.key }) add("settings: add the settings.page action (with its why) to have a settings page")
@@ -355,6 +373,7 @@ data class Manifest(
         private val KEY = Regex("^[A-Za-z0-9_]{1,40}$")
         private val TAG = Regex("^[a-z0-9][a-z0-9 -]{0,23}$")
         private val LANG = Regex("^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8}){0,2}$")
+        private const val MAX_WRITES = 8
 
         fun parse(text: String): Manifest = ExtJson.decodeFromString(serializer(), text)
     }

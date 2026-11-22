@@ -113,8 +113,8 @@ fun activeDeviceLabel(): String {
     return when (route.kind) {
         // "This phone", in the player as in the official app. Spotify Connect still lists it under
         // the device's own name (the engine registers that name); only this label says "this phone".
-        AudioRoute.Kind.SPEAKER -> stringResource(R.string.lbl_this_phone)
-        AudioRoute.Kind.BLUETOOTH -> route.name.ifBlank { stringResource(R.string.lbl_bluetooth) }
+        AudioRoute.Kind.SPEAKER -> stringResource(R.string.connect_phone_is_self)
+        AudioRoute.Kind.BLUETOOTH -> route.name.ifBlank { stringResource(R.string.label_bluetooth) }
         AudioRoute.Kind.WIRED -> stringResource(R.string.headphones)
     }
 }
@@ -150,10 +150,29 @@ fun playingSourceLabel(): String {
     return if (temporary == null || label.isBlank() || uri.startsWith("spotify:episode:")) label else "$label · $temporary"
 }
 
-/** Nothing plays from Spotify here: no Spotify stream to describe. */
-@Suppress("UNUSED_PARAMETER")
+/**
+ * What Spotify streams while its own player plays here: "Spotify · AAC · 160 kbit/s", read from the
+ * page once the song has loaded (it reports the stream a moment after the start); "" on another
+ * device or while it is not known. Same line, same tap (the quality sheet) as an extension's source.
+ */
+/** How many times (every 2 s, about half a minute) the page is asked for the stream it plays. */
+private const val QUALITY_TRIES = 15
+
 @Composable
-private fun spotifyQualityLabel(uri: String): String = ""
+private fun spotifyQualityLabel(uri: String): String {
+    if (SongPlayer.activeDevice.value != null || uri.isBlank()) return ""
+    val label by androidx.compose.runtime.produceState("", uri) {
+        value = ""
+        // The Immersive player is composed from the song's start, before the page has loaded the
+        // stream (later still after a pause or a slow start): asked again until it is known.
+        repeat(QUALITY_TRIES) { i ->
+            kotlinx.coroutines.delay(if (i == 0) 1500L else 2000L)
+            val (bitrate, mime) = app.myspoti.host.android.MyspotiRuntime.spotify.player.audioInfo()
+            if (bitrate > 0) { value = "${codecName(mime)} · ${bitrate / 1000} kbit/s"; return@produceState }
+        }
+    }
+    return if (label.isBlank()) "" else stringResource(R.string.player_source_spotify, label)
+}
 
 /** The name of the extension streaming the song playing, for the mini player; null otherwise (see [playingSourceLabel]). */
 @Composable
@@ -179,8 +198,7 @@ fun DevicesSheet(onDismiss: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     var devices by remember { mutableStateOf<List<SongPlayer.ConnectDevice>?>(null) }
     var quality by remember { mutableStateOf(false) }
-    // Spotify Connect is not offered: nothing plays from Spotify here.
-    LaunchedEffect(Unit) { devices = emptyList() }
+    LaunchedEffect(Unit) { devices = SongPlayer.devices() }
     val remote = SongPlayer.activeDevice.value
     val route = rememberAudioRoute()
     val headphones = remote == null && route.kind != AudioRoute.Kind.SPEAKER
@@ -202,6 +220,12 @@ fun DevicesSheet(onDismiss: () -> Unit) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(activeDeviceLabel(), color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold,
                             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                        if (remote == null) Text(
+                            stringResource(streamingLabel(com.music.spotui.data.preferences.getStreamingQuality(context, com.music.spotui.data.DataSaver.metered))),
+                            color = Color(0xFFDDDDDD), fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(start = 8.dp).clip(RoundedCornerShape(6.dp)).background(Color(0xFF4A4A4A))
+                                .clickable { quality = true }.padding(horizontal = 6.dp, vertical = 2.dp),
+                        )
                     }
                     val title = Graph.currentSongState.title.value
                     if (title.isNotBlank()) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
@@ -224,15 +248,15 @@ fun DevicesSheet(onDismiss: () -> Unit) {
             val list = devices
             val self = list?.firstOrNull { it.isSelf }
             // This phone's speaker: from headphones (the system's output picker), or back from a Connect device.
-            if (remote != null || headphones) DeviceRow(Icons.Default.Smartphone, stringResource(R.string.lbl_this_phone), null) {
+            if (remote != null || headphones) DeviceRow(Icons.Default.Smartphone, stringResource(R.string.connect_phone_is_self), null) {
                 if (remote != null) self?.let { SongPlayer.transferTo(it) } else AudioRoute.pickOutput(context)
                 onDismiss()
             }
             // The headphones this phone plays into, while a Connect device has the music.
             if (remote != null && route.kind != AudioRoute.Kind.SPEAKER || headphones) DeviceRow(
                 Icons.Default.Headphones,
-                if (route.kind == AudioRoute.Kind.BLUETOOTH) route.name.ifBlank { stringResource(R.string.lbl_bluetooth) } else stringResource(R.string.headphones),
-                if (route.kind == AudioRoute.Kind.BLUETOOTH) stringResource(R.string.lbl_bluetooth) else null,
+                if (route.kind == AudioRoute.Kind.BLUETOOTH) route.name.ifBlank { stringResource(R.string.label_bluetooth) } else stringResource(R.string.headphones),
+                if (route.kind == AudioRoute.Kind.BLUETOOTH) stringResource(R.string.label_bluetooth) else null,
                 current = headphones,
             ) {
                 if (remote != null) self?.let { SongPlayer.transferTo(it) } else AudioRoute.pickOutput(context)
@@ -247,11 +271,14 @@ fun DevicesSheet(onDismiss: () -> Unit) {
                     DeviceRow(deviceIcon(d.type), d.name, null) { SongPlayer.transferTo(d); onDismiss() }
                 }
                 if (list.none { !it.isSelf } && !headphones && remote == null && com.music.spotui.cast.CastDiscovery.devices.isEmpty() &&
-                    com.music.spotui.cast.CastPlayback.device.value == null)
+                    com.music.spotui.connect.LanDiscovery.devices.isEmpty() && com.music.spotui.cast.CastPlayback.device.value == null)
                     Text(stringResource(R.string.no_devices), color = AppText.copy(alpha = 0.7f), modifier = Modifier.padding(20.dp))
             }
-            // Cast devices, for the songs Orpheon plays itself.
+            // Spotify Connect devices of the network that are not logged in to the account yet.
+            com.music.spotui.connect.LanDeviceRows()
+            // Cast devices, for Myspoti's own songs (Spotify's go through Spotify Connect above).
             com.music.spotui.cast.CastDeviceRows(onDismiss)
+            JamSection(onDismiss)
             // Bluetooth: pair or pick headphones and speakers in the system settings.
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -260,7 +287,7 @@ fun DevicesSheet(onDismiss: () -> Unit) {
                     .clickable { AudioRoute.openBluetooth(context) }.padding(14.dp),
             ) {
                 Icon(Icons.Default.Bluetooth, null, tint = Green, modifier = Modifier.size(26.dp))
-                Text(stringResource(R.string.lbl_bluetooth), color = Green, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+                Text(stringResource(R.string.label_bluetooth), color = Green, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
             }
         }
     }
@@ -281,6 +308,14 @@ private fun DeviceRow(icon: ImageVector, name: String, detail: String?, current:
     }
 }
 
+internal fun streamingLabel(q: com.music.spotui.data.preferences.StreamingQuality): Int = when (q) {
+    com.music.spotui.data.preferences.StreamingQuality.AUTO -> R.string.quality_streaming_auto
+    com.music.spotui.data.preferences.StreamingQuality.LOW -> R.string.quality_streaming_low
+    com.music.spotui.data.preferences.StreamingQuality.NORMAL -> R.string.quality_streaming_normal
+    com.music.spotui.data.preferences.StreamingQuality.HIGH -> R.string.quality_streaming_high
+    com.music.spotui.data.preferences.StreamingQuality.VERY_HIGH -> R.string.quality_streaming_very_high
+}
+
 /** The sound quality page: what plays now (codec and bitrate, the downloaded file, or what an extension announced), and the setting. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -297,7 +332,10 @@ fun QualitySheet(onDismiss: () -> Unit) {
                 ?: t?.uri?.takeIf { it.scheme == com.music.spotui.extensions.ExtensionAudio.SCHEME }
                     ?.let { com.music.spotui.extensions.ExtensionAudio.qualityOf(it.lastPathSegment.orEmpty()) }
                 ?: ""
-        } else ""
+        } else {
+            val (bitrate, mime) = app.myspoti.host.android.MyspotiRuntime.spotify.player.audioInfo()
+            if (bitrate <= 0) "" else "${codecName(mime)} · ${bitrate / 1000} kbit/s"
+        }
     }
     com.music.spotui.ui.components.LookSheet(onDismissRequest = onDismiss, containerColor = SheetColor) {
         Column(Modifier.fillMaxWidth().verticalScroll(androidx.compose.foundation.rememberScrollState()).navigationBarsPadding().padding(bottom = 16.dp)) {
@@ -323,6 +361,9 @@ fun QualitySheet(onDismiss: () -> Unit) {
             }
             // Another audio source for this song and the next ones, until the app restarts.
             SourcePicker(Modifier.padding(top = 12.dp))
+            // The level of the network in use now (Wi-Fi and mobile data each keep their own).
+            if (!local) StreamingQualityPicker(Modifier.padding(top = 12.dp), cellular = com.music.spotui.data.DataSaver.metered,
+                title = if (com.music.spotui.data.DataSaver.metered) R.string.quality_streaming_cell_title else R.string.quality_streaming_wifi_title)
         }
     }
 }
@@ -336,6 +377,112 @@ internal fun codecName(mime: String): String = when {
     else -> mime.substringBefore(';').substringAfter('/').uppercase()
 }
 
+/** Spotify Jam: listen together. Free accounts can join (Spotify keeps starting one to Premium). */
+@Composable
+private fun JamSection(onDismiss: () -> Unit) {
+    val jam = app.myspoti.host.android.MyspotiRuntime.api.jam
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val session by jam.session.collectAsState()
+    val availability by androidx.compose.runtime.produceState<app.myspoti.api.JamAvailability?>(null) {
+        value = runCatching { jam.refresh(); jam.availability() }.getOrDefault(app.myspoti.api.JamAvailability.UNKNOWN)
+    }
+    fun failed() = android.widget.Toast.makeText(context, context.getString(R.string.jam_failed), android.widget.Toast.LENGTH_SHORT).show()
+    Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)) {
+        Text(stringResource(R.string.jam_title), color = AppText, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        val s = session
+        if (s != null) {
+            Text(stringResource(R.string.jam_members, s.members.size), color = Green, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
+            // A member: where the music plays, as Spotify let this phone in (see JamSession.listensHere).
+            if (!s.isHost) Text(stringResource(if (s.listensHere) R.string.jam_plays_here else R.string.jam_plays_on_host),
+                color = AppMuted, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp, bottom = 4.dp))
+            Text(stringResource(R.string.jam_invite), color = AppText, fontSize = 15.sp,
+                modifier = Modifier.fillMaxWidth().clickable {
+                    scope.launch {
+                        val url = runCatching { jam.inviteLink() }.getOrNull() ?: return@launch failed()
+                        val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, url)
+                        context.startActivity(android.content.Intent.createChooser(send, null).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+                    }
+                }.padding(vertical = 10.dp))
+            Text(stringResource(R.string.jam_leave), color = AppText, fontSize = 15.sp,
+                modifier = Modifier.fillMaxWidth().clickable {
+                    scope.launch { runCatching { if (s.isHost) jam.end() else jam.leave() }; onDismiss() }
+                }.padding(vertical = 10.dp))
+            return@Column
+        }
+        if (availability == app.myspoti.api.JamAvailability.AVAILABLE) Text(stringResource(R.string.jam_start), color = Green, fontSize = 15.sp,
+            modifier = Modifier.fillMaxWidth().clickable {
+                scope.launch { if (runCatching { jam.start() }.isFailure) failed() }
+            }.padding(vertical = 10.dp))
+        // Spotify refuses to start a Jam on a free account (FREE_USER_NOT_ALLOWED); joining one works.
+        if (availability == app.myspoti.api.JamAvailability.RESTRICTED && session == null) Text(stringResource(R.string.jam_start_premium),
+            color = AppMuted, fontSize = 13.sp, modifier = Modifier.padding(vertical = 6.dp))
+        // Join: scan the QR code another phone shows in its Jam.
+        Text(stringResource(R.string.jam_scan), color = Green, fontSize = 15.sp,
+            modifier = Modifier.fillMaxWidth().clickable {
+                com.google.mlkit.vision.codescanner.GmsBarcodeScanning.getClient(context).startScan()
+                    .addOnSuccessListener { code ->
+                        val raw = code.rawValue.orEmpty()
+                        joinJam(context, raw, onDismiss)
+                    }
+                    // No scanner on this phone (Play services missing or too old): say so.
+                    .addOnFailureListener { failed() }
+            }.padding(vertical = 10.dp))
+        // Join: an invite link copied from a message.
+        Text(stringResource(R.string.jam_paste_link), color = Green, fontSize = 15.sp,
+            modifier = Modifier.fillMaxWidth().clickable {
+                val clip = context.getSystemService(android.content.ClipboardManager::class.java)?.primaryClip
+                val raw = clip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+                joinJam(context, raw, onDismiss)
+            }.padding(vertical = 10.dp))
+    }
+}
+
+/**
+ * Joins the Jam of the invite [raw] (a link, a QR code's text) on the app's scope, not the sheet's.
+ * Reported: "Spotify refused the Jam" while the phone was in it: the sheet closes as soon as the
+ * Jam's device shows up, which cancelled the join still waiting on the page, and that cancellation
+ * was shown as a failure. Only an answer Spotify refused (or a link that is not one) says so now.
+ */
+private fun joinJam(context: android.content.Context, raw: String, onDismiss: () -> Unit) {
+    fun failed() = android.widget.Toast.makeText(context.applicationContext, context.getString(R.string.jam_failed), android.widget.Toast.LENGTH_SHORT).show()
+    onDismiss()
+    app.myspoti.host.android.MyspotiRuntime.scope.launch {
+        // A short link (spotify.link) is followed to its token first.
+        val token = JamLinks.token(raw)
+            ?: return@launch kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { failed() }
+        val error = runCatching { app.myspoti.host.android.MyspotiRuntime.api.jam.join(token) }.exceptionOrNull()
+        if (error != null && error !is kotlinx.coroutines.CancellationException) {
+            app.myspoti.host.android.Logbook.log("jam: join failed: ${error.message}")
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { failed() }
+        }
+    }
+}
+
+/** Jam invite codes: `open.spotify.com/socialsession/<token>`, or a spotify.link short link to it. */
+private object JamLinks {
+    private val http = okhttp3.OkHttpClient.Builder().followRedirects(true).build()
+
+    suspend fun token(raw: String): String? {
+        val url = if (raw.contains("spotify.link") || raw.contains("spoti.fi")) resolve(raw) ?: raw else raw
+        Regex("socialsession/([A-Za-z0-9_-]+)").find(url)?.let { return it.groupValues[1] }
+        Regex("spotify:socialsession:([A-Za-z0-9_-]+)").find(url)?.let { return it.groupValues[1] }
+        return null
+    }
+
+    /** Where a short link leads (its final URL after redirects). */
+    private suspend fun resolve(link: String): String? = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        runCatching {
+            http.newCall(okhttp3.Request.Builder().url(link).header("user-agent", "Mozilla/5.0").build()).execute().use { r ->
+                val final = r.request.url.toString()
+                // Some short links answer with a page that holds the target in a meta refresh / link.
+                if (final.contains("socialsession")) final
+                else Regex("https://open\\.spotify\\.com/socialsession/[A-Za-z0-9_-]+").find(r.body.string())?.value ?: final
+            }
+        }.getOrNull()
+    }
+}
+
 // ── Sleep timer ──
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -345,14 +492,14 @@ fun SleepTimerSheet(onDismiss: () -> Unit) {
     com.music.spotui.ui.components.LookSheet(onDismissRequest = onDismiss, containerColor = SheetColor) {
         Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(
-                stringResource(R.string.lbl_sleep_timer),
+                stringResource(R.string.context_menu_sleep_timer),
                 color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
             )
-            val endOfTrack = stringResource(R.string.lbl_sleep_end_of_song)
+            val endOfTrack = stringResource(R.string.context_menu_sleep_timer_end_of_track)
             val options = buildList {
                 for (m in listOf(5, 10, 15, 30, 45)) add(stringResource(R.string.sleep_minutes, m) to m)
-                add(stringResource(R.string.lbl_one_hour) to 60)
+                add(stringResource(R.string.mute_chat_duration_one_hour) to 60)
                 add(endOfTrack to 0)
             }
             options.forEach { (label, minutes) ->
@@ -367,7 +514,7 @@ fun SleepTimerSheet(onDismiss: () -> Unit) {
             }
             if (active) {
                 Text(
-                    stringResource(R.string.lbl_sleep_timer_off),
+                    stringResource(R.string.context_menu_sleep_timer_turn_off),
                     color = Green, fontSize = 16.sp, fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -406,7 +553,7 @@ fun QueueSheet(contextName: String, onDismiss: () -> Unit) {
         Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92f).navigationBarsPadding()) {
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.lbl_queue), color = AppText, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.action_queue_label), color = AppText, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     if (contextName.isNotBlank()) Row(modifier = Modifier.padding(top = 4.dp)) {
                         Text(stringResource(R.string.playing_on), color = AppText.copy(alpha = 0.7f), fontSize = 14.sp)
                         Text(contextName, color = AppText, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -417,7 +564,7 @@ fun QueueSheet(contextName: String, onDismiss: () -> Unit) {
                         Text(activeDeviceLabel(), color = Green, fontSize = 13.sp)
                     }
                 }
-                PillButton(if (editing) "OK" else stringResource(R.string.lbl_edit)) { editing = !editing }
+                PillButton(if (editing) "OK" else stringResource(R.string.curation_actions_edit_button_title)) { editing = !editing }
             }
             LazyColumn(state = listState, modifier = Modifier.weight(1f)) {
                 q.current?.let { cur ->
@@ -433,7 +580,7 @@ fun QueueSheet(contextName: String, onDismiss: () -> Unit) {
                             ) {
                                 Icon(
                                     if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                    contentDescription = if (playing) stringResource(R.string.lbl_pause) else stringResource(R.string.lbl_play),
+                                    contentDescription = if (playing) stringResource(R.string.content_description_pause_button) else stringResource(R.string.content_description_play_button),
                                     tint = com.music.spotui.ui.theme.AppBackground, modifier = Modifier.size(22.dp),
                                 )
                             }
@@ -446,14 +593,14 @@ fun QueueSheet(contextName: String, onDismiss: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
             ) {
-                QueueAction(Icons.Default.Shuffle, stringResource(R.string.lbl_shuffle), shuffle, Modifier.weight(1f)) {
+                QueueAction(Icons.Default.Shuffle, stringResource(R.string.play_mode_item_shuffle_title), shuffle, Modifier.weight(1f)) {
                     SongPlayer.setShuffle(!shuffle); state.shuffle.value = !shuffle
                 }
                 val mode = SongPlayer.repeatMode.value
-                QueueAction(when (mode) { 2 -> Icons.Default.RepeatOne; 3 -> RepeatIcons.once; else -> Icons.Default.Repeat }, stringResource(R.string.lbl_repeat), mode != 0, Modifier.weight(1f)) {
+                QueueAction(when (mode) { 2 -> Icons.Default.RepeatOne; 3 -> RepeatIcons.once; else -> Icons.Default.Repeat }, stringResource(R.string.np_content_desc_repeat), mode != 0, Modifier.weight(1f)) {
                     SongPlayer.cycleRepeat()
                 }
-                QueueAction(Icons.Outlined.Timer, stringResource(R.string.lbl_sleep_timer_desc), SongPlayer.sleepEndsAt.value != null, Modifier.weight(1f)) {
+                QueueAction(Icons.Outlined.Timer, stringResource(R.string.np_content_desc_sleep_timer), SongPlayer.sleepEndsAt.value != null, Modifier.weight(1f)) {
                     showTimer = true
                 }
             }
@@ -763,7 +910,7 @@ private fun QueueList(
                             QueueSheetRow(item.song, current = false, leading = {
                                 if (editing) Icon(
                                     Icons.Default.RemoveCircleOutline,
-                                    contentDescription = stringResource(R.string.lbl_remove),
+                                    contentDescription = stringResource(R.string.aligned_curation_first_save_default_row_remove_action_description),
                                     tint = AppText.copy(alpha = 0.8f),
                                     modifier = Modifier
                                         .padding(end = 12.dp)
@@ -776,7 +923,7 @@ private fun QueueList(
                             }, trailing = {
                                 Icon(
                                     Icons.Default.DragHandle,
-                                    contentDescription = stringResource(R.string.lbl_move),
+                                    contentDescription = stringResource(R.string.edit_playlist_items_move_chip),
                                     tint = AppText.copy(alpha = 0.8f),
                                     modifier = Modifier
                                         .size(28.dp)
@@ -823,7 +970,7 @@ private fun SwipeLeftToRemove(enabled: Boolean, onRemove: () -> Unit, content: @
             contentAlignment = Alignment.CenterEnd,
             modifier = Modifier.matchParentSize().background(if (armed) Color(0xFFE22134) else Color(0xFF7A1F1F)),
         ) {
-            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.lbl_remove), tint = AppText, modifier = Modifier.padding(end = 24.dp).size(24.dp))
+            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.aligned_curation_first_save_default_row_remove_action_description), tint = AppText, modifier = Modifier.padding(end = 24.dp).size(24.dp))
         }
         Box(
             modifier = Modifier

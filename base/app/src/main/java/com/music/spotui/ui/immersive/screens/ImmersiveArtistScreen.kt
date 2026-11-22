@@ -115,11 +115,11 @@ private fun releaseYear(album: AlbumsModel): String = album.year
 @Composable
 internal fun releaseDetail(album: AlbumsModel): String {
     val kind = when (album.type.uppercase()) {
-        "SINGLE" -> stringResource(R.string.lbl_type_single)
-        "EP" -> stringResource(R.string.lbl_type_ep)
-        "COMPILATION" -> stringResource(R.string.lbl_type_compilation)
+        "SINGLE" -> stringResource(R.string.album_type_single)
+        "EP" -> stringResource(R.string.album_type_ep)
+        "COMPILATION" -> stringResource(R.string.album_type_compilation)
         "" -> ""
-        else -> stringResource(R.string.lbl_type_album)
+        else -> stringResource(R.string.album_type_album)
     }
     return listOf(releaseYear(album), kind).filter { it.isNotBlank() }.joinToString(" · ")
 }
@@ -312,7 +312,7 @@ private fun ArtistOverviewContent(
                             .getInstance(java.util.Locale.getDefault(), android.icu.text.CompactDecimalFormat.CompactStyle.SHORT)
                             .format(it)
                         Text(
-                            text = stringResource(R.string.lbl_monthly_listeners, compact),
+                            text = stringResource(R.string.monthly_listeners_text, compact),
                             style = Immersive.Subhead,
                             modifier = Modifier.padding(top = 4.dp),
                         )
@@ -381,7 +381,7 @@ private fun ArtistOverviewContent(
                 item(key = "latest-release") {
                     ArtistTopReleaseCard(
                         album = latest,
-                        label = stringResource(R.string.lbl_newest_release),
+                        label = stringResource(R.string.latest_release_title),
                         detail = releaseDetail(latest),
                         onClick = { navController.navigate(albumRoute(latest.name, latest.artists.ifBlank { displayName }, latest.spotifyId)) },
                     )
@@ -390,7 +390,7 @@ private fun ArtistOverviewContent(
 
             // Popular tracks: they page sideways four at a time rather than bury the shelves.
             if (tracks.isNotEmpty()) item(key = "top-songs") {
-                SectionHeader(stringResource(R.string.lbl_artist_top))
+                SectionHeader(stringResource(R.string.artist_popular_tracks))
                 BoxWithConstraints {
                     val columnWidth = minOf(maxWidth * TRACK_COLUMN_FRACTION, TrackColumnMaxWidth)
                     val topSongsState = rememberLazyListState()
@@ -429,13 +429,13 @@ private fun ArtistOverviewContent(
             fun openAlbum(album: AlbumsModel) {
                 navController.navigate(albumRoute(album.name, album.artists.ifBlank { displayName }, album.spotifyId))
             }
-            releaseShelf(R.string.lbl_artist_albums, albums, "albums", ::openAlbum, openReleases)
-            releaseShelf(R.string.lbl_artist_singles, singles, "singles", ::openAlbum, openReleases)
-            releaseShelf(R.string.lbl_artist_top_releases, untyped, "untyped", ::openAlbum, openReleases)
+            releaseShelf(R.string.artist_releases_albums, albums, "albums", ::openAlbum, openReleases)
+            releaseShelf(R.string.artist_releases_singles, singles, "singles", ::openAlbum, openReleases)
+            releaseShelf(R.string.popular_releases_section_title, untyped, "untyped", ::openAlbum, openReleases)
 
             if (overview.appearsOn.isNotEmpty()) item(key = "appears-on") {
                 ImmersiveShelf(
-                    title = stringResource(R.string.lbl_featured_on),
+                    title = stringResource(R.string.appears_on_section_title),
                     onSeeAll = if (overview.appearsOn.size > ARTIST_ROW_MAX_ITEMS) openReleases else null,
                 ) {
                     items(overview.appearsOn.take(ARTIST_ROW_MAX_ITEMS)) { album ->
@@ -450,11 +450,11 @@ private fun ArtistOverviewContent(
             }
 
             if (overview.relatedArtists.isNotEmpty()) item(key = "related") {
-                ImmersiveShelf(title = stringResource(R.string.lbl_similar_artists)) {
+                ImmersiveShelf(title = stringResource(R.string.fans_also_like_section_title)) {
                     items(overview.relatedArtists) { artist ->
                         ImmersiveShelfCard(
                             title = artist.name,
-                            subtitle = stringResource(R.string.lbl_artist),
+                            subtitle = stringResource(R.string.artist_subtitle),
                             imageUrl = artist.coverUri,
                             round = true,
                             onClick = { navController.navigate(artistRoute(artist.name, artist.id)) },
@@ -465,7 +465,7 @@ private fun ArtistOverviewContent(
 
             // About closes the page, after the shelves.
             if (!overview.biography.isNullOrBlank()) item(key = "about") {
-                SectionHeader(stringResource(R.string.lbl_bio))
+                SectionHeader(stringResource(R.string.creator_biography_section_title))
                 Column(Modifier.padding(horizontal = Immersive.Gutter)) {
                     if (overview.avatarImage.isNotBlank()) {
                         ImmersiveCover(
@@ -487,7 +487,7 @@ private fun ArtistOverviewContent(
             actions = {
                 if (onSpotify) ImmersiveBarAction(
                     icon = Icons.Rounded.MoreHoriz,
-                    contentDescription = stringResource(R.string.lbl_more),
+                    contentDescription = stringResource(R.string.content_description_context_menu),
                     onClick = { showArtistMenu = true },
                 )
             },

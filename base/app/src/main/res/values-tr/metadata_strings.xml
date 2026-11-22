@@ -7,5 +7,6 @@
     <string name="metadata_asked">Soruluyor</string>
     <string name="metadata_off">Kapalı: asla sorulmaz</string>
     <string name="metadata_reset">Varsayılan sıraya dön</string>
+    <string name="metadata_not_on_spotify">Spotify\'da bulunamadı: bu şarkı henüz çalınamıyor</string>
     <string name="metadata_switch">%1$s hizmetine sor</string>
 </resources>

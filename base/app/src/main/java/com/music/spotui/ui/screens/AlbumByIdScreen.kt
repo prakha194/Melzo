@@ -47,7 +47,7 @@ fun AlbumByIdScreen(navController: NavController, name: String, artist: String, 
         albumId != null -> ContextScreen(navController, type = "album", id = albumId)
         failed -> Column(Modifier.fillMaxSize().statusBarsPadding()) {
             Icon(
-                Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.lbl_back), tint = AppText,
+                Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.accessibility_navigate_back), tint = AppText,
                 modifier = Modifier.pressable(0.96f) { navController.navigateUp() }.padding(16.dp).size(26.dp),
             )
             ErrorRetry(stringResource(R.string.album_not_found)) { failed = false; attempt++ }

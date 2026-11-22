@@ -10,7 +10,8 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class PassTest {
-    private val payload = PassPayload(from = "phone", prefs = mapOf("settings_prefs" to mapOf("look" to PassPref("s", "glass"))))
+    private val payload = PassPayload(from = "phone", prefs = mapOf("settings_prefs" to mapOf("look" to PassPref("s", "glass"))),
+        cookies = listOf(PassCookie("a", "b")))
 
     @Test fun `a sealed payload opens with the receiver's key and token only`() {
         val mine = PassCrypto.keyPair()

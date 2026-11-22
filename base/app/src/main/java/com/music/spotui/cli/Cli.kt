@@ -56,6 +56,10 @@ sealed interface CliCommand {
     /** Phone songs (a piece of each one's MediaStore folder + title) played as the local queue. */
     data class AutoMixFiles(val names: List<String>) : CliCommand
     data class AutoMixSeek(val ms: Long) : CliCommand
+    /** Jam: join by its token or link, where it stands (read again from Spotify), leave it. */
+    data class JamJoin(val token: String) : CliCommand
+    data object JamStatus : CliCommand
+    data object JamLeave : CliCommand
     /** The metadata catalog: its scripts (version, bundled or downloaded, last look), the providers' order. */
     data object CatalogStatus : CliCommand
     /** Times a search as the search screen runs it: the wait for the account, then the results (counts only). */
@@ -110,14 +114,13 @@ object CliParser {
         "ext.setting <id> <key> <value|null>", "ext.press <id> <key>", "ext.call <id> <hook> [json]",
         "ext.log <id> [lines]", "ext.storage <id>", "ext.why [n]", "play <spotify uri> [context uri]", "pause", "resume", "next", "previous",
         "devices", "transfer <device id>", "volume <0-100>",
-        "nav <route>", "automix [on|off]", "automix.segue [on|off]", "automix.status", "automix.settings [name value]", "automix.next", "automix.files <folder+title piece> <folder+title piece>...", "automix.seek <ms>",
+        "nav <route>", "automix [on|off]", "automix.segue [on|off]", "automix.status", "automix.settings [name value]", "automix.next", "automix.files <folder+title piece> <folder+title piece>...", "automix.seek <ms>", "jam.join <token|link>", "jam.status", "jam.leave",
         "catalog.status", "catalog.update", "catalog.source <https url|http://localhost:port/|default>",
     )
 
     private val ID = Regex("[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
     private val KEY = Regex("[A-Za-z0-9_.-]{1,64}")
-    /** An item uri: a catalog provider's (`deezer:track:3135556`), or a `spotify:` one saved by an older version. */
-    private val URI = Regex("[a-z]+:[a-z]+(:[A-Za-z0-9_.-]+)+")
+    private val URI = Regex("spotify:[a-z]+(:[A-Za-z0-9_.-]+)+")
 
     /** The arguments the script sends: a JSON array of strings, base64 in [args64] (no shell quoting). */
     fun args(args: String?, args64: String?): List<String> {
@@ -157,8 +160,8 @@ object CliParser {
             "ext.why" -> CliCommand.ExtWhy(args.getOrNull(0)?.let { it.toIntOrNull()?.coerceIn(1, 20) ?: throw CliError("ext.why: [n] is a number") } ?: 1).also { most(1) }
             "play" -> {
                 most(2)
-                val uri = arg(0, "item uri").also { if (!URI.matches(it)) throw CliError("play: not an item uri (deezer:track:…)") }
-                CliCommand.Play(uri, args.getOrNull(1)?.takeIf { it.isNotBlank() }?.also { if (!URI.matches(it)) throw CliError("play: the context is not an item uri") })
+                val uri = arg(0, "spotify uri").also { if (!URI.matches(it)) throw CliError("play: not a spotify: uri") }
+                CliCommand.Play(uri, args.getOrNull(1)?.takeIf { it.isNotBlank() }?.also { if (!URI.matches(it)) throw CliError("play: the context is not a spotify: uri") })
             }
             "automix" -> CliCommand.AutoMixSet(when (args.getOrNull(0)) { null -> null; "on" -> true; "off" -> false; else -> throw CliError("automix: on or off") }).also { most(1) }
             "automix.segue" -> CliCommand.AutoMixSegue(when (args.getOrNull(0)) { null -> null; "on" -> true; "off" -> false; else -> throw CliError("automix.segue: on or off") }).also { most(1) }
@@ -192,6 +195,9 @@ object CliParser {
             }
             "automix.next" -> CliCommand.AutoMixNext.also { most(0) }
             "automix.files" -> CliCommand.AutoMixFiles(args.filter { it.isNotBlank() }.also { if (it.size < 2) throw CliError("automix.files: at least two files") })
+            "jam.join" -> CliCommand.JamJoin(arg(0, "token").let { a -> Regex("socialsession[:/]([A-Za-z0-9]+)").find(a)?.groupValues?.get(1) ?: a }).also { most(1) }
+            "jam.status" -> CliCommand.JamStatus.also { most(0) }
+            "jam.leave" -> CliCommand.JamLeave.also { most(0) }
             "catalog.status" -> CliCommand.CatalogStatus.also { most(0) }
             "search" -> CliCommand.Search(args.joinToString(" ").trim().ifEmpty { throw CliError("search: missing <query>") }.take(120))
             "catalog.update" -> CliCommand.CatalogUpdate.also { most(0) }

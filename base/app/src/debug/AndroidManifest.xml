@@ -12,6 +12,12 @@
                 <action android:name="app.myspoti.TEST" />
             </intent-filter>
         </receiver>
+        <!-- Debug builds only: the Connect consent page on its own (see ConsentProbeActivity). -->
+        <activity
+            android:name="com.music.spotui.connect.ConsentProbeActivity"
+            android:exported="true"
+            android:permission="android.permission.DUMP"
+            android:theme="@style/Theme.Orpheon" />
         <!-- Debug builds only: the queue panel over a made-up queue (see QueueProbeActivity). -->
         <activity
             android:name="com.music.spotui.di.QueueProbeActivity"

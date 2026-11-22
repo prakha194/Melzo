@@ -113,7 +113,7 @@ fun ArtistScreen(navController: NavController, artistName: String, artistId: Str
             is Response.Error -> androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().statusBarsPadding()) {
                 androidx.compose.material3.Icon(
                     androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack,
-                    stringResource(R.string.lbl_back), tint = AppText,
+                    stringResource(R.string.accessibility_navigate_back), tint = AppText,
                     modifier = Modifier.pressable(0.96f) { navController.navigateUp() }.padding(16.dp).size(26.dp),
                 )
                 com.music.spotui.ui.components.ErrorRetry(stringResource(R.string.page_load_failed)) {
@@ -249,7 +249,7 @@ private fun ArtistOverviewContent(
                         .clip(CircleShape)
                         .background(Color.Black.copy(alpha = 0.35f)),
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lbl_back), tint = Color.White)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.accessibility_navigate_back), tint = Color.White)
                 }
                 Column(
                     modifier = Modifier
@@ -284,7 +284,7 @@ private fun ArtistOverviewContent(
                     .getInstance(java.util.Locale.getDefault(), android.icu.text.CompactDecimalFormat.CompactStyle.SHORT)
                     .format(it)
                 Text(
-                    text = stringResource(R.string.lbl_monthly_listeners, compact),
+                    text = stringResource(R.string.monthly_listeners_text, compact),
                     color = AppText.copy(alpha = 0.7f),
                     fontSize = 14.sp,
                     modifier = Modifier.padding(16.dp, 12.dp, 16.dp, 0.dp),
@@ -329,7 +329,7 @@ private fun ArtistOverviewContent(
                         .padding(16.dp, 7.dp),
                     ) {
                         Text(
-                            text = stringResource(if (SongPlayer.library["spotify:artist:${overview.id}"] ?: following) R.string.lbl_following else R.string.lbl_follow),
+                            text = stringResource(if (SongPlayer.library["spotify:artist:${overview.id}"] ?: following) R.string.curation_button_following_state_text else R.string.curation_button_follow_state_text),
                             color = AppText,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -340,7 +340,7 @@ private fun ArtistOverviewContent(
                     // opened with the same pressable feedback as the row's other buttons.
                     if (onSpotify) Icon(
                         Icons.Default.MoreVert,
-                        contentDescription = stringResource(R.string.lbl_more),
+                        contentDescription = stringResource(R.string.content_description_context_menu),
                         tint = AppText.copy(alpha = 0.7f),
                         modifier = Modifier
                             .pressable(0.96f) { showArtistMenu = true }
@@ -351,7 +351,7 @@ private fun ArtistOverviewContent(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_player_shuffle),
-                        contentDescription = stringResource(R.string.lbl_shuffle),
+                        contentDescription = stringResource(R.string.play_mode_item_shuffle_title),
                         tint = if (isThisArtist && com.music.spotui.di.Graph.currentSongState.shuffle.value) SpotifyGreen else AppText,
                         modifier = Modifier.pressable(0.96f) {
                                 if (tracks.isNotEmpty()) {
@@ -377,7 +377,7 @@ private fun ArtistOverviewContent(
                     ) {
                         com.music.spotui.ui.components.PlayPauseIcon(
                             playing = isThisArtist && playingNow,
-                            contentDescription = if (isThisArtist && playingNow) stringResource(R.string.lbl_pause) else stringResource(R.string.lbl_play),
+                            contentDescription = if (isThisArtist && playingNow) stringResource(R.string.content_description_pause_button) else stringResource(R.string.content_description_play_button),
                             tint = Color.Black,
                             modifier = Modifier.size(26.dp),
                         )
@@ -418,7 +418,7 @@ private fun ArtistOverviewContent(
         if (tracks.isNotEmpty()) {
             item {
                 Text(
-                    text = stringResource(R.string.lbl_artist_top),
+                    text = stringResource(R.string.artist_popular_tracks),
                     color = AppText,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -449,7 +449,7 @@ private fun ArtistOverviewContent(
                             .clickable { showAllPopular = !showAllPopular }
                             .padding(horizontal = 20.dp, vertical = 8.dp),
                     ) {
-                        Text(if (showAllPopular) stringResource(R.string.lbl_show_less) else stringResource(R.string.lbl_show_more), color = AppText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(if (showAllPopular) stringResource(R.string.profile_bio_show_less) else stringResource(R.string.audiobook_series_see_more_button), color = AppText, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -457,7 +457,7 @@ private fun ArtistOverviewContent(
 
         // ── Popular releases (discography) — vertical list, first few + "Show all" ──
         if (overview.popularReleases.isNotEmpty()) {
-            item { SectionHeader(stringResource(R.string.lbl_artist_top_releases)) }
+            item { SectionHeader(stringResource(R.string.popular_releases_section_title)) }
             val popularReleases = overview.popularReleases.take(4)
             val popularReleaseKeys = rowKeys("release", popularReleases) { it.spotifyId.ifBlank { it.name } }
             itemsIndexed(popularReleases, key = { i, _ -> popularReleaseKeys[i] }) { _, album ->
@@ -476,7 +476,7 @@ private fun ArtistOverviewContent(
 
         // ── About ──
         if (!overview.biography.isNullOrBlank()) {
-            item { SectionHeader(stringResource(R.string.lbl_bio)) }
+            item { SectionHeader(stringResource(R.string.creator_biography_section_title)) }
             item {
                 Box(modifier = Modifier
                     .fillMaxWidth()
@@ -498,7 +498,7 @@ private fun ArtistOverviewContent(
                         }
                         overview.monthlyListeners?.let {
                             Text(
-                                text = stringResource(R.string.lbl_monthly_listeners, grouped(it)),
+                                text = stringResource(R.string.monthly_listeners_text, grouped(it)),
                                 color = AppText,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
@@ -518,7 +518,7 @@ private fun ArtistOverviewContent(
 
         // ── Fans also like ──
         if (overview.relatedArtists.isNotEmpty()) {
-            item { SectionHeader(stringResource(R.string.lbl_similar_artists)) }
+            item { SectionHeader(stringResource(R.string.fans_also_like_section_title)) }
             item {
                 LazyRow(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp, 0.dp),
@@ -535,7 +535,7 @@ private fun ArtistOverviewContent(
 
         // ── Appears on ──
         if (overview.appearsOn.isNotEmpty()) {
-            item { SectionHeader(stringResource(R.string.lbl_featured_on)) }
+            item { SectionHeader(stringResource(R.string.appears_on_section_title)) }
             item {
                 LazyRow(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp, 0.dp),
@@ -567,7 +567,7 @@ private fun ArtistOverviewContent(
                 .padding(horizontal = 12.dp),
         ) {
             Icon(
-                Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lbl_back), tint = AppText,
+                Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.accessibility_navigate_back), tint = AppText,
                 modifier = Modifier.wideClickable(horizontal = 12.dp, vertical = 15.dp) { navController.navigateUp() }.size(26.dp),
             )
             Text(
@@ -640,7 +640,7 @@ private fun PopularTrackRow(
         }
         Icon(
             Icons.Default.MoreVert,
-            contentDescription = stringResource(R.string.lbl_more),
+            contentDescription = stringResource(R.string.content_description_context_menu),
             tint = AppText.copy(alpha = 0.7f),
             modifier = Modifier.pressable(0.96f) { onMore() }
                 .size(24.dp)
@@ -730,9 +730,9 @@ private fun ReleaseRow(album: AlbumsModel, onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = album.name, color = AppText, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             val kind = when (album.type.uppercase()) {
-                "SINGLE" -> stringResource(R.string.lbl_type_single); "EP" -> stringResource(R.string.lbl_type_ep)
-                "COMPILATION" -> stringResource(R.string.lbl_type_compilation); "" -> ""
-                else -> stringResource(R.string.lbl_type_album)
+                "SINGLE" -> stringResource(R.string.album_type_single); "EP" -> stringResource(R.string.album_type_ep)
+                "COMPILATION" -> stringResource(R.string.album_type_compilation); "" -> ""
+                else -> stringResource(R.string.album_type_album)
             }
             val year = releaseYear(album)
             Text(
@@ -755,7 +755,7 @@ private fun ShowAllButton(onClick: () -> Unit) {
         
         .padding(20.dp, 8.dp),
     ) {
-        Text(text = stringResource(R.string.lbl_see_all), color = AppText, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(text = stringResource(R.string.composer_section_button_show_all), color = AppText, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -814,7 +814,7 @@ fun ArtistReleasesScreen(navController: NavController, artistName: String, artis
                     )
                     Spacer(Modifier.width(16.dp))
                     Text(
-                        text = stringResource(R.string.lbl_releases),
+                        text = stringResource(R.string.releases_title),
                         color = AppText,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
@@ -823,11 +823,11 @@ fun ArtistReleasesScreen(navController: NavController, artistName: String, artis
             }
             item {
                 Row(modifier = Modifier.padding(12.dp, 0.dp, 12.dp, 8.dp)) {
-                    ReleaseFilterChip(stringResource(R.string.lbl_artist_albums), filter == "albums") {
+                    ReleaseFilterChip(stringResource(R.string.artist_releases_albums), filter == "albums") {
                         filter = if (filter == "albums") "" else "albums"
                     }
                     Spacer(Modifier.width(8.dp))
-                    ReleaseFilterChip(stringResource(R.string.lbl_artist_singles), filter == "singles") {
+                    ReleaseFilterChip(stringResource(R.string.artist_releases_singles), filter == "singles") {
                         filter = if (filter == "singles") "" else "singles"
                     }
                     if (featuredOn.isNotEmpty()) {
@@ -852,20 +852,20 @@ fun ArtistReleasesScreen(navController: NavController, artistName: String, artis
                 "featured" -> items(featuredOn.size, key = { featuredKeys[it] }) { i -> ReleaseRow(featuredOn[i]) { openAlbum(featuredOn[i]) } }
                 else -> {
                     latest?.let {
-                        item { ReleaseSectionHeader(stringResource(R.string.lbl_newest_release)) }
+                        item { ReleaseSectionHeader(stringResource(R.string.latest_release_title)) }
                         item(key = "latest") { ReleaseRow(it) { openAlbum(it) } }
                     }
                     if (albums.isNotEmpty()) {
-                        item { ReleaseSectionHeader(stringResource(R.string.lbl_artist_albums)) }
+                        item { ReleaseSectionHeader(stringResource(R.string.artist_releases_albums)) }
                         items(albums.size, key = { albumKeys[it] }) { i -> ReleaseRow(albums[i]) { openAlbum(albums[i]) } }
                     }
                     if (singles.isNotEmpty()) {
-                        item { ReleaseSectionHeader(stringResource(R.string.lbl_artist_singles)) }
+                        item { ReleaseSectionHeader(stringResource(R.string.artist_releases_singles)) }
                         items(singles.size, key = { singleKeys[it] }) { i -> ReleaseRow(singles[i]) { openAlbum(singles[i]) } }
                     }
                     if (untyped.isNotEmpty()) {
                         if (albums.isEmpty() && singles.isEmpty()) {
-                            item { ReleaseSectionHeader(stringResource(R.string.lbl_artist_top_releases)) }
+                            item { ReleaseSectionHeader(stringResource(R.string.popular_releases_section_title)) }
                         }
                         items(untyped.size, key = { untypedKeys[it] }) { i -> ReleaseRow(untyped[i]) { openAlbum(untyped[i]) } }
                     }
@@ -929,6 +929,6 @@ private fun RelatedArtistCard(artist: ArtistsModel, onClick: () -> Unit) {
         )
         Spacer(Modifier.height(6.dp))
         Text(text = artist.name, color = AppText, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-        Text(text = stringResource(R.string.lbl_artist), color = AppMuted, fontSize = 11.sp)
+        Text(text = stringResource(R.string.artist_subtitle), color = AppMuted, fontSize = 11.sp)
     }
 }

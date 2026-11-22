@@ -116,6 +116,16 @@ fun ImmersiveEqualizerScreen(navController: NavController) {
                 ImmersiveSwitchRow(stringResource(R.string.equalizer_skip_silence), checked = pref.skipSilence,
                     onChecked = { pref.setSkipSilence(ctx, it) }, detail = stringResource(R.string.equalizer_skip_silence_detail))
             }
+            row {
+                var level by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(com.music.spotui.di.Leveller.on) }
+                ImmersiveSwitchRow(stringResource(R.string.leveller_title), checked = level,
+                    onChecked = { level = it; com.music.spotui.di.Leveller.set(ctx, it) }, detail = stringResource(R.string.leveller_detail))
+            }
+            row {
+                var upgrade by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(com.music.spotui.di.SourceUpgrade.on) }
+                ImmersiveSwitchRow(stringResource(R.string.upgrade_source_title), checked = upgrade,
+                    onChecked = { upgrade = it; com.music.spotui.di.SourceUpgrade.set(ctx, it) }, detail = stringResource(R.string.upgrade_source_detail))
+            }
         }
     }
 }

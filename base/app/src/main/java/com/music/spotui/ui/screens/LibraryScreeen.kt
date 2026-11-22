@@ -163,7 +163,7 @@ fun LibraryScreen(navController: NavController) {
                 .padding(16.dp, 12.dp, 16.dp, 8.dp)
         ) {
             Text(
-                text = stringResource(R.string.lbl_tab_library),
+                text = stringResource(R.string.navigationbar_musicappitems_yourlibrary_title),
                 fontWeight = FontWeight.Bold,
                 color = AppText,
                 fontSize = 22.sp,
@@ -180,13 +180,13 @@ fun LibraryScreen(navController: NavController) {
             if (creating) LibraryCreateSheet(navController, onDismiss = { creating = false }, onLibraryChanged = { libraryViewModel.load() })
             Icon(
                 painter = painterResource(R.drawable.ic_add),
-                contentDescription = stringResource(R.string.lbl_playlist_create),
+                contentDescription = stringResource(R.string.create_playlist_content_description),
                 tint = AppText,
                 modifier = Modifier.pressable(0.96f) { creating = true }.padding(end = 14.dp).size(22.dp),
             )
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = stringResource(R.string.lbl_library_search_hint),
+                contentDescription = stringResource(R.string.library_search_text_hint),
                 tint = if (searchActive) Color(AppPalette.toArgb()) else AppText,
                 modifier = Modifier.pressable(0.96f) {
                         searchActive = !searchActive
@@ -208,7 +208,7 @@ fun LibraryScreen(navController: NavController) {
                 if (avatar.isNotBlank()) {
                     AccountAvatar(avatar, 34.dp)
                 } else {
-                    Icon(Icons.Default.Person, contentDescription = stringResource(R.string.lbl_account), tint = AppText, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Person, contentDescription = stringResource(R.string.account_title), tint = AppText, modifier = Modifier.size(20.dp))
                 }
             }
         }
@@ -269,7 +269,7 @@ fun LibraryScreen(navController: NavController) {
                         .focusRequester(searchFocus),
                     decorationBox = { inner ->
                         Box {
-                            if (searchQuery.isEmpty()) Text(stringResource(R.string.lbl_tab_search), color = Color(0xFF888888), fontSize = 15.sp)
+                            if (searchQuery.isEmpty()) Text(stringResource(R.string.navigationbar_musicappitems_search_title), color = Color(0xFF888888), fontSize = 15.sp)
                             inner()
                         }
                     },
@@ -294,12 +294,12 @@ fun LibraryScreen(navController: NavController) {
                 onRefresh = { libraryViewModel.refresh() },
                 modifier = Modifier.fillMaxSize(),
             ) {
-                val localName = stringResource(R.string.lbl_local_files)
-                val downloadsName = stringResource(R.string.lbl_downloads)
-                val localSubtitle = stringResource(R.string.lbl_playlist) + " • " + stringResource(R.string.local_playlist_subtitle)
+                val localName = stringResource(R.string.local_files_title)
+                val downloadsName = stringResource(R.string.collection_downloaded)
+                val localSubtitle = stringResource(R.string.assisted_curation_search_playlist) + " • " + stringResource(R.string.local_playlist_subtitle)
                 val hasDownloads = com.music.spotui.data.offline.OfflineStore.tracks.isNotEmpty() ||
                     com.music.spotui.data.offline.OfflineDownloader.requests.isNotEmpty()
-                val likedName = stringResource(R.string.lbl_liked_songs)
+                val likedName = stringResource(R.string.collection_liked_songs_title)
                 // Liked Songs, Local Files and Downloaded stay on top; the rest follows the
                 // chosen sort. "Récents" is not here: it lives on the profile panel, as in the
                 // official app (it is the account's history, not a library folder).
@@ -582,7 +582,7 @@ fun SumUpLibraryScreen(
                         Text(text = entry.subtitle, color = AppMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
-                if (hasMenu) Icon(Icons.Default.MoreVert, stringResource(R.string.lbl_more),
+                if (hasMenu) Icon(Icons.Default.MoreVert, stringResource(R.string.content_description_context_menu),
                     tint = AppMuted, modifier = Modifier.size(com.music.spotui.ui.components.MinTouch).clip(CircleShape).clickable { itemMenu = entry }.padding(12.dp))
             }
         }
@@ -590,7 +590,7 @@ fun SumUpLibraryScreen(
         if (followedArtists.isNotEmpty()) {
             item {
                 Text(
-                    text = stringResource(R.string.lbl_followed_artists),
+                    text = stringResource(R.string.song_dna_search_chip_followed_artists),
                     color = AppText,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
@@ -615,7 +615,7 @@ fun SumUpLibraryScreen(
                     )
                     Column(modifier = Modifier.padding(start = 12.dp)) {
                         Text(text = artist.name, color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(text = stringResource(R.string.lbl_artist), color = AppMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text(text = stringResource(R.string.artist_subtitle), color = AppMuted, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                     }
                 }
             }
@@ -823,7 +823,7 @@ fun LibraryGridScreen(
         if (followedArtists.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Text(
-                    text = stringResource(R.string.lbl_followed_artists),
+                    text = stringResource(R.string.song_dna_search_chip_followed_artists),
                     color = AppText,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
@@ -846,7 +846,7 @@ fun LibraryGridScreen(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(text = artist.name, color = AppText, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
-                    Text(text = stringResource(R.string.lbl_artist), color = AppMuted, fontSize = 11.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
+                    Text(text = stringResource(R.string.artist_subtitle), color = AppMuted, fontSize = 11.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
                 }
             }
         }
@@ -930,6 +930,7 @@ private fun AccountSheet(
             }
             HorizontalDivider(color = tone(0xFF2A2A2A))
 
+            // Spotify's own account pages (plan, privacy, devices), signed in, in the app.
             val context = androidx.compose.ui.platform.LocalContext.current
             com.music.spotui.data.api.ProfileCache.id?.let { myId ->
                 AccountRow(stringResource(R.string.view_profile)) {
@@ -937,9 +938,13 @@ private fun AccountSheet(
                     navController.navigate(com.music.spotui.ui.navigation.profileRoute(myId, account.name))
                 }
             }
-            AccountRow(stringResource(R.string.settings_screen_title)) {
+            AccountRow(stringResource(R.string.settings_title)) {
                 onDismiss()
                 navController.navigate(com.music.spotui.ui.navigation.Routes.Settings.route)
+            }
+            AccountRow(stringResource(R.string.account_page_title) + "  \u2197") {
+                onDismiss()
+                AccountBrowser.open(context, AccountBrowser.ACCOUNT_URL)
             }
             HorizontalDivider(color = tone(0xFF2A2A2A))
             Spacer(modifier = Modifier.height(8.dp))
@@ -961,11 +966,11 @@ private fun AccountRow(label: String, tint: Color = AppText, onClick: () -> Unit
 }
 
 private fun sortLabel(sort: LibraryOrder.Sort) = when (sort) {
-    LibraryOrder.Sort.CUSTOM -> R.string.lbl_sort_custom
+    LibraryOrder.Sort.CUSTOM -> R.string.your_library_sort_order_custom
     LibraryOrder.Sort.RECENTS -> R.string.library_sort_recents
     LibraryOrder.Sort.RECENTLY_ADDED -> R.string.library_sort_recently_added
-    LibraryOrder.Sort.ALPHABETICAL -> R.string.lbl_sort_name
-    LibraryOrder.Sort.CREATOR -> R.string.lbl_sort_owner
+    LibraryOrder.Sort.ALPHABETICAL -> R.string.your_library_sort_order_alphabetical
+    LibraryOrder.Sort.CREATOR -> R.string.your_library_sort_order_creator
 }
 
 /** "Sort by": custom order (moved by hand), alphabetical or by creator. */
@@ -974,7 +979,7 @@ private fun sortLabel(sort: LibraryOrder.Sort) = when (sort) {
 private fun LibrarySortSheet(onDismiss: () -> Unit) {
     com.music.spotui.ui.components.LookSheet(onDismissRequest = onDismiss, containerColor = tone(0xFF282828)) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
-            Text(stringResource(R.string.lbl_sort), color = AppText, fontSize = 18.sp,
+            Text(stringResource(R.string.filter_and_sort_sort_section_title), color = AppText, fontSize = 18.sp,
                 fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
             for (sort in LibraryOrder.Sort.entries) {
                 Row(

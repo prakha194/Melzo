@@ -12,14 +12,15 @@ import app.myspoti.host.android.MyspotiRuntime
 import app.myspoti.ytmusic.Ytm
 import app.myspoti.ytmusic.YtmAccount
 import com.music.spotui.data.preferences.AccountProviderPref
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 /**
  * YouTube Music as the account provider ([AccountProviderPref]): its hidden page (the official web
  * app, in a WebView profile of its own), the session the user signs in to in a WebView of Google's
- * own sign-in ([HiddenPageHost.signInView]), and what reads it: the library and the metadata provider
- * first in the catalog while signed in. Nothing
+ * own sign-in ([HiddenPageHost.signInView]), and what reads it: the listen sync
+ * ([AccountSync]), the library and the metadata provider first in the catalog while signed in. Nothing
  * is made (no WebView) until YouTube Music is chosen. Main thread.
  */
 object YtmRuntime {
@@ -28,7 +29,7 @@ object YtmRuntime {
 
     val host: HiddenPageHost by lazy {
         made = true
-        HiddenPageHost(Graph.app, PROFILE, Ytm.ORIGIN, Ytm.SESSION_URLS, null)
+        HiddenPageHost(Graph.app, PROFILE, Ytm.ORIGIN, Ytm.SESSION_URLS, if (MyspotiRuntime.isStarted) MyspotiRuntime.host.userAgent else null)
     }
 
     val account: YtmAccount by lazy {
@@ -49,16 +50,35 @@ object YtmRuntime {
     val chosen: Boolean get() = AccountProviderPref.id == AccountProviders.YTMUSIC
 
     /**
-     * Chosen: the session is read. The library and the metadata read YouTube Music's API on the
-     * session's cookies, without the page; nothing ever plays in it. Not chosen: the page is freed.
+     * Chosen: the session is read and, signed in with the listen sync on, the page opened. Not
+     * chosen, or the sync off: the page is freed. The library and the metadata read YouTube Music's
+     * API on the session's cookies, without the page; only the sync plays in it (it loaded the
+     * whole web app at every start, the sync on or off).
      */
     fun startIfChosen() {
+        watchSyncSetting()
         if (!chosen) { if (made) host.unload(); return }
         window?.get()?.let(host::attach)
         MyspotiRuntime.scope.launch {
             val ok = runCatching { account.refreshSignIn() }.getOrDefault(false)
             signedIn = ok
-            Logbook.log("ytmusic: ${if (ok) "signed in" else "not signed in"}")
+            val sync = com.music.spotui.data.preferences.ConnectMirrorPref.on
+            Logbook.log("ytmusic: ${if (ok) "signed in" else "not signed in"}, listen sync ${if (sync) "on" else "off"}")
+            if (ok && sync && !com.music.spotui.data.DataSaver.active) runCatching { account.open() }
+            else if (!sync && made) host.unload()
+            AccountSync.listen.refresh()
+        }
+    }
+
+    private var watchingSync = false
+
+    /** The listen sync turned on or off in the settings: the page is opened or freed with it. */
+    private fun watchSyncSetting() {
+        if (watchingSync) return
+        watchingSync = true
+        MyspotiRuntime.scope.launch {
+            androidx.compose.runtime.snapshotFlow { com.music.spotui.data.preferences.ConnectMirrorPref.on }
+                .drop(1).collect { if (chosen) startIfChosen() }
         }
     }
 
@@ -69,12 +89,14 @@ object YtmRuntime {
         startIfChosen()
     }
 
-    /** Signs out of YouTube Music on this phone: the session's cookies are deleted. */
+    /** Signs out of YouTube Music on this phone: the sync stops, the session's cookies are deleted. */
     fun signOut() {
+        AccountSync.listen.stop("signed out of YouTube Music")
         MyspotiRuntime.scope.launch {
             runCatching { account.signOut() }
             signedIn = false
             host.unload()
+            AccountSync.listen.refresh()
         }
     }
 

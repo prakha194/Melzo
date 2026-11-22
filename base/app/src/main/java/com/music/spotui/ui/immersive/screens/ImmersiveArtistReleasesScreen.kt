@@ -70,7 +70,7 @@ fun ImmersiveArtistReleasesScreen(navController: NavController, artistName: Stri
     val latest = releases.maxByOrNull { it.time }
     var filter by rememberSaveable { mutableStateOf("") } // "" | "albums" | "singles" | "featured"
     val listState = rememberLazyListState()
-    val releasesTitle = stringResource(R.string.lbl_releases)
+    val releasesTitle = stringResource(R.string.releases_title)
 
     fun openAlbum(album: AlbumsModel) {
         navController.navigate(albumRoute(album.name, album.artists.ifBlank { artistName }, album.spotifyId))
@@ -88,10 +88,10 @@ fun ImmersiveArtistReleasesScreen(navController: NavController, artistName: Stri
                     modifier = Modifier.padding(horizontal = Immersive.Gutter).padding(top = 4.dp, bottom = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ReleaseFilterChip(stringResource(R.string.lbl_artist_albums), filter == "albums") {
+                    ReleaseFilterChip(stringResource(R.string.artist_releases_albums), filter == "albums") {
                         filter = if (filter == "albums") "" else "albums"
                     }
-                    ReleaseFilterChip(stringResource(R.string.lbl_artist_singles), filter == "singles") {
+                    ReleaseFilterChip(stringResource(R.string.artist_releases_singles), filter == "singles") {
                         filter = if (filter == "singles") "" else "singles"
                     }
                     if (featuredOn.isNotEmpty()) {
@@ -110,20 +110,20 @@ fun ImmersiveArtistReleasesScreen(navController: NavController, artistName: Stri
                 "featured" -> releaseRows(featuredOn, ::openAlbum)
                 else -> {
                     latest?.let {
-                        item(key = "latest-header") { SectionHeader(stringResource(R.string.lbl_newest_release)) }
+                        item(key = "latest-header") { SectionHeader(stringResource(R.string.latest_release_title)) }
                         releaseRows(listOf(it), ::openAlbum)
                     }
                     if (albums.isNotEmpty()) {
-                        item(key = "albums-header") { SectionHeader(stringResource(R.string.lbl_artist_albums)) }
+                        item(key = "albums-header") { SectionHeader(stringResource(R.string.artist_releases_albums)) }
                         releaseRows(albums, ::openAlbum)
                     }
                     if (singles.isNotEmpty()) {
-                        item(key = "singles-header") { SectionHeader(stringResource(R.string.lbl_artist_singles)) }
+                        item(key = "singles-header") { SectionHeader(stringResource(R.string.artist_releases_singles)) }
                         releaseRows(singles, ::openAlbum)
                     }
                     if (untyped.isNotEmpty()) {
                         if (albums.isEmpty() && singles.isEmpty()) {
-                            item(key = "untyped-header") { SectionHeader(stringResource(R.string.lbl_artist_top_releases)) }
+                            item(key = "untyped-header") { SectionHeader(stringResource(R.string.popular_releases_section_title)) }
                         }
                         releaseRows(untyped, ::openAlbum)
                     }

@@ -129,7 +129,7 @@ fun NameDialog(title: String, initial: String, confirm: String, onDismiss: () ->
             TextButton(enabled = text.isNotBlank(), onClick = { onConfirm(text.trim()) }) { Text(confirm, color = Green) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.lbl_cancel), color = AppText) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.add_to_playlist_button_cancel), color = AppText) }
         },
     )
 }
@@ -157,19 +157,19 @@ fun LibraryCreateSheet(navController: NavController, onDismiss: () -> Unit, onLi
     val scope = rememberCoroutineScope()
     var asking by remember { mutableStateOf<String?>(null) } // "playlist" | "folder" | "local"
     when (asking) {
-        "playlist" -> NameDialog(stringResource(R.string.lbl_playlist_create), context.getString(R.string.my_playlist),
-            stringResource(R.string.lbl_create), onDismiss = onDismiss) { name ->
+        "playlist" -> NameDialog(stringResource(R.string.create_playlist_content_description), context.getString(R.string.my_playlist),
+            stringResource(R.string.create_playlist_create_button), onDismiss = onDismiss) { name ->
             // The row shows in the library at once; SpotifySync takes it back if Spotify refuses.
             SpotifySync.createPlaylistWithTrack(context, name, "")
             onDismiss()
         }
-        "folder" -> NameDialog(stringResource(R.string.lbl_folder), context.getString(R.string.lbl_folder_default),
-            stringResource(R.string.lbl_create), onDismiss = onDismiss) { name ->
+        "folder" -> NameDialog(stringResource(R.string.create_menu_item_folder_title), context.getString(R.string.create_folder_name_suggested_folder_name),
+            stringResource(R.string.create_playlist_create_button), onDismiss = onDismiss) { name ->
             LibraryFolders.create(context, name)
             onDismiss()
         }
         "local" -> NameDialog(stringResource(R.string.local_playlist_new), context.getString(R.string.my_playlist),
-            stringResource(R.string.lbl_create), onDismiss = onDismiss) { name ->
+            stringResource(R.string.create_playlist_create_button), onDismiss = onDismiss) { name ->
             val p = LocalPlaylists.create(name)
             onDismiss()
             navController.navigate(localPlaylistRoute(p.id))
@@ -177,9 +177,9 @@ fun LibraryCreateSheet(navController: NavController, onDismiss: () -> Unit, onLi
         "blend" -> BlendSheet(navController, onDismiss)
         else -> com.music.spotui.ui.components.LookSheet(onDismissRequest = onDismiss, containerColor = SheetColor) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
-                SheetRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.lbl_playlist)) { asking = "playlist" }
+                SheetRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.assisted_curation_search_playlist)) { asking = "playlist" }
                 SheetRow(Icons.Outlined.Group, stringResource(R.string.blend_title), stringResource(R.string.blend_detail)) { asking = "blend" }
-                SheetRow(Icons.Outlined.CreateNewFolder, stringResource(R.string.lbl_folder)) { asking = "folder" }
+                SheetRow(Icons.Outlined.CreateNewFolder, stringResource(R.string.create_menu_item_folder_title)) { asking = "folder" }
                 SheetRow(Icons.Outlined.PhoneAndroid, stringResource(R.string.local_playlist_new), stringResource(R.string.local_add_note)) { asking = "local" }
             }
         }
@@ -245,6 +245,93 @@ private fun BlendSheet(navController: NavController, onDismiss: () -> Unit) {
     }
 }
 
+/**
+ * A Blend invitation link opened from outside (see InviteLinks.blend): who invites, and "Join".
+ * Spotify's own words for the invitation's state are shown as they come (already translated).
+ * An invitation already joined opens its playlist straight away; one of the account's own is
+ * offered to be sent again.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BlendInviteSheet(link: com.music.spotui.data.api.InviteLinks.BlendLink, navController: NavController, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val api = app.myspoti.host.android.MyspotiRuntime.api
+    var invitation by remember(link) { mutableStateOf<app.myspoti.api.BlendInvitation?>(null) }
+    var failed by remember(link) { mutableStateOf(false) }
+    var busy by remember(link) { mutableStateOf(false) }
+    fun open(uri: String) { onDismiss(); navController.navigate(playlistRoute(uri.substringAfterLast(':'))) }
+    LaunchedEffect(link) {
+        api.ready.first { it }
+        runCatching { api.blends.invitation(link.id) }
+            .onSuccess { v ->
+                if (v.state == app.myspoti.api.BlendInvitationState.JOINED && v.playlist != null) open(v.playlist!!)
+                else invitation = v
+            }
+            .onFailure { failed = true }
+    }
+    com.music.spotui.ui.components.LookSheet(onDismissRequest = onDismiss, containerColor = SheetColor) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(24.dp, 0.dp, 24.dp, 20.dp),
+        ) {
+            val v = invitation
+            val inviter = v?.inviter
+            val own = v?.state == app.myspoti.api.BlendInvitationState.WAITING
+            val joinable = v?.state == app.myspoti.api.BlendInvitationState.JOINABLE || v?.state == app.myspoti.api.BlendInvitationState.UNKNOWN
+            ProfileAvatar(inviter?.imageUrl, inviter?.name, 88.dp)
+            Spacer(Modifier.height(16.dp))
+            val title = when {
+                failed -> stringResource(R.string.blend_failed)
+                v == null -> stringResource(R.string.blend_title)
+                joinable && inviter != null -> stringResource(R.string.blend_invited_by, inviter.name)
+                else -> v.title ?: stringResource(R.string.blend_title)
+            }
+            Text(title, color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            val detail = when {
+                v == null && !failed -> stringResource(R.string.blend_working)
+                v == null -> null
+                joinable -> stringResource(R.string.blend_detail)
+                else -> v.subtitle
+            }
+            if (detail != null) Text(detail, color = AppMuted, fontSize = 14.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(top = 6.dp))
+            Spacer(Modifier.height(24.dp))
+            if (joinable) androidx.compose.material3.Button(
+                enabled = !busy,
+                onClick = {
+                    busy = true
+                    scope.launch {
+                        val uri = runCatching { api.blends.join(link.id) }.getOrNull()
+                        busy = false
+                        if (uri == null) Toast.makeText(context, context.getString(R.string.blend_failed), Toast.LENGTH_SHORT).show()
+                        else {
+                            com.music.spotui.data.api.Api.HomeCache.libraryRoot = null
+                            LibraryEdits.reloadSoon()
+                            open(uri)
+                        }
+                    }
+                },
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = com.music.spotui.ui.theme.AppAccent, contentColor = Color.Black),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+            ) { Text(stringResource(if (busy) R.string.blend_working else R.string.blend_join_button), fontWeight = FontWeight.Bold, fontSize = 16.sp) }
+            if (own) androidx.compose.material3.Button(
+                onClick = {
+                    val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain")
+                        .putExtra(android.content.Intent.EXTRA_TEXT, context.getString(R.string.blend_invite_message, "https://open.spotify.com/blend/taste-match/${link.id}"))
+                    context.startActivity(android.content.Intent.createChooser(send, null).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+                    onDismiss()
+                },
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = AppText, contentColor = com.music.spotui.ui.theme.AppBackground),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+            ) { Text(stringResource(R.string.blend_invite), fontWeight = FontWeight.Bold, fontSize = 16.sp) }
+            TextButton(onClick = onDismiss, modifier = Modifier.padding(top = 4.dp)) {
+                Text(stringResource(R.string.blend_later), color = AppText)
+            }
+        }
+    }
+}
+
 @Composable
 private fun PageHeader(title: String, subtitle: String?, navController: NavController, onMenu: (() -> Unit)?) {
     Row(
@@ -254,7 +341,7 @@ private fun PageHeader(title: String, subtitle: String?, navController: NavContr
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.size(44.dp).clip(CircleShape).pressable { navController.navigateUp() },
-        ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.lbl_back), tint = AppText) }
+        ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.accessibility_navigate_back), tint = AppText) }
         Column(Modifier.weight(1f).padding(start = 4.dp)) {
             Text(title, color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (subtitle != null) Text(subtitle, color = AppMuted, fontSize = 13.sp)
@@ -262,7 +349,7 @@ private fun PageHeader(title: String, subtitle: String?, navController: NavContr
         if (onMenu != null) Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.size(44.dp).clip(CircleShape).pressable { onMenu() },
-        ) { Icon(Icons.Default.MoreVert, stringResource(R.string.lbl_more), tint = AppText) }
+        ) { Icon(Icons.Default.MoreVert, stringResource(R.string.content_description_context_menu), tint = AppText) }
     }
 }
 
@@ -292,8 +379,8 @@ fun FolderScreen(navController: NavController, uri: String, initialName: String)
     LaunchedEffect(uri) { com.music.spotui.data.api.LibraryEdits.reloads.collect { generation++ } }
     if (menu) com.music.spotui.ui.components.LookSheet(onDismissRequest = { menu = false }, containerColor = SheetColor) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
-            SheetRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.lbl_new_playlist)) { menu = false; newPlaylist = true }
-            SheetRow(Icons.Outlined.Edit, stringResource(R.string.lbl_folder_rename)) { menu = false; renaming = true }
+            SheetRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.add_to_playlist_new_playlist_button_text)) { menu = false; newPlaylist = true }
+            SheetRow(Icons.Outlined.Edit, stringResource(R.string.context_menu_rename_folder)) { menu = false; renaming = true }
             SheetRow(Icons.Outlined.Delete, stringResource(R.string.folder_delete)) { menu = false; deletingFolder = true }
         }
     }
@@ -307,17 +394,17 @@ fun FolderScreen(navController: NavController, uri: String, initialName: String)
                 // The folder is gone from the library at once; a refusal brings it back.
                 LibraryFolders.delete(context, uri)
                 navController.navigateUp()
-            }) { Text(stringResource(R.string.lbl_delete), color = AppDestructive) }
+            }) { Text(stringResource(R.string.actions_picker_delete), color = AppDestructive) }
         },
-        dismissButton = { androidx.compose.material3.TextButton(onClick = { deletingFolder = false }) { Text(stringResource(R.string.action_cancel_label), color = AppText) } },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = { deletingFolder = false }) { Text(stringResource(R.string.cancel), color = AppText) } },
     )
     // A Spotify playlist created straight inside this folder.
-    if (newPlaylist) NameDialog(stringResource(R.string.lbl_playlist_create), context.getString(R.string.my_playlist),
-        stringResource(R.string.lbl_create), onDismiss = { newPlaylist = false }) { playlistName ->
+    if (newPlaylist) NameDialog(stringResource(R.string.create_playlist_content_description), context.getString(R.string.my_playlist),
+        stringResource(R.string.create_playlist_create_button), onDismiss = { newPlaylist = false }) { playlistName ->
         newPlaylist = false
         SpotifySync.createPlaylistWithTrack(context, playlistName, "", folderUri = uri)
     }
-    if (renaming) NameDialog(stringResource(R.string.lbl_folder_rename), name, stringResource(R.string.local_rename),
+    if (renaming) NameDialog(stringResource(R.string.context_menu_rename_folder), name, stringResource(R.string.local_rename),
         onDismiss = { renaming = false }) { newName ->
         renaming = false
         val before = name
@@ -326,7 +413,7 @@ fun FolderScreen(navController: NavController, uri: String, initialName: String)
     }
     Column(Modifier.fillMaxSize().background(AppBackground)) {
         val n = entries?.size
-        PageHeader(name, n?.let { pluralStringResource(R.plurals.lbl_n_playlists, it, it.toString()) }, navController) { menu = true }
+        PageHeader(name, n?.let { pluralStringResource(R.plurals.add_to_playlist_folder_subtitle_playlists_count, it, it.toString()) }, navController) { menu = true }
         when (val list = entries) {
             null -> Loader(SkeletonKind.Header)
             else -> {
@@ -399,7 +486,7 @@ fun LocalPlaylistScreen(navController: NavController, id: String) {
         onDismiss = { renaming = false }) { renaming = false; LocalPlaylists.rename(id, it) }
     Column(Modifier.fillMaxSize().background(AppBackground)) {
         PageHeader(playlist.name, stringResource(R.string.local_playlist_subtitle) + " • " +
-            pluralStringResource(R.plurals.lbl_n_songs_s, playlist.items.size, playlist.items.size.toString()),
+            pluralStringResource(R.plurals.add_to_playlist_subtitle_songs_count, playlist.items.size, playlist.items.size.toString()),
             navController) { menu = true }
         if (playlist.items.isEmpty()) Text(stringResource(R.string.local_playlist_empty), color = AppMuted, fontSize = 14.sp,
             modifier = Modifier.padding(20.dp))
@@ -413,7 +500,7 @@ fun LocalPlaylistScreen(navController: NavController, id: String) {
                             LocalPlayer.play(playlist.items.map { it.toTrack() }, 0, context = playlist.name)
                         }.clip(CircleShape).background(Green),
                     ) {
-                        Icon(painterResource(R.drawable.play_svgrepo_com), stringResource(R.string.lbl_play), tint = Color.Black, modifier = Modifier.size(24.dp))
+                        Icon(painterResource(R.drawable.play_svgrepo_com), stringResource(R.string.content_description_play_button), tint = Color.Black, modifier = Modifier.size(24.dp))
                     }
                 }
             }
@@ -442,7 +529,7 @@ fun AddLocalToPlaylistSheet(track: LocalTrack, onDismiss: () -> Unit) {
     }
     if (creating) {
         NameDialog(stringResource(R.string.local_playlist_new), context.getString(R.string.my_playlist),
-            stringResource(R.string.lbl_create), onDismiss = { creating = false }) { name ->
+            stringResource(R.string.create_playlist_create_button), onDismiss = { creating = false }) { name ->
             val p = LocalPlaylists.create(name)
             LocalPlaylists.add(p.id, track)
             added(p.name)
@@ -452,11 +539,11 @@ fun AddLocalToPlaylistSheet(track: LocalTrack, onDismiss: () -> Unit) {
     com.music.spotui.ui.components.LookSheet(onDismissRequest = onDismiss, containerColor = SheetColor) {
         LazyColumn(Modifier.navigationBarsPadding().heightIn(max = 560.dp)) {
             item {
-                Text(stringResource(R.string.lbl_add_to_playlist), color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold,
+                Text(stringResource(R.string.context_menu_add_to_playlist), color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(20.dp, 4.dp, 20.dp, 4.dp))
                 Text(stringResource(R.string.local_add_note), color = AppMuted, fontSize = 12.sp,
                     modifier = Modifier.padding(20.dp, 0.dp, 20.dp, 8.dp))
-                SheetRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.lbl_new_playlist),
+                SheetRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.add_to_playlist_new_playlist_button_text),
                     stringResource(R.string.local_playlist_subtitle)) { creating = true }
             }
             items(LocalPlaylists.list(), key = { "l:" + it.id }) { p ->
@@ -533,10 +620,10 @@ fun LibraryItemSheet(entry: LibraryEntry, onDismiss: () -> Unit, onChanged: () -
             if (!moving) {
                 // A saved playlist or album: all its songs into the queue (read to the end first).
                 if (entry.uri.startsWith("spotify:playlist:") || entry.uri.startsWith("spotify:album:")) {
-                    SheetRow(Icons.AutoMirrored.Outlined.PlaylistPlay, stringResource(R.string.lbl_play_next)) {
+                    SheetRow(Icons.AutoMirrored.Outlined.PlaylistPlay, stringResource(R.string.context_menu_play_next)) {
                         com.music.spotui.di.CollectionQueue.queue(entry.uri, next = true); onDismiss()
                     }
-                    SheetRow(Icons.AutoMirrored.Outlined.QueueMusic, stringResource(R.string.lbl_queue_add)) {
+                    SheetRow(Icons.AutoMirrored.Outlined.QueueMusic, stringResource(R.string.context_menu_add_to_queue)) {
                         com.music.spotui.di.CollectionQueue.queue(entry.uri, next = false); onDismiss()
                     }
                 }
@@ -546,7 +633,7 @@ fun LibraryItemSheet(entry: LibraryEntry, onDismiss: () -> Unit, onChanged: () -
                 if (entry.isPlaylist || entry.isFolder) SheetRow(Icons.Outlined.DriveFileMove, stringResource(R.string.library_move_to_folder)) { moving = true }
                 // A saved playlist or album: all its songs into another playlist of yours.
                 if (entry.uri.startsWith("spotify:playlist:") || entry.uri.startsWith("spotify:album:"))
-                    SheetRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.lbl_add_to_playlist)) { merging = true }
+                    SheetRow(Icons.AutoMirrored.Filled.PlaylistAdd, stringResource(R.string.context_menu_add_to_playlist)) { merging = true }
                 if (entry.isFolder) SheetRow(Icons.Outlined.Delete, stringResource(R.string.folder_delete)) { deleting = true }
                 // Someone else's playlist, an album, an artist or a show: out of the library from here,
                 // without opening it and relying on its heart (reported: a playlist listed with an
@@ -573,9 +660,9 @@ fun LibraryItemSheet(entry: LibraryEntry, onDismiss: () -> Unit, onChanged: () -
         text = { Text(stringResource(R.string.folder_delete_confirm, entry.name), color = AppText) },
         confirmButton = {
             androidx.compose.material3.TextButton(onClick = { deleting = false; act(LibraryEdits.Remove(entry.uri)) { api.library.deleteFolder(entry.uri) } }) {
-                Text(stringResource(R.string.lbl_delete), color = AppDestructive)
+                Text(stringResource(R.string.actions_picker_delete), color = AppDestructive)
             }
         },
-        dismissButton = { androidx.compose.material3.TextButton(onClick = { deleting = false }) { Text(stringResource(R.string.action_cancel_label), color = AppText) } },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = { deleting = false }) { Text(stringResource(R.string.cancel), color = AppText) } },
     )
 }

@@ -54,7 +54,7 @@ fun HiddenSongsScreen(navController: NavController) {
     Column(Modifier.fillMaxSize().background(AppBackground).statusBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(48.dp).clickable { navController.popBackStack() }, contentAlignment = Alignment.Center) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lbl_back), tint = AppText)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.accessibility_navigate_back), tint = AppText)
             }
             Text(stringResource(R.string.hidden_songs_title), color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }

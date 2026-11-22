@@ -7,5 +7,6 @@
     <string name="metadata_asked">Tiek vaicāts</string>
     <string name="metadata_off">Izslēgts: nekad netiek vaicāts</string>
     <string name="metadata_reset">Atpakaļ uz noklusējuma secību</string>
+    <string name="metadata_not_on_spotify">Nav atrasta Spotify: šo dziesmu vēl nevar atskaņot</string>
     <string name="metadata_switch">Vaicāt %1$s</string>
 </resources>

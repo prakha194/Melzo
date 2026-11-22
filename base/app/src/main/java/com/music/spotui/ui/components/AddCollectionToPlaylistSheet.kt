@@ -93,7 +93,7 @@ fun AddCollectionToPlaylistSheet(sourceUri: String, title: String, onDismiss: ()
     fun pickLiked() {
         if (reading) return
         reading = true
-        val likedName = context.getString(R.string.lbl_liked_songs)
+        val likedName = context.getString(R.string.collection_liked_songs_title)
         scope.launch {
             val plan = runCatching { PlaylistMerge.likePlan(MyspotiRuntime.api, sourceUri) }.getOrNull()
             reading = false
@@ -137,7 +137,7 @@ fun AddCollectionToPlaylistSheet(sourceUri: String, title: String, onDismiss: ()
             )
             val list = playlists
             // Liked Songs first, as in the song's "Saved in" sheet (asked for: a whole playlist liked at once).
-            val likedName = stringResource(R.string.lbl_liked_songs)
+            val likedName = stringResource(R.string.collection_liked_songs_title)
             if (!reading && matchesFind(query, likedName)) LikedPickRow(likedName) { pickLiked() }
             when {
                 list == null || reading -> Text(
@@ -192,9 +192,13 @@ fun AlbumOptionsSheet(albumUri: String, name: String, known: com.music.spotui.da
                 modifier = Modifier.padding(20.dp, 0.dp, 20.dp, 8.dp))
             QueueListRows(albumUri, known, onDismiss)
             // Liked Songs has no playlist to copy from: only the albums.
-            if (albumUri.startsWith("spotify:album:")) OptionRow(Icons.Outlined.AddCircleOutline, stringResource(R.string.lbl_add_to_playlist)) { adding = true }
-            if (albumUri.startsWith("spotify:album:")) OptionRow(Icons.Outlined.QrCode2, stringResource(R.string.lbl_share)) {
-                ShareItem.show(ShareTarget(albumUri, name, known?.ownerName.orEmpty(), known?.coverUri.orEmpty())); onDismiss()
+            if (albumUri.startsWith("spotify:album:")) OptionRow(Icons.Outlined.AddCircleOutline, stringResource(R.string.context_menu_add_to_playlist)) { adding = true }
+            // Shared as a playlist is: its Spotify Code and its link (reported: only songs could be shared).
+            if (albumUri.startsWith("spotify:album:")) OptionRow(Icons.Outlined.QrCode2, stringResource(R.string.context_menu_share)) {
+                SpotifyCode.show(ShareTarget(albumUri, name, known?.ownerName.orEmpty(), known?.coverUri.orEmpty())); onDismiss()
+            }
+            if (albumUri.startsWith("spotify:album:")) OptionRow(Icons.Outlined.ContentCopy, stringResource(R.string.copy_link)) {
+                SpotifyCode.copyLink(linkContext, albumUri); onDismiss()
             }
         }
     }

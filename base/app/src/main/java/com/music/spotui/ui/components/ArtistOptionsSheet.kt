@@ -70,8 +70,11 @@ fun ArtistOptionsSheet(artistId: String, artistName: String, artistImage: String
             HorizontalDivider(color = tone(0xFF3E3E3E), thickness = 0.5.dp)
             Spacer(Modifier.height(8.dp))
             ArtistMenuRow(Icons.Default.Share, stringResource(R.string.share_link), enabled = artistId.isNotBlank()) {
-                ShareItem.show(ShareTarget("spotify:artist:$artistId", artistName, coverUri = artistImage))
+                SpotifyCode.show(ShareTarget("spotify:artist:$artistId", artistName, coverUri = artistImage))
                 onDismiss()
+            }
+            ArtistMenuRow(Icons.Default.ContentCopy, stringResource(R.string.copy_link), enabled = artistId.isNotBlank()) {
+                SpotifyCode.copyLink(context, "spotify:artist:$artistId"); onDismiss()
             }
             ArtistMenuRow(
                 Icons.Default.Block,

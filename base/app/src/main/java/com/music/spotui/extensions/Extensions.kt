@@ -37,6 +37,9 @@ import app.myspoti.extensions.LyricsResult
 import app.myspoti.extensions.Romanize
 import app.myspoti.extensions.Manifest
 import app.myspoti.extensions.Snapshot
+import app.myspoti.extensions.SpotifyCall
+import app.myspoti.extensions.SpotifyDispatcher
+import app.myspoti.extensions.SpotifyRaw
 import app.myspoti.extensions.Storage
 import app.myspoti.extensions.TrackInfo
 import app.myspoti.host.android.Logbook
@@ -165,7 +168,12 @@ object Extensions {
         if (isReady) return
         ctx = application
         dir = File(application.filesDir, "extensions")
-        _registry.value = Registry.read(File(dir, "registry.json"))
+        _registry.value = Registry.read(File(dir, "registry.json")).let { r ->
+            // Always-allow grants without an operation on a multiplexed endpoint (GraphQL) covered every
+            // operation: dropped, the user is asked again (per operation from now on).
+            if (r.extensions.none { e -> e.rawGrants.any { it.tooBroad } }) r
+            else r.extensions.fold(r) { acc, e -> if (e.rawGrants.any { it.tooBroad }) acc.put(e.copy(rawGrants = e.rawGrants.filterNot { it.tooBroad })) else acc }
+        }
         // A protected surface just went: what extensions draw is asked again.
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch { guard.state.collect { if (it.isEmpty()) blocksTick.value++ } }
         scope.launch {
@@ -243,6 +251,17 @@ object Extensions {
         if (before.ready && before.download.isEmpty() && now.download.isNotEmpty())
             com.music.spotui.data.offline.OfflineCollections.refreshAll(ctx, force = true)
     }
+
+    // ── Writes allowed for good ──
+
+    /** Keeps [g] for [id]: its `raw.request` writes [g] covers run without asking. */
+    fun addRawGrant(id: String, g: app.myspoti.extensions.RawGrant) = update { r ->
+        r.find(id)?.let { e -> if (g in e.rawGrants) r else r.put(e.copy(rawGrants = e.rawGrants + g)) } ?: r
+    }.also { log(id, "always allowed: $g") }
+
+    fun revokeRawGrant(id: String, g: app.myspoti.extensions.RawGrant) = update { r ->
+        r.find(id)?.let { e -> r.put(e.copy(rawGrants = e.rawGrants - g)) } ?: r
+    }.also { log(id, "no longer allowed: $g") }
 
     // ── Work that waits for the network ──
 
@@ -367,6 +386,9 @@ object Extensions {
                 previous = if (before != null && before.sha256 != p.sha256) KeptVersion(before.version, before.versionCode, before.sha256, before.origin) else before?.previous,
                 declinedVersionCode = before?.declinedVersionCode ?: 0,
                 lastCheck = before?.lastCheck ?: 0,
+                // The writes it declared are allowed with the install (shown under spotify.raw before it).
+                rawGrants = (before?.rawGrants.orEmpty() +
+                    if (app.myspoti.extensions.Action.SPOTIFY_RAW.key in granted) p.manifest.declaredWrites() else emptyList()).distinct(),
             )
             // A fresh install is asked first wherever it acts; an update keeps the user's order.
             update { r -> r.put(e).let { if (before == null) it.firstOnInstall(id, p.manifest) else it } }
@@ -520,8 +542,8 @@ object Extensions {
     fun sources(action: Action): List<InstalledExtension> = _registry.value.let { r -> line(r, action).mapNotNull(r::find) }
 
     /**
-     * The order the source [action] asks in, as ids: its extensions ([ACCOUNT_SOURCE] only when the
-     * account's player plays, which it never does now: see SongPlayer.accountPlays).
+     * The order the source [action] asks in, as ids: its extensions and, for audio, Spotify
+     * ([ACCOUNT_SOURCE], last until the user moves it up; the extensions after it are not asked).
      */
     fun sourceLine(action: Action): List<String> = line(_registry.value, action)
 
@@ -592,6 +614,57 @@ object Extensions {
     fun activeFor(action: Action): String? = _registry.value.let { r ->
         Conflicts.activeFor(action.area?.let { byArea()[it] }.orEmpty().filter { it.enabled && action in manifest(it.id)?.actionSet().orEmpty() }.map { it.id }, r.active[action.key])
     }
+
+    // ── Silent Spotify mirror (player.setLocalMute, playback.mirror) ──
+
+    /** The host's rules for the mute; the app feeds it the local player's state. */
+    val mirror = app.myspoti.extensions.MirrorGuard()
+
+    /** Name of the extension keeping Spotify muted now (the players show "Spotify mirrored by <name>"). */
+    val mirrorBy = MutableStateFlow<String?>(null)
+    private var mirrorTimer: kotlinx.coroutines.Job? = null
+
+    private fun mirrorStarted(id: String) {
+        val name = _registry.value.find(id)?.name ?: id
+        mirrorBy.value = name
+        com.music.spotui.di.LocalPlayer.setMirrorFocus(true)
+        did(Area.PLAYBACK, id, "mirrors Spotify silently")
+        log(id, "mirror on: Spotify plays unheard on this phone")
+        mirrorTimer?.cancel()
+        mirrorTimer = scope.launch {
+            while (mirror.active != null) {
+                delay((mirror.remainingMs() ?: 0L) + 500L)
+                val s = SongPlayer.localSnapshot(); mirrorTick(s.first, s.second)
+            }
+        }
+    }
+
+    private fun mirrorEnded(id: String, reason: String) {
+        mirrorBy.value = null
+        com.music.spotui.di.LocalPlayer.setMirrorFocus(false)
+        mirrorTimer?.cancel()
+        did(Area.PLAYBACK, id, "mirror ended: $reason")
+        log(id, "mirror cleared: $reason")
+        SongPlayer.unmuteMirrorNow()
+    }
+
+    /** The local player's state changed: the mute ends when the track changes, pauses or runs out. */
+    fun mirrorTick(localPlaying: Boolean, trackUri: String?) {
+        val a = mirror.active ?: return
+        mirror.check(localPlaying, trackUri)?.let { mirrorEnded(a.extensionId, it) }
+    }
+
+    /** The local player stopped (or any other reason that is not about one extension). */
+    fun mirrorReset(reason: String) {
+        val a = mirror.active ?: return
+        mirror.disable(a.extensionId)
+        mirrorEnded(a.extensionId, reason)
+    }
+
+    internal fun mirrorStartedBy(id: String) = mirrorStarted(id)
+    internal fun mirrorEndedBy(id: String) = mirrorEnded(id, "the extension turned it off")
+
+    private fun mirrorGone(id: String) { if (mirror.extensionGone(id)) mirrorEnded(id, "the extension stopped, was turned off or removed") }
 
     // ── Who did what, and the playback arbiter ──
 
@@ -697,6 +770,8 @@ object Extensions {
      */
     fun hasAudioSource(): Boolean {
         providedState.value
+        // A Jam member's songs play on the host's device, sent there by Spotify: none through an extension here.
+        if (app.myspoti.host.android.MyspotiRuntime.isStarted && app.myspoti.host.android.MyspotiRuntime.spotify.jam.member) return false
         return isReady && (providing(Hook.AUDIO_SOURCE).isNotEmpty() || startingAudioSource())
     }
 
@@ -855,6 +930,15 @@ object Extensions {
      * asked before the song plays (the next one of the queue), which the extension is told. Each
      * call is one [PlayAttempt] ([attempts]): the sources asked or skipped, and the one chosen.
      */
+    /** Per song: the audio sources above the one that played it that did not get to answer (see [audio]). */
+    private val passedOver = ConcurrentHashMap<String, List<String>>()
+
+    /**
+     * The sources ranked above the one [trackId] plays from that were cut short or timed out when
+     * it was asked, in priority order: worth asking again while it plays (SourceUpgrade).
+     */
+    fun passedOver(trackId: String): List<String> = passedOver[trackId].orEmpty()
+
     suspend fun audio(track: TrackInfo, timeoutMs: Long = AUDIO_MS, ahead: Boolean = false): AudioStream? {
         if (!isReady) return null
         val attempt = attempts.start(track.id, track.title, ahead)
@@ -912,6 +996,12 @@ object Extensions {
         }
         misses.forget(track.id)
         val (c, a) = found
+        // Sources above the one chosen that were cut short (a faster one answered within the grace)
+        // or timed out: they may still have it, in their own better quality (see SourceUpgrade).
+        val chosenAt = asked.indexOfFirst { it.first == c.first }
+        val passed = asked.take(chosenAt.coerceAtLeast(0)).map { it.first }
+            .filter { id -> answers[id].let { it == null || it.outcome == Outcome.Network().key } }
+        if (passed.isEmpty()) passedOver.remove(track.id) else passedOver[track.id] = passed
         log(c.first, "audio for ${track.title} ($ms ms)")
         did(Area.AUDIO, c.first, "Audio of ${track.title} from ${c.second.manifest.name}")
         val own = qualityLine(c.first, app.myspoti.extensions.SettingSection.PLAYBACK)
@@ -1262,7 +1352,7 @@ object Extensions {
         }
     }
 
-    /** What is playing now in Orpheon's own player; null: nothing. */
+    /** What is playing now, in the player that plays (Myspoti's own, or the Web Player); null: nothing. */
     private fun playbackSnapshot(): PlaybackTracker.Snapshot? {
         // A song shown loading while the extensions are asked for it does not play yet.
         if (SongPlayer.routing) return null
@@ -1279,8 +1369,14 @@ object Extensions {
                 contextUri = local.contextUri, shuffle = local.shuffled, origin = origin, providerId = providerId,
             )
         }
-        // Only Orpheon's own player plays: nothing else to report.
-        return null
+        val np = SongPlayer.nowPlaying.value
+        if (np.uri.isBlank()) return null
+        val info = currentTrack() ?: return null
+        return PlaybackTracker.Snapshot(
+            key = "spotify:${np.uri}", track = info.copy(uri = np.uri), source = PlaybackEvent.SPOTIFY,
+            playing = SongPlayer.isPlaying(), positionMs = SongPlayer.getCurrentPosition(), durationMs = SongPlayer.getDuration(),
+            contextUri = np.contextUri, shuffle = SongPlayer.isShuffleOn(),
+        )
     }
 
     /**
@@ -1308,7 +1404,7 @@ object Extensions {
     fun trackInfo(trackId: String, title: String, artist: String, album: String, durationMs: Long, cover: String?): TrackInfo {
         val artists = artist.split(", ").map { it.trim() }.filter { it.isNotEmpty() }
         return TrackInfo(
-            id = trackId, uri = if (trackId.isBlank()) "" else com.music.spotui.data.catalog.CatalogRuntime.uriOfKey(trackId) ?: "spotify:track:$trackId", title = title,
+            id = trackId, uri = if (trackId.isBlank()) "" else "spotify:track:$trackId", title = title,
             artist = artists.firstOrNull().orEmpty(), artists = artists, album = album, durationMs = durationMs,
             cover = cover?.takeIf { it.startsWith("http") },
         )
@@ -1442,6 +1538,7 @@ object Extensions {
     }
 
     internal fun stop(id: String) {
+        mirrorGone(id)
         runningSha.remove(id)
         runtimes.remove(id)?.close(); ExtensionAuth.cancel(id)
         health.forget(id); _statuses.value = health.inactiveNow()
@@ -1508,9 +1605,38 @@ object Extensions {
     }
 
     private fun logOf(id: String) = logs.getOrPut(id) { ExtensionLog(File(dir, "$id/log.txt")) }
-    /** [id]'s settings (its `settings.json`). */
-    private fun settingsOf(id: String): FileStore = settings.getOrPut(id) { FileStore(File(dir, "$id/settings.json")) }
+    /**
+     * [id]'s settings as the Spotify account in use has them (asked: the extensions' settings follow
+     * the account): the first account's `settings.json`, another's `settings-<profile>.json`, made
+     * from the first account's at its first read so the extension goes on as it was set.
+     */
+    private fun settingsOf(id: String): FileStore {
+        val profile = com.music.spotui.data.preferences.ProfilePrefs.profile()
+        return settings.getOrPut("$profile\u0000$id") {
+            val first = File(dir, "$id/settings.json")
+            if (profile == app.myspoti.host.android.AccountList.DEFAULT_PROFILE) return@getOrPut FileStore(first)
+            val own = File(dir, "$id/settings-" + profile.filter { it.isLetterOrDigit() || it == '-' || it == '_' } + ".json")
+            if (!own.exists() && first.exists()) runCatching { first.copyTo(own) }
+            FileStore(own)
+        }
+    }
 
+    /**
+     * Another Spotify account took over: each extension on hears its settings as that account has
+     * them (as it hears a change made in its page), its status is asked again (its sign-in may
+     * differ), and who gives what is read again.
+     */
+    fun profileChanged() {
+        if (!isReady) return
+        _registry.value.extensions.filter { it.enabled }.forEach { e ->
+            val keys = settingsOf(e.id).all().keys.map { app.myspoti.extensions.Setting.baseKey(it) }.distinct()
+            if (keys.isNotEmpty()) scope.launch { keys.forEach { sendSetting(e.id, it, pressed = false) } }
+            health.forget(e.id)
+            runtimes[e.id]?.let { rt -> scope.launch { probe(e.id, rt) } }
+        }
+        _statuses.value = health.inactiveNow()
+        refreshProvided()
+    }
     private fun storeOf(id: String) = stores.getOrPut(id) { FileStore(File(dir, "$id/storage.json")) }
 
     /** Replaces [file] whole or throws, never losing the old one (see [com.music.spotui.data.writeBytesSafely]). */
@@ -1519,6 +1645,11 @@ object Extensions {
     // ── What the sandbox reaches of the app ──
 
     private object AndroidHost : Host {
+        // Spotify's own API, not the app's metadata catalog: an extension's spotify.* calls answer with Spotify's items.
+        private val dispatcher by lazy {
+            SpotifyDispatcher(MyspotiRuntime.spotify, AppRaw, app.myspoti.extensions.PlayerMedia { app.myspoti.spotify.bridge.MediaManifests.of(it) })
+        }
+
         override fun http(extensionId: String, request: HttpRequest): HttpResponse {
             if (com.music.spotui.data.DataSaver.active) throw IllegalStateException("the data saver is on")
             return BasicHttp.send(request, userAgent(extensionId))
@@ -1558,9 +1689,42 @@ object Extensions {
             main.post { android.widget.Toast.makeText(ctx, "$name: $text", android.widget.Toast.LENGTH_SHORT).show() }
         }
 
+        override suspend fun spotify(extensionId: String, call: SpotifyCall): String {
+            if (!MyspotiRuntime.isStarted) throw IllegalStateException("no Spotify account")
+            // Playback commands go through the arbiter like myspoti.player's; a dropped one answers null.
+            if (call.area == "player" && call.method == "setLocalMute") return setLocalMute(extensionId, call)
+            if (call.area == "player" && call.method in ARBITRATED && !arbitrate(extensionId, call.method)) return "null"
+            if (call.area == "devices" && call.method != "list" && !arbitrate(extensionId, "transfer")) return "null"
+            return dispatcher.execute(call)
+        }
+
+        private val ARBITRATED = setOf("play", "pause", "resume", "seek", "next", "previous", "setShuffle", "setRepeat", "skipTo", "setLocalMute")
+
+        /** The host's side of the mute: only while the local player plays, one extension, rate limited, auto-cleared. */
+        private suspend fun setLocalMute(extensionId: String, call: SpotifyCall): String {
+            val on = kotlinx.serialization.json.Json.parseToJsonElement(call.argsJson).let { it as? kotlinx.serialization.json.JsonArray }
+                ?.firstOrNull()?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content } == "true"
+            if (!on) {
+                if (!Extensions.mirror.disable(extensionId)) return "null"
+                try { return dispatcher.execute(call) } finally { Extensions.mirrorEndedBy(extensionId) }
+            }
+            // Myspoti's own listen sync has the page already ("Count extension plays on Spotify"): it wins.
+            if (com.music.spotui.di.AccountSync.holdsSpotify) {
+                val why = "setLocalMute: Myspoti already plays this song on Spotify (Count extension plays on Spotify)"
+                Extensions.log(extensionId, "refused: $why"); throw IllegalStateException(why)
+            }
+            if (!arbitrate(extensionId, "setLocalMute")) return "null"
+            val (playing, uri, dur) = SongPlayer.localSnapshot3()
+            Extensions.mirror.enable(extensionId, playing, uri, dur)?.let { Extensions.log(extensionId, "refused: $it"); throw IllegalStateException(it) }
+            return try { dispatcher.execute(call).also { Extensions.mirrorStartedBy(extensionId) } }
+            catch (t: Throwable) { Extensions.mirror.disable(extensionId); throw t }
+        }
+
         override fun refresh(extensionId: String, surface: String) { blocksTick.value++ }
 
         override fun postToPage(extensionId: String, json: String) { main.post { pageSinks[extensionId]?.invoke(json) } }
+
+        override fun spotifyMutation(name: String): Boolean = app.myspoti.spotify.gql.isMutation(name)
 
         override suspend fun confirm(extensionId: String, text: String): Boolean {
             val ok = ExtensionConfirm.ask(extensionId, text)
@@ -1568,11 +1732,32 @@ object Extensions {
             return ok
         }
 
+        override fun rawGrants(extensionId: String) = _registry.value.find(extensionId)?.rawGrants.orEmpty()
+
+        override suspend fun confirmWrite(extensionId: String, text: String, offer: app.myspoti.extensions.RawGrant): app.myspoti.extensions.Consent {
+            val c = ExtensionConfirm.ask(extensionId, text, offer)
+            if (c == app.myspoti.extensions.Consent.ALWAYS) addRawGrant(extensionId, offer)
+            else Extensions.log(extensionId, "the user ${if (c == app.myspoti.extensions.Consent.ONCE) "allowed once" else "refused"}: $offer")
+            return c
+        }
+
         override fun openAuth(extensionId: String, request: app.myspoti.extensions.AuthRequest): String = ExtensionAuth.open(extensionId, request)
 
         override fun whenOnline(extensionId: String) = askOnline(extensionId)
 
         override fun attestation(): app.myspoti.extensions.Attestation = ExtensionAttestation
+    }
+
+    /** The raw door: the Web Player's GraphQL, page services and Spotify URLs, as the account. */
+    private object AppRaw : SpotifyRaw {
+        private val api get() = MyspotiRuntime.spotify
+        override suspend fun gql(operation: String, variables: JsonObject): JsonElement = api.raw.gql(operation, variables)
+        override fun operations(): Set<String> = api.raw.operations
+        override suspend fun service(service: String, method: String, args: List<JsonElement>): JsonElement = api.raw.service(service, method, *args.toTypedArray())
+        override suspend fun get(url: String): JsonElement? = api.raw.get(url)
+        override fun isMutation(operation: String): Boolean = app.myspoti.spotify.gql.isMutation(operation)
+        override suspend fun request(method: String, url: String, body: ByteArray?, headers: Map<String, String>): JsonElement =
+            api.raw.request(method, url, body, headers).let { app.myspoti.extensions.RawRequest.response(it.status, it.headers, it.body) }
     }
 
     /**

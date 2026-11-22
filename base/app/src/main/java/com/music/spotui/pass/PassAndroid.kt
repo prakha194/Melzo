@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import app.myspoti.host.android.Logbook
+import app.myspoti.host.android.MyspotiRuntime
+import app.myspoti.pass.PassCookie
 import app.myspoti.pass.PassExtension
 import app.myspoti.pass.PassPayload
 import app.myspoti.pass.PassPref
@@ -42,7 +44,7 @@ object PassAndroid {
 
     private fun sent(name: String) = name !in NOT_SENT && NOT_SENT_PARTS.none { name.contains(it, ignoreCase = true) }
 
-    /** Everything this app passes, read now. Off the main thread. */
+    /** Everything this app passes, read now. Off the main thread (the cookies are read on it). */
     suspend fun collect(c: Context): PassPayload {
         val prefs = prefsDir(c).listFiles { f -> f.name.endsWith(".xml") }.orEmpty().map { it.name.removeSuffix(".xml") }.filter(::sent).associateWith { name ->
             c.getSharedPreferences(name, Context.MODE_PRIVATE).all.mapNotNull { (k, v) ->
@@ -62,7 +64,13 @@ object PassAndroid {
         val files = root.walkTopDown().filter { it.isFile && !it.relativeTo(root).path.startsWith("cache") && it.name != "log.txt" }
             .associate { it.relativeTo(root).path to b64.encodeToString(it.readBytes()) }
         val extensions = extensions(c)
-        return PassPayload(from = android.os.Build.MODEL.orEmpty(), prefs = prefs, extensions = extensions, extensionFiles = files)
+        val cookies = onMain {
+            MyspotiRuntime.host.cookies().getCookie(SPOTIFY).orEmpty().split(';').mapNotNull { part ->
+                val name = part.substringBefore('=').trim()
+                if (name.isEmpty() || !part.contains('=')) null else PassCookie(name, part.substringAfter('=').trim())
+            }
+        }
+        return PassPayload(from = android.os.Build.MODEL.orEmpty(), prefs = prefs, extensions = extensions, extensionFiles = files, cookies = cookies)
     }
 
     /**
@@ -117,11 +125,23 @@ object PassAndroid {
             root.deleteRecursively()
             fresh.renameTo(root)
         }
-        Logbook.log("pass: received from ${p.from.take(30)}: ${p.prefs.size} settings files, ${p.extensions.size} extensions")
+        if (p.cookies.isNotEmpty()) {
+            val done = java.util.concurrent.CountDownLatch(1)
+            Handler(Looper.getMainLooper()).post {
+                runCatching {
+                    val jar = MyspotiRuntime.host.cookies()
+                    for (cookie in p.cookies) jar.setCookie(SPOTIFY, "${cookie.name}=${cookie.value}; Domain=.spotify.com; Path=/; Max-Age=31536000; Secure")
+                    jar.flush()
+                }
+                done.countDown()
+            }
+            done.await(5, java.util.concurrent.TimeUnit.SECONDS)
+        }
+        Logbook.log("pass: received from ${p.from.take(30)}: ${p.prefs.size} settings files, ${p.extensions.size} extensions, session ${if (p.cookies.isEmpty()) "no" else "yes"}")
         return true
     }
 
-    /** Starts the app again, to read the settings and extensions it just took. */
+    /** Starts the app again, to read the settings, extensions and session it just took. */
     fun restart(c: Context) {
         // A TV build only has a Leanback entrance.
         val launch = (c.packageManager.getLaunchIntentForPackage(c.packageName) ?: c.packageManager.getLeanbackLaunchIntentForPackage(c.packageName))?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -137,4 +157,5 @@ object PassAndroid {
         return r.await()
     }
 
+    private const val SPOTIFY = "https://open.spotify.com"
 }

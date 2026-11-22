@@ -36,6 +36,22 @@
     return parse(host.httpAll(JSON.stringify(list.map(shape)))).map(function (r) { return r.error != null ? r : response(r); });
   }
 
+  // myspoti.spotify.<area>.<method>(...): built from the app's own table of methods, so nothing
+  // here decides what is allowed. Arguments go as a JSON list; the answer is the method's result.
+  var spotify = {};
+  var methods = parse(host.spotifyMethods());
+  Object.keys(methods).forEach(function (area) {
+    var calls = {};
+    methods[area].forEach(function (name) {
+      calls[name] = function () {
+        return parse(host.spotify(area, name, JSON.stringify(Array.prototype.slice.call(arguments))));
+      };
+    });
+    spotify[area] = Object.freeze(calls);
+  });
+  // The player's media manifest of a song (file ids included): spotify.media(trackUri).
+  if (spotify.player && spotify.player.media) spotify.media = spotify.player.media;
+
   var myspoti = {
     apiVersion: 1,
     /** The language the app shows, as a BCP 47 tag ('fr', 'pt-BR'): asked at each read, so it follows a change of language. */
@@ -98,16 +114,23 @@
       seek: function (ms) { return host.control('seek', Number(ms)); },
     }),
 
+    /**
+     * The signed-in Spotify account: search, catalog, library, playlists, player, home, podcasts,
+     * users, extras, devices, recents, blends (typed, like the app's own API) and raw (GraphQL,
+     * page services, Spotify URLs). Each needs a spotify.* permission; removing things asks the user.
+     */
+    spotify: Object.freeze(spotify),
+
     notify: function (text) { host.notify(String(text)); },
 
     /**
      * What this app understands beyond the first API, for an extension to adapt to: "audio.manifest",
-     * "audio.expires", "audio.quality", "audio.source", "audio.ahead", "http.all", "status", "results" (source hooks may answer { outcome }), "settings.section" (manifest section, role, perNetwork), "util.sleep", "lyrics.romanize" (the lyrics-romanize hook), and "attest" only when the user granted attest.
+     * "audio.expires", "audio.quality", "audio.source", "audio.ahead", "http.all", "status", "raw.base64", "results" (source hooks may answer { outcome }), "settings.section" (manifest section, role, perNetwork), "util.sleep", "lyrics.romanize" (the lyrics-romanize hook), "player.localMute" only when the user granted playback.mirror, and "attest" only when it granted attest.
      */
     sources: Object.freeze({ race: function (hook, query, lanes) {
       return parse(host.sourceRace(String(hook),JSON.stringify(query),JSON.stringify(lanes)));
     } }),
-    features: Object.freeze(['audio.manifest', 'audio.expires', 'audio.quality', 'audio.source', 'audio.ahead', 'http.all', 'status', 'results', 'sources.race', 'settings.section', 'util.sleep', 'lyrics.romanize'].concat(parse(host.info()).attest ? ['attest'] : [])),
+    features: Object.freeze(['audio.manifest', 'audio.expires', 'audio.quality', 'audio.source', 'audio.ahead', 'http.all', 'status', 'raw.base64', 'results', 'download.transform', 'audio.transform', 'sources.race', 'settings.section', 'util.sleep', 'lyrics.romanize'].concat(parse(host.info()).mirror ? ['player.localMute'] : [], parse(host.info()).attest ? ['attest'] : [])),
 
     /**
      * A sign-in page (webview.auth): open({ url, callback, hidden }) shows url in a web view of its

@@ -17,11 +17,17 @@ import app.myspoti.extensions.Host
 import app.myspoti.extensions.LyricsResult
 import app.myspoti.extensions.Manifest
 import app.myspoti.extensions.MemoryStorage
+import app.myspoti.extensions.SpotifyCall
+import app.myspoti.extensions.SpotifyDispatcher
+import app.myspoti.extensions.SpotifyRaw
 import app.myspoti.extensions.DownloadFile
 import app.myspoti.extensions.PlaybackEvent
 import app.myspoti.extensions.Romanize
 import app.myspoti.extensions.Storage
 import app.myspoti.extensions.TrackInfo
+import app.myspoti.host.cdp.CdpHost
+import app.myspoti.spotify.SpotifyApi
+import app.myspoti.spotify.gql.isMutation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,6 +35,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -38,9 +46,13 @@ private const val USAGE = """myspoti-ext: build and try Myspoti extensions on a 
                                      loads, the hooks it provides, the actions the user is asked (icon,
                                      level, why). It never calls a hook (use run or test for that)
   run <folder|zip> <hook> [options]  calls a hook as the app would, prints what it answered
-      --title T --artist A [--album B] [--duration MS] [--id ID] [--isrc ISRC]
+      --title T --artist A [--album B] [--duration MS] [--id SPOTIFY_ID] [--isrc ISRC]
       --set key=value                a setting's value (repeatable; key@cell=value: a perNetwork setting's mobile data value)
       --network wifi|cell            the network the phone is on, for perNetwork settings (default wifi)
+      --cdp PORT|URL                 myspoti.spotify works on the account signed in to the Web Player
+                                     of a Chrome started with --remote-debugging-port=PORT; a change
+                                     that removes something (delete, remove, unfollow, clear) asks
+                                     yes or no on this terminal first
       --quality hi-res|cd|small      download-source only: the quality asked (default cd)
       --ahead true                   audio-source only: asked before the song plays (ahead: true)
       --lines FILE [--language L]    lyrics-romanize only: the song's lines, one per row (the ones in another
@@ -60,7 +72,8 @@ private const val USAGE = """myspoti-ext: build and try Myspoti extensions on a 
 
 Hooks: lyrics, lyrics-romanize (--lines FILE), audio-source, download-source, trackinfo, home, search (--query Q),
 menu (--kind track|album|playlist|artist), player, page, message (--data JSON), tap (--action ID), status (live or not). Each hook gets the
-app's own time limit (HookBudgets). Everything the manifest asks is granted here."""
+app's own time limit (HookBudgets). Everything the manifest asks is granted here. Without --cdp,
+myspoti.spotify has no account and its calls fail."""
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) { println(USAGE); return }
@@ -84,10 +97,14 @@ private fun usage(): Nothing { println(USAGE); exitProcess(2) }
 private class DesktopHost(
     private val settings: Map<String, String>,
     private val track: TrackInfo?,
+    private val spotify: SpotifyDispatcher? = null,
     private val cell: Boolean = false,
 ) : Host {
     override fun metered(): Boolean = cell
     private val store = MemoryStorage()
+    override suspend fun spotify(extensionId: String, call: SpotifyCall): String =
+        spotify?.execute(call) ?: super.spotify(extensionId, call)
+    override fun spotifyMutation(name: String): Boolean = spotify?.isMutation(name) ?: true
     override suspend fun confirm(extensionId: String, text: String): Boolean = withContext(Dispatchers.IO) {
         System.err.println("[$extensionId] $text")
         System.err.print("Allow it? [y/N] ")
@@ -107,6 +124,42 @@ private class DesktopHost(
 
 /** Where the runner keeps what must outlive a run (the software attestation keys): `$MYSPOTI_EXT_HOME`, else `~/.myspoti-ext`. */
 private fun stateDir() = File(System.getenv("MYSPOTI_EXT_HOME") ?: (System.getProperty("user.home") + "/.myspoti-ext"))
+
+/** The Web Player of a Chrome on [cdp] (a port, or its http address), as a Spotify account for extensions. */
+private class Account(cdp: String) : AutoCloseable {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val host: CdpHost
+    val dispatcher: SpotifyDispatcher
+
+    init {
+        val url = if (cdp.all { it.isDigit() }) "http://localhost:$cdp" else cdp
+        val api: SpotifyApi
+        val chrome = runBlocking {
+            val h = CdpHost.connect(url)
+            api = SpotifyApi(h, scope)
+            h.reload()
+            h.awaitLoad()
+            api.onPageLoaded()
+            withTimeout(60_000) { api.awaitReady() }
+            if (!api.isSignedIn()) throw ExtensionException("the Web Player in that Chrome is not signed in")
+            h
+        }
+        host = chrome
+        dispatcher = SpotifyDispatcher(api, ApiRaw(api))
+    }
+
+    override fun close() { host.close(); scope.cancel() }
+}
+
+private class ApiRaw(private val api: SpotifyApi) : SpotifyRaw {
+    override suspend fun gql(operation: String, variables: JsonObject): JsonElement = api.raw.gql(operation, variables)
+    override fun operations(): Set<String> = api.raw.operations
+    override suspend fun service(service: String, method: String, args: List<JsonElement>): JsonElement = api.raw.service(service, method, *args.toTypedArray())
+    override suspend fun get(url: String): JsonElement? = api.raw.get(url)
+    override fun isMutation(operation: String): Boolean = isMutation(operation)
+    override suspend fun request(method: String, url: String, body: ByteArray?, headers: Map<String, String>): JsonElement =
+        api.raw.request(method, url, body, headers).let { app.myspoti.extensions.RawRequest.response(it.status, it.headers, it.body) }
+}
 
 private fun load(path: File): Pair<Manifest, String> = if (path.isDirectory) {
     val m = Manifest.parse(File(path, "manifest.json").readText())
@@ -174,8 +227,9 @@ private fun run(path: File, hookName: String, rest: List<String>) {
         artist = artist.substringBefore(",").trim(), artists = artist.split(",").map { it.trim() }.filter { it.isNotEmpty() },
         album = opts["album"] ?: "", durationMs = opts["duration"]?.toLongOrNull() ?: 0, isrc = opts["isrc"],
     )
-    ExtensionRuntime(m, script, DesktopHost(settings, track, cell = opts["network"] == "cell"), m.asks().map { it.key }.toSet()).use { rt ->
-        runScript(rt, m, hookName, track, opts)
+    val account = opts["cdp"]?.let { Account(it) }
+    ExtensionRuntime(m, script, DesktopHost(settings, track, account?.dispatcher, cell = opts["network"] == "cell"), m.asks().map { it.key }.toSet()).use { rt ->
+        account.use { runScript(rt, m, hookName, track, opts) }
     }
 }
 

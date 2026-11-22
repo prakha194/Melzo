@@ -79,7 +79,7 @@ fun SwipeToQueue(
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.PlaylistAdd,
-                    contentDescription = stringResource(R.string.lbl_queue_add_desc),
+                    contentDescription = stringResource(R.string.add_to_queue_action_content_description),
                     tint = iconTint,
                     modifier = Modifier.padding(horizontal = 24.dp).size(26.dp),
                 )

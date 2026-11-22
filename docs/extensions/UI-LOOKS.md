@@ -75,7 +75,7 @@ user's own value, the look only hides on top of it.
 
 | Part | What it hides |
 |---|---|
-| `home.dj` | The DJ on Home |
+| `home.dj` | Spotify's DJ on Home |
 | `player.lyrics-card` | The lyrics card under the Classic player (a swipe up on the cover still opens the lyrics) |
 | `player.source` | The line under the player's title that says what plays and how (Sound quality and Stats for nerds move to the player's menu) |
 | `player.capsule` | The capsule at the bottom of the Immersive player (Listen on moves to the player's menu) |
@@ -95,7 +95,7 @@ A rule is a selector and its properties, as in CSS but from a closed list:
 ### `blocks`
 
 `home`: a list of native blocks, the same as a `home` hook answer (API.md section 3, "Blocks"),
-fixed in the manifest: a `card` or `image` that opens a catalog item (`deezer:playlist:…`), a `text`, a list of
+fixed in the manifest: a `card` or `image` that opens a `spotify:` uri, a `text`, a list of
 `tracks`, `albums`, `playlists` or `artists`. They are shown with the other extensions' Home
 blocks, under "From <your extension>", with the same quotas. A block with an `action` calls the
 extension's `tap` hook, so it needs a script that answers it.
@@ -103,7 +103,7 @@ extension's `tap` hook, so it needs a script that answers it.
 ```json
 "blocks": {
   "home": [
-    { "type": "card", "title": "Sunset mix", "subtitle": "Your evening playlist", "open": "deezer:playlist:1479458365" }
+    { "type": "card", "title": "Sunset mix", "subtitle": "Your evening playlist", "open": "spotify:playlist:37i9dQZF1DX6R7QUWePReA" }
   ]
 }
 ```

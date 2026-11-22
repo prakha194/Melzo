@@ -98,7 +98,8 @@ object ExtensionAudio {
         @Volatile private var loaded = false
 
         fun put(trackId: String, s: AudioStream) {
-            if (trackId.isBlank()) return
+            // A transformed file (decrypted, remuxed) is not replayed from a bare address.
+            if (s.transform != null || trackId.isBlank()) return
             val json = kotlinx.serialization.json.buildJsonObject {
                 put("at", kotlinx.serialization.json.JsonPrimitive(System.currentTimeMillis()))
                 put("url", kotlinx.serialization.json.JsonPrimitive(s.url))
@@ -375,8 +376,7 @@ object ExtensionAudio {
         kotlinx.coroutines.withTimeout(LOOKUP_MS) {
             val api = app.myspoti.host.android.MyspotiRuntime.api
             api.ready.first { it }
-            val uri = com.music.spotui.data.catalog.CatalogRuntime.uriOfKey(trackId) ?: "spotify:track:$trackId"
-            com.music.spotui.di.Graph.api.songOf(api.catalog.track(uri))
+            com.music.spotui.di.Graph.api.songOf(api.catalog.track("spotify:track:$trackId"))
         }
     }.getOrNull()
 

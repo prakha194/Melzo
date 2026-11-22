@@ -9,19 +9,19 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MetadataOrderTest {
-    @Test fun theDefaultOrderHasNoSpotify() {
-        assertEquals(listOf("deezer", "ytmusic", "tidal", "itunes", "musicbrainz"), MetadataOrder.normalized(emptyList()))
+    @Test fun theDefaultOrderPutsTheSignedInAccountFirst() {
+        assertEquals(listOf("spotify", "deezer", "ytmusic", "tidal", "itunes", "musicbrainz"), MetadataOrder.normalized(emptyList()))
     }
 
     @Test fun aStoredOrderKeepsItsPlacesAndGainsNewProvidersAtTheEnd() {
-        val stored = listOf("itunes", "spotify", "nonsense", "deezer", "itunes")
-        assertEquals(listOf("itunes", "deezer", "ytmusic", "tidal", "musicbrainz"), MetadataOrder.normalized(stored))
+        val stored = listOf("itunes", "nonsense", "deezer", "itunes")
+        assertEquals(listOf("itunes", "deezer", "spotify", "ytmusic", "tidal", "musicbrainz"), MetadataOrder.normalized(stored))
     }
 
     @Test fun movesStayInTheList() {
         val o = MetadataOrder.ALL
-        assertEquals(listOf("ytmusic", "deezer") + o.drop(2), MetadataOrder.moved(o, "deezer", 1))
-        assertEquals(o, MetadataOrder.moved(o, "deezer", -1))
+        assertEquals(listOf("deezer", "spotify") + o.drop(2), MetadataOrder.moved(o, "spotify", 1))
+        assertEquals(o, MetadataOrder.moved(o, "spotify", -1))
         assertEquals(o, MetadataOrder.moved(o, "musicbrainz", 1))
         assertEquals(o, MetadataOrder.moved(o, "unknown", 1))
     }

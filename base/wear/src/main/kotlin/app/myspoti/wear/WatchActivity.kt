@@ -1,6 +1,7 @@
 package app.myspoti.wear
 
 import android.content.Context
+import app.myspoti.api.sync.LocalNow
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.SystemClock
@@ -25,13 +26,13 @@ import kotlinx.coroutines.launch
 /**
  * The watch's two pages: what plays (its name, its artists, previous, play or pause, next, the
  * volume), then, a swipe away, the account's playlists as the phone lists them; a tap plays one
- * on the watch from its own extensions ([WatchPlay]).
+ * on the watch, from its own extensions when one has the songs ([WatchPlay]), else from the account.
  */
 class WatchActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // The Wi-Fi link to the phone, for when the Data Layer is not there.
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { runCatching { PhoneLink(applicationContext).refreshLink() } }
+        // The listen mirror's setting and the engine's context, before anything plays.
+        WatchSync.init(applicationContext)
         setContent { WatchTheme { WatchApp() } }
     }
 }
@@ -40,22 +41,28 @@ class WatchActivity : ComponentActivity() {
 @Composable
 internal fun WatchApp() {
     val context = LocalContext.current
+    val engineNow by WatchEngine.now.collectAsState()
     val localNow by WatchLocal.now.collectAsState()
-    var error by remember { mutableStateOf<String?>(null) }
+    val error by WatchEngine.error.collectAsState()
     val extensions by WatchExtensions.installed.collectAsState()
     val ui = rememberCoroutineScope()
     var syncNote by remember { mutableStateOf<String?>(null) }
     remember { WatchExtensions.init(context.applicationContext) }
     // The extensions' player gives no position on its own: read every second while it has a song.
     val local = localNow
-    var localPosition by remember { mutableStateOf<WatchPosition?>(null) }
+    var localPosition by remember { mutableStateOf<LocalNow?>(null) }
     LaunchedEffect(local != null) {
-        while (local != null) { localPosition = WatchLocal.position(); delay(1_000) }
+        while (local != null) { localPosition = WatchLocal.localNow(); delay(1_000) }
         localPosition = null
     }
+    // One "now" for both players: the extensions' one while it plays a list.
     val playing = local?.let {
         val p = localPosition
         WatchPlaying(it.name, it.artists, it.playing, it.source, it.cover, p?.positionMs ?: 0L, p?.durationMs ?: 0L, SystemClock.elapsedRealtime(), p?.buffering == true)
+    } ?: engineNow?.let {
+        // The engine's position is at its wall clock time; the ring predicts on elapsedRealtime.
+        val at = SystemClock.elapsedRealtime() - (System.currentTimeMillis() - it.atMs)
+        WatchPlaying(it.name, it.artists, it.playing, null, it.imageUrl, it.positionMs, it.durationMs, at, it.buffering)
     }
     var attempt by remember { mutableStateOf(0) }
     // null: being read; a failure: the phone is not there or not signed in.
@@ -64,12 +71,12 @@ internal fun WatchApp() {
     WatchPager(
         playing = playing,
         error = error,
-        onPrevious = { WatchLocal.previous() },
-        onToggle = { WatchLocal.toggle() },
-        onNext = { WatchLocal.next() },
+        onPrevious = { if (WatchLocal.active) WatchLocal.previous() else WatchEngine.previous(context) },
+        onToggle = { if (WatchLocal.active) WatchLocal.toggle() else WatchEngine.toggle(context) },
+        onNext = { if (WatchLocal.active) WatchLocal.next() else WatchEngine.next(context) },
         volume = rememberWatchVolume(),
         lists = lists,
-        onPlay = { error = null; WatchPlay.play(context, it.uri) { e -> error = e } },
+        onPlay = { WatchPlay.play(context, it.uri) },
         onRetry = { attempt++ },
         extensionsNote = syncNote ?: stringResource(R.string.wear_extensions_count, extensions.size),
         onSyncExtensions = {
@@ -102,12 +109,12 @@ private fun rememberWatchVolume(): WatchVolumeUi {
 
 /**
  * A list tapped on the watch: from the watch's own extensions when one has its songs (the songs
- * from the phone, or the last ones read). With none, nothing plays and the screen says so.
+ * from the phone, or the last ones read), else from the account through the engine.
  */
 object WatchPlay {
     private val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main)
 
-    fun play(context: android.content.Context, uri: String, failed: (String) -> Unit) {
+    fun play(context: android.content.Context, uri: String) {
         val app = context.applicationContext
         scope.launch {
             WatchExtensions.init(app)
@@ -118,10 +125,11 @@ object WatchPlay {
                 tracks.indices.take(5).firstNotNullOfOrNull { i -> WatchExtensions.audio(tracks[i])?.let { Triple(tracks, i, it) } }
             }
             if (fromExtensions != null) {
+                WatchEngine.pause()
                 WatchLocal.play(app, fromExtensions.first, fromExtensions.second, fromExtensions.third, uri = uri)
             } else {
                 WatchLocal.stop()
-                failed(app.getString(R.string.wear_no_source))
+                WatchEngine.play(app, uri)
             }
         }
     }

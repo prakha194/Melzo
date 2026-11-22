@@ -7,19 +7,20 @@ import app.myspoti.api.Track
 import app.myspoti.api.Uri
 
 /**
- * The account providers the user can choose for the account's library (one at a time): their keys,
- * as in the catalog's uris.
+ * The account providers the user can choose for the listen sync and the account's library (one at a
+ * time): their keys, as in [app.myspoti.api.sync.ListenSync.provider] and the catalog's uris.
  */
 object AccountProviders {
+    const val SPOTIFY = "spotify"
     const val YTMUSIC = "ytmusic"
     const val DEEZER = "deezer"
     const val NONE = "none"
 
     /** The choices offered now, in the order shown. Deezer is left out: see the research notes (no documented web player control). */
-    val OFFERED = listOf(NONE, YTMUSIC)
+    val OFFERED = listOf(SPOTIFY, YTMUSIC, NONE)
 
-    /** [stored] if it is a choice offered now, else [fallback] (a Spotify account chosen before: none now). */
-    fun normalized(stored: String?, fallback: String = NONE): String = stored?.takeIf { it in OFFERED } ?: fallback
+    /** [stored] if it is a choice offered now, else [fallback]. */
+    fun normalized(stored: String?, fallback: String = SPOTIFY): String = stored?.takeIf { it in OFFERED } ?: fallback
 }
 
 /**

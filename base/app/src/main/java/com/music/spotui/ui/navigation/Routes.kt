@@ -10,9 +10,9 @@ sealed class Routes(
     /** Official label (per system language) for the bottom navigation, 0 = none. */
     @androidx.annotation.StringRes val labelRes: Int = 0,
 ) {
-    object Home : Routes(icon = R.drawable.ic_home_filled, label = "Accueil", route = "home", labelRes = R.string.lbl_tab_home)
-    object Search : Routes(icon = R.drawable.ic_search_big, label = "Rechercher", route = "search", labelRes = R.string.lbl_tab_search)
-    object Library : Routes(icon = R.drawable.ic_library_big, label = "Bibliothèque", route = "library", labelRes = R.string.lbl_tab_library)
+    object Home : Routes(icon = R.drawable.ic_home_filled, label = "Accueil", route = "home", labelRes = R.string.navigationbar_musicappitems_home_title)
+    object Search : Routes(icon = R.drawable.ic_search_big, label = "Rechercher", route = "search", labelRes = R.string.navigationbar_musicappitems_search_title)
+    object Library : Routes(icon = R.drawable.ic_library_big, label = "Bibliothèque", route = "library", labelRes = R.string.navigationbar_musicappitems_yourlibrary_title)
     object Album : Routes(0, "Album", "album")
     object Player : Routes(0, "Player", "player")
     object Artist : Routes(0, "Artist", "artist")
@@ -94,10 +94,6 @@ fun artistRoute(name: String, id: String = ""): String {
  * Builds an album route, optionally carrying the artist so same-named albums by
  * different artists resolve to the right one. The artist value is URL-encoded.
  */
-/** The id a page route takes for [uri]: a catalog item's whole uri ("deezer:album:1"), else its last part. */
-fun pageIdOf(uri: String): String =
-    if (com.music.spotui.data.catalog.CatalogRuntime.isCatalogUri(uri)) uri else uri.substringAfterLast(':')
-
 fun albumRoute(name: String, artist: String = "", id: String = ""): String =
     "${Routes.Album.route}/${android.net.Uri.encode(name.ifBlank { "album" })}" +
         "?artist=${android.net.Uri.encode(artist)}&id=${android.net.Uri.encode(id)}"

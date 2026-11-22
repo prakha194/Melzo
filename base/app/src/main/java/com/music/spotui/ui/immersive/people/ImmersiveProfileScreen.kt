@@ -142,7 +142,7 @@ fun ImmersiveProfileScreen(navController: NavController, userId: String, userNam
                                     }
                                     if (p.followers != null && p.following != null) Text("·", style = Immersive.Subhead)
                                     p.following?.let {
-                                        CountLink(stringResource(R.string.profile_follows_count, it)) {
+                                        CountLink(stringResource(R.string.profile_following_count, it)) {
                                             navController.navigate(followListRoute(userId, followers = false))
                                         }
                                     }
@@ -172,7 +172,7 @@ fun ImmersiveProfileScreen(navController: NavController, userId: String, userNam
                                 Spacer(Modifier.height(18.dp))
                                 ImmersiveButton(
                                     text = stringResource(
-                                        if (f) R.string.lbl_following else R.string.lbl_follow,
+                                        if (f) R.string.curation_button_following_state_text else R.string.curation_button_follow_state_text,
                                     ),
                                     icon = if (f) Icons.Rounded.Check else Icons.Rounded.PersonAdd,
                                     filled = !f,
@@ -264,7 +264,7 @@ fun ImmersiveProfileScreen(navController: NavController, userId: String, userNam
             }) { Text(stringResource(R.string.profile_block), style = Immersive.BodyStrong.copy(color = Color(0xFFF15E6C))) }
         },
         dismissButton = {
-            TextButton(onClick = { blockAsk = false }) { Text(stringResource(R.string.action_cancel_label), style = Immersive.BodyStrong.copy(color = Immersive.Accent)) }
+            TextButton(onClick = { blockAsk = false }) { Text(stringResource(R.string.cancel), style = Immersive.BodyStrong.copy(color = Immersive.Accent)) }
         },
     )
 }

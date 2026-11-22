@@ -7,5 +7,6 @@
     <string name="metadata_asked">Spørges</string>
     <string name="metadata_off">Fra: spørges aldrig</string>
     <string name="metadata_reset">Tilbage til standardrækkefølgen</string>
+    <string name="metadata_not_on_spotify">Ikke fundet på Spotify: denne sang kan ikke afspilles endnu</string>
     <string name="metadata_switch">Spørg %1$s</string>
 </resources>

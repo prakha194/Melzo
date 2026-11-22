@@ -53,6 +53,7 @@
     <string name="extensions_cat_all">Tutte</string>
     <string name="extensions_cat_lyrics">Testi</string>
     <string name="extensions_cat_playback">Riproduzione e audio</string>
+    <string name="extensions_cat_library">Libreria</string>
     <string name="extensions_cat_discovery">Scoperta</string>
     <string name="extensions_cat_stats">Statistiche</string>
     <string name="extensions_cat_look">Aspetto</string>
@@ -63,6 +64,7 @@
     <string name="extensions_browse_store">Sfoglia lo store</string>
     <string name="extensions_other_ways">Altri modi per installare</string>
     <string name="extensions_empty_title">Cosa sono le estensioni?</string>
+    <string name="extensions_empty_body">Le estensioni aggiungono a Spoon ciò che non fa da sé: testi da altre fonti, da dove arriva l\'audio o il download di un brano, strumenti che usano il tuo account Spotify. Ognuna gira in una sandbox e chiede prima di raggiungere qualsiasi cosa. Aggiungi un repository per sfogliarle, o installa un pacchetto di cui ti fidi.</string>
     <string name="extensions_official_badge">Ufficiale</string>
     <string name="extensions_repo_yours">Aggiunto da te</string>
     <string name="extensions_repo_community">Comunità</string>
@@ -106,6 +108,8 @@
     <string name="action_library_read">Leggere la tua libreria</string>
     <string name="action_library_write">Modificare la tua libreria</string>
     <string name="action_playlists_write">Modificare le tue playlist</string>
+    <string name="action_spotify_catalog">Esplorare Spotify</string>
+    <string name="action_spotify_raw">Accesso completo a Spotify</string>
     <string name="action_network">Usare internet</string>
     <string name="action_network_any">Usare qualsiasi sito web</string>
     <string name="action_webview_page">Una pagina web propria</string>
@@ -121,6 +125,7 @@
     <string name="area_audio">Audio e download</string>
     <string name="area_home">Home e ricerca</string>
     <string name="area_menus">Menu e lettore</string>
+    <string name="area_library">Libreria e Spotify</string>
     <string name="area_other">Pagine e altro</string>
     <string name="area_activity">Attività recente</string>
     <string name="area_turn_off">Disattiva</string>
@@ -129,6 +134,7 @@
     <string name="area_make_active">Usala per %1$s</string>
     <!-- Install prompt -->
     <string name="ext_third_party_notice">Estensione di terze parti, non controllata da Spoon, sotto la responsabilità del suo autore.</string>
+    <string name="ext_risk_accept">Capisco che questa estensione è fatta da terzi e la installo sotto la mia responsabilità</string>
     <string name="ext_clash_exclusive">Sostituisce %1$s, ora fornito da %2$s</string>
     <string name="ext_clash_conflict">Incompatibile con %1$s (installata)</string>
     <string name="ext_clash_replaces">Sostituisce %1$s (installata)</string>
@@ -195,9 +201,14 @@
     <string name="extension_change_replaces">Disattiva %1$s quando installata</string>
     <string name="extension_change_conflicts">Rifiuta di funzionare con %1$s</string>
     <string name="action_webview_auth">Accedi su un sito web</string>
+    <string name="extension_confirm_once">Consenti una volta</string>
+    <string name="extension_confirm_always">Consenti sempre %1$s</string>
     <string name="ext_auth_title">%1$s: accesso</string>
     <string name="ext_auth_close">Chiudi</string>
     <string name="ext_auth_notice">Una pagina a sé: ciò che digiti e i suoi cookie restano in Spoon. L\'estensione riceve solo l\'indirizzo finale della pagina.</string>
+    <string name="ext_grants_title">Sempre consentiti</string>
+    <string name="ext_grants_note">Modifiche a Spotify che questa estensione apporta senza chiedere. Revocane una per essere di nuovo interpellato.</string>
+    <string name="ext_grant_revoke">Revoca</string>
     <string name="extensions_unreadable_file">Impossibile leggere il file</string>
     <string name="ext_welcome_title">%1$s è installata</string>
     <string name="ext_welcome_steps">Per finire</string>

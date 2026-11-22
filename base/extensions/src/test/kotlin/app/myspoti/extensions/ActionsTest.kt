@@ -31,10 +31,10 @@ class ActionsTest {
     // ── The catalogue ──
 
     @Test fun theCatalogueIsClosedAndComplete() {
-        assertEquals(19, Action.entries.size)
+        assertEquals(26, Action.entries.size)
         assertEquals(Action.entries.size, Action.entries.map { it.key }.toSet().size)
         assertEquals(
-            setOf("audio.source", "download.source", "webview.page", "webview.auth"),
+            setOf("audio.source", "download.source", "library.write", "playlists.write", "spotify.raw", "webview.page", "webview.auth", "playback.mirror"),
             Action.entries.filter { it.level == Level.CRITICAL }.map { it.key }.toSet(),
         )
         Action.entries.forEach { act ->
@@ -149,8 +149,8 @@ class ActionsTest {
         assertEquals(listOf("api.example.com"), old.hosts())
         // What an old install was granted becomes its actions; new keys are kept as they are.
         assertEquals(
-            setOf("lyrics.provide", "network", "playback.events", "storage", "settings.page"),
-            Action.migrateGranted(setOf("lyrics", "network", "player.read")),
+            setOf("lyrics.provide", "network", "playback.events", "library.read", "storage", "settings.page"),
+            Action.migrateGranted(setOf("lyrics", "network", "spotify.library.read")),
         )
         assertEquals(setOf("lyrics.provide", "network.any"), Action.migrateGranted(setOf("lyrics.provide", "network.any")))
         // An old install keeps working: granted with old keys, its hook and its storage answer.
@@ -242,10 +242,6 @@ class ActionsTest {
         )) {
             try { Blocks.parse(json, surface); fail("$surface accepted $json") } catch (_: ExtensionException) {}
         }
-        // A catalog provider's items open too.
-        assertEquals(1, Blocks.parse("""[{ "type": "albums", "items": [{ "uri": "deezer:album:302127", "title": "x" }] }]""", Surface.HOME).size)
-        assertEquals(1, Blocks.parse("""[{ "type": "card", "title": "x", "open": "musicbrainz:artist:5b11f4ce-a62d-471e-81fc-a69a8278c7da" }]""", Surface.HOME).size)
-        try { Blocks.parse("""[{ "type": "card", "title": "x", "open": "evil:album:1" }]""", Surface.HOME); fail("an unknown provider") } catch (_: ExtensionException) {}
         assertEquals(PageContent("Act", "<p>hi</p>"), PageContent.parse("""{ "html": "<p>hi</p>" }""", "Act"))
     }
 
