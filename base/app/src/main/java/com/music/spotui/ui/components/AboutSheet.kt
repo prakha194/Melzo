@@ -44,7 +44,7 @@ import com.music.spotui.ui.theme.AppAccent
 import kotlinx.coroutines.launch
 
 private val repo get() = BuildConfig.UPDATE_REPO.ifBlank { "Kirisos-Guna/myspoti" }
-val REPO_URL get() = "https://github.com/$repo"
+val REPO_URL get() = "https://github.com/prakha194/Spotify"
 
 private fun openUrl(context: Context, url: String) {
     runCatching {
@@ -78,11 +78,12 @@ fun AboutSheet(onDismiss: () -> Unit) {
             }
             Text(stringResource(R.string.about_free), color = AppMuted, fontSize = 13.sp,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp))
-            AboutRow(stringResource(R.string.about_github), stringResource(R.string.about_github_detail)) { openUrl(context, REPO_URL) }
-            UpdateRows()
-            Text(stringResource(R.string.about_star_body), color = AppMuted, fontSize = 13.sp,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 12.dp))
-            StarOnGitHubButton(Modifier.padding(horizontal = 20.dp))
+            Text("Spoon is made by Prashant.", color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp))
+            Text("Free and open source, under the GNU GPL v3. Based on Myspoti/Orpheon by kota-zo.",
+                color = AppMuted, fontSize = 12.sp,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 8.dp))
+            AboutRow("Source code", "github.com/prakha194/Spotify") { openUrl(context, REPO_URL) }
         }
     }
 }

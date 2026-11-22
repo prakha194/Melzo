@@ -51,6 +51,9 @@ const val RELEASES_PAGE = "https://github.com/prakha194/Spotify/releases/latest"
 private const val LATEST_RELEASE_API = "https://api.github.com/repos/prakha194/Spotify/releases/latest"
 private const val NOTICE_PREFS = "release_notice"
 private const val KEY_DISMISSED = "dismissed_tag"
+private const val KEY_DISMISSED_AT = "dismissed_at"
+/** "Not now" hides the card for this long, then it comes back until the app is updated. */
+private const val REPEAT_MS = 6 * 60 * 60 * 1000L
 
 /** The latest release's tag ("v1.0.2"), or null when there is no release or no network. */
 private fun latestTag(): String? = runCatching {
@@ -99,9 +102,14 @@ fun ReleaseNotice() {
         while (true) {
             val latest = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { latestTag() }
             if (latest != null && isNewer(latest, BuildConfig.VERSION_NAME)) {
-                val dismissed = context.getSharedPreferences(NOTICE_PREFS, Context.MODE_PRIVATE)
-                    .getString(KEY_DISMISSED, null)
-                if (dismissed != latest) { tag = latest; return@LaunchedEffect }
+                val prefs = context.getSharedPreferences(NOTICE_PREFS, Context.MODE_PRIVATE)
+                val dismissed = prefs.getString(KEY_DISMISSED, null)
+                val dismissedAt = prefs.getLong(KEY_DISMISSED_AT, 0L)
+                // "Not now" is a pause, not a silence: after REPEAT_MS the card is offered again,
+                // and keeps coming back every REPEAT_MS until the app is updated.
+                if (dismissed != latest || System.currentTimeMillis() - dismissedAt >= REPEAT_MS) {
+                    tag = latest; return@LaunchedEffect
+                }
             }
             kotlinx.coroutines.delay(15 * 60_000L)
         }
@@ -109,7 +117,9 @@ fun ReleaseNotice() {
     val current = tag ?: return
     val close = {
         context.getSharedPreferences(NOTICE_PREFS, Context.MODE_PRIVATE).edit()
-            .putString(KEY_DISMISSED, current).apply()
+            .putString(KEY_DISMISSED, current)
+            .putLong(KEY_DISMISSED_AT, System.currentTimeMillis())
+            .apply()
         tag = null
     }
     val version = current.trim().removePrefix("v").removePrefix("V")
