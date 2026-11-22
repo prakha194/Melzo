@@ -83,14 +83,18 @@ fun ReleaseNotice() {
     val context = LocalContext.current
     var tag by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
+        // 4 s after launch, then again every 15 minutes while the app stays open: a release
+        // published after the app was started is still offered, without waiting for a relaunch.
         kotlinx.coroutines.delay(4_000)
-        val latest = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { latestTag() }
-            ?: return@LaunchedEffect
-        if (!isNewer(latest, BuildConfig.VERSION_NAME)) return@LaunchedEffect
-        val dismissed = context.getSharedPreferences(NOTICE_PREFS, Context.MODE_PRIVATE)
-            .getString(KEY_DISMISSED, null)
-        if (dismissed == latest) return@LaunchedEffect
-        tag = latest
+        while (true) {
+            val latest = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { latestTag() }
+            if (latest != null && isNewer(latest, BuildConfig.VERSION_NAME)) {
+                val dismissed = context.getSharedPreferences(NOTICE_PREFS, Context.MODE_PRIVATE)
+                    .getString(KEY_DISMISSED, null)
+                if (dismissed != latest) { tag = latest; return@LaunchedEffect }
+            }
+            kotlinx.coroutines.delay(15 * 60_000L)
+        }
     }
     val current = tag ?: return
     val close = {
