@@ -900,14 +900,25 @@ class Api constructor(
         merged
     }.getOrNull()
 
+    /** The chosen account is YouTube Music and its session is in place. */
+    private fun ytmOn(): Boolean =
+        com.music.spotui.di.YtmRuntime.chosen && com.music.spotui.di.YtmRuntime.account.signedIn.value
+
     private val LIKED_PAGE = 50
 
     /** The newest Liked Songs: one page of 50. */
     private suspend fun likedHead(): List<SongsModel> =
-        api.library.likedTracks(0, 50).items.map { songOf(it.track).copy(addedAt = it.addedAt.orEmpty()) }
+        if (ytmOn()) com.music.spotui.di.YtmRuntime.account.library.likedTracks(0, 50).items.map { songOf(it) }
+        else api.library.likedTracks(0, 50).items.map { songOf(it.track).copy(addedAt = it.addedAt.orEmpty()) }
 
     private suspend fun allLiked(onPage: suspend (List<SongsModel>) -> Unit): List<SongsModel> {
         fun songs(p: app.myspoti.api.Page<app.myspoti.api.SavedTrack>) = p.items.map { songOf(it.track).copy(addedAt = it.addedAt.orEmpty()) }
+        if (ytmOn()) {
+            val ytFirst = com.music.spotui.di.YtmRuntime.account.library.likedTracks(0, LIKED_PAGE)
+            return PagedFetch.inOrder(ytFirst.items.map { songOf(it) }, ytFirst.total, LIKED_PAGE,
+                fetch = { o -> com.music.spotui.di.YtmRuntime.account.library.likedTracks(o, LIKED_PAGE).items.map { songOf(it) } },
+                onBatch = onPage)
+        }
         val first = api.library.likedTracks(0, LIKED_PAGE)
         return PagedFetch.inOrder(songs(first), first.total, LIKED_PAGE, fetch = { o -> songs(api.library.likedTracks(o, LIKED_PAGE)) }, onBatch = onPage)
     }
