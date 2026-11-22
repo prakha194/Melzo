@@ -44,7 +44,6 @@ import com.music.spotui.di.Graph
 import com.music.spotui.ui.components.AboutSheet
 import com.music.spotui.ui.components.SupporterBadge
 import com.music.spotui.ui.components.SupporterSheet
-import com.music.spotui.ui.components.SupportSheet
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.immersive.components.ImmersiveCover
 import com.music.spotui.ui.immersive.components.immersiveClickable
