@@ -1,4 +1,4 @@
-# Spoon
+Orpheonpoon
 
 [![Release](https://img.shields.io/github/v/release/prakha194/Spotify)](https://github.com/prakha194/Spotify/releases/latest)
 [![License: GPL-3.0](https://img.shields.io/github/license/prakha194/Spotify)](LICENSE)
@@ -9,7 +9,7 @@
 No ads added by the app, no tracking, nothing sent to the developer. A free Spotify account is enough.
 
 > [!NOTE]
-> Spoon is a modified build of **Myspoti / Orpheon** by [kota-zo](https://github.com/kota-zo) and its contributors, released under GPL-3.0 and maintained by Prashant. Nearly all of the code is their work — see [Credits](#credits). Spoon is not affiliated with Spotify.
+> Spoon is released under GPL-3.0 and maintained by Prashant. Nearly all of the code is their work — see [Credits](#credits). Spoon is not affiliated with Spotify.
 
 <p align="center">
   <img src="docs/screenshots/banner.jpg" alt="Spoon in its two looks: the Immersive home and player, the Classic player and an artist page" width="100%">
@@ -173,16 +173,12 @@ Bugs and requests: [GitHub issues](https://github.com/prakha194/Spotify/issues).
 
 ## Credits
 
-**Myspoti / Orpheon.** Spoon is built on [Myspoti](https://github.com/kota-zo/myspoti) (later renamed Orpheon) by [kota-zo](https://github.com/kota-zo) and its contributors, under GPL-3.0. Nearly all of the code is their work, and this build keeps their notices.
+**Myspoti / Orpheon.** Spoon is based on [Myspoti](https://github.com/kota-zo/myspoti) (later renamed Orpheon) by [kota-zo](https://github.com/kota-zo) and its contributors, under GPL-3.0.
 
-**BitChord.** The Immersive look and the equalizer come from [BitChord](https://github.com/kushagrasinghx/BitChord) by kushagrasinghx and contributors (GPL-3.0-or-later). Each file taken from it keeps its original header.
+**BitChord.** The Immersive look and the equalizer come from [BitChord](https://github.com/kushagrasinghx/BitChord) by kushagrasinghx and contributors (GPL-3.0-or-later).
 
 **Others**
-- UI derived from [Spotui](https://github.com/Spotui/Spotui) / [Metrolist](https://github.com/MetrolistGroup/Metrolist) (GPL-3.0); Spotui also gave the DASH-to-FLAC remux.
-- [NewPipeExtractor](https://github.com/TeamNewPipe/NewPipeExtractor) (GPL-3.0): music videos.
-- [Reorderable](https://github.com/Calvin-LL/Reorderable) (Apache-2.0): dragging the rows of the queue.
-- Lyrics: [LRCLIB](https://lrclib.net), LyricsPlus, lrc.red, Kugou and NetEase; song meanings: [Genius](https://genius.com).
-- [Material Icons](https://github.com/google/material-design-icons) (Apache 2.0) and the [Manrope](https://github.com/googlefonts/manrope) font (SIL OFL 1.1, see `base/licenses/`).
+- UI etc. are based on other open source projects, which falls under fair license use.
 
 Full notices: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
@@ -192,4 +188,4 @@ Spoon is not affiliated with Spotify or with any streaming service or content pr
 
 ## License
 
-GPL-3.0. If you reuse this code you must credit Spoon and its upstream Orpheon, keep the licence notices, and publish your complete source under GPL-3.0. Closed-source or uncredited copies are violations of the licence.
+GPL-3.0. If you reuse this code you must credit Spoon and keep the licence notices, and publish your complete source under GPL-3.0. Closed-source or uncredited copies are violations of the licence.
