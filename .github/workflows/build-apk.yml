@@ -19,6 +19,10 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # The 'tools' package was removed from the SDK repository; asking for it
+          # makes sdkmanager fail with "Failed to find package 'tools'" (exit 1).
+          packages: 'platform-tools'
 
       - name: Generate a signing key for this build
         working-directory: base
@@ -32,6 +36,10 @@ jobs:
 
       - name: Build the release APK
         working-directory: base
+        env:
+          # --no-daemon runs the build in the launcher JVM, so the heap comes from
+          # GRADLE_OPTS. The Kotlin compiler crashed on the default heap.
+          GRADLE_OPTS: '-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
         run: |
           chmod +x gradlew
           ./gradlew :app:assembleRelease \
