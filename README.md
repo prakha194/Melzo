@@ -9,7 +9,7 @@ Orpheonpoon
 No ads added by the app, no tracking, nothing sent to the developer. A free Spotify account is enough.
 
 > [!NOTE]
-> Spoon is released under GPL-3.0 and maintained by Prashant. Nearly all of the code is their work — see [Credits](#credits). Spoon is not affiliated with Spotify.
+> Spoon is released under GPL-3.0 and maintained by Prashant. 😎 — see [Credits](#credits). Spoon is not affiliated with Spotify.
 
 <p align="center">
   <img src="docs/screenshots/banner.jpg" alt="Spoon in its two looks: the Immersive home and player, the Classic player and an artist page" width="100%">
