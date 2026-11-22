@@ -1262,7 +1262,7 @@ object Extensions {
         }
     }
 
-    /** What is playing now in Spoon's own player; null: nothing. */
+    /** What is playing now in Orpheon's own player; null: nothing. */
     private fun playbackSnapshot(): PlaybackTracker.Snapshot? {
         // A song shown loading while the extensions are asked for it does not play yet.
         if (SongPlayer.routing) return null
@@ -1279,7 +1279,7 @@ object Extensions {
                 contextUri = local.contextUri, shuffle = local.shuffled, origin = origin, providerId = providerId,
             )
         }
-        // Only Spoon's own player plays: nothing else to report.
+        // Only Orpheon's own player plays: nothing else to report.
         return null
     }
 

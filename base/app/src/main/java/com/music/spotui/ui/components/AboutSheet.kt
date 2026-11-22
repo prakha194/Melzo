@@ -9,7 +9,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.border
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,54 +37,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.myspoti.engine.BuildConfig
 import app.myspoti.engine.R
+import com.music.spotui.data.api.SupportReminder
 import com.music.spotui.ui.theme.AppAccent
 
-/** The two links this build's About offers: the builder's support page and the owner's source code. */
-const val SUPPORT_URL = "https://github.com/prakha194/"
 const val SOURCE_URL = "https://github.com/prakha194/Spotify"
+private val repo get() = BuildConfig.UPDATE_REPO.ifBlank { "kota-zo/myspoti" }
 
-/** Opens [url] outside the app; a browser missing is not worth a crash. */
-fun openExternal(context: Context, url: String) {
+private fun openUrl(context: Context, url: String) {
     runCatching {
         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 }
 
-/**
- * Who made Spoon, and what this build is: the credit the GPL asks for, and the honest note that
- * this APK is a modified build and not the project's official release.
- */
-@Composable
-fun AboutCredit(modifier: Modifier = Modifier, muted: Color = AppMuted) {
-    Column(modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
-        Text("Spoon is made by Prashant.", color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-        Text("Free and open source, under the GNU GPL v3. Based on Orpheon by kota-zo.",
-            color = muted, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
-        Text("This APK is a modified build, not an official release.",
-            color = muted, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
-    }
-}
-
-/** The About buttons: support (this build's builder) and the owner's source code. */
-@Composable
-fun AboutButtons(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    Column(modifier.fillMaxWidth()) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp).fillMaxWidth().height(48.dp)
-                .clip(RoundedCornerShape(50)).border(1.dp, AppText.copy(alpha = 0.6f), RoundedCornerShape(50))
-                .pressable(0.96f) { openExternal(context, SOURCE_URL) },
-        ) { Text("Source code", color = AppText, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
-    }
-}
-
-/** About: the version, who made the app, and two buttons (support, source code). */
+/** About: the version, who made Spoon, and where its source code lives. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutSheet(onDismiss: () -> Unit) {
+    val context = LocalContext.current
     com.music.spotui.extensions.ProtectedSurfaceEffect(app.myspoti.extensions.ProtectedSurface.ABOUT)
-    // Opened in full: half open, it hid the buttons at the bottom.
+    // Opened in full: half open, it hid the support buttons at the bottom.
     LookSheet(
         onDismissRequest = onDismiss,
         sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -101,13 +73,19 @@ fun AboutSheet(onDismiss: () -> Unit) {
                         color = AppMuted, fontSize = 13.sp)
                 }
             }
-            AboutCredit(Modifier.padding(top = 12.dp))
-            AboutButtons(Modifier.padding(top = 4.dp))
+            Text(stringResource(R.string.about_free), color = AppMuted, fontSize = 13.sp,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp))
+            Text("Spoon is made by Prashant.", color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp))
+            Text("Free and open source, under the GNU GPL v3. Based on Orpheon by kota-zo.",
+                color = AppMuted, fontSize = 12.sp,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 8.dp))
+            AboutRow("Source code", "github.com/prakha194/Spotify") { openUrl(context, SOURCE_URL) }
         }
     }
 }
 
-/** GitHub Sponsors, under a filled button: outlined, so it stays the second one. */
+/** GitHub Sponsors, under the Ko-fi button: outlined, so Ko-fi stays the main one. */
 @Composable
 fun GitHubSponsorButton(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
     val context = LocalContext.current
@@ -115,7 +93,39 @@ fun GitHubSponsorButton(modifier: Modifier = Modifier, onClick: (() -> Unit)? = 
         contentAlignment = Alignment.Center,
         modifier = modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(50))
             .border(1.dp, AppText.copy(alpha = 0.6f), RoundedCornerShape(50))
-            .pressable(0.96f) { onClick?.invoke() ?: com.music.spotui.data.api.SupportReminder.openSponsors(context) },
+            .pressable(0.96f) { onClick?.invoke() ?: SupportReminder.openSponsors(context) },
     ) { Text(stringResource(R.string.support_github_action), color = AppText, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
 }
 
+/** "Support Myspoti" from the profile menu: Ko-fi or GitHub Sponsors, the user picks. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SupportSheet(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    com.music.spotui.extensions.ProtectedSurfaceEffect(app.myspoti.extensions.ProtectedSurface.SUPPORT)
+    LookSheet(
+        onDismissRequest = onDismiss,
+        sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = tone(0xFF282828),
+    ) {
+        androidx.compose.foundation.layout.Column(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 28.dp)) {
+            Text(stringResource(R.string.support_title), color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.support_body), color = AppMuted, fontSize = 14.sp,
+                modifier = Modifier.padding(top = 10.dp, bottom = 18.dp))
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(50))
+                    .background(AppAccent).pressable(0.96f) { onDismiss(); SupportReminder.open(context) },
+            ) { Text(stringResource(R.string.support_action), color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
+            GitHubSponsorButton(Modifier.padding(top = 10.dp)) { onDismiss(); SupportReminder.openSponsors(context) }
+        }
+    }
+}
+
+@Composable
+private fun AboutRow(title: String, detail: String, onClick: () -> Unit) {
+    Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 10.dp)) {
+        Text(title, color = AppText, fontSize = 16.sp)
+        Text(detail, color = AppMuted, fontSize = 12.sp)
+    }
+}

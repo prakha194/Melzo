@@ -192,19 +192,6 @@ object YtmParse {
     /** Every card of an answer (grids and carousels), in order. */
     fun cards(answer: JsonElement): List<Item> = deep(answer, "musicTwoRowItemRenderer").mapNotNull(::twoRow)
 
-    /**
-     * The home page's shelves, each with its own title and its cards ("Quick picks", "Listen again",
-     * "Mixed for you"…): one section per carousel, in the page's order. A carousel with no card that
-     * parses is dropped.
-     */
-    fun shelves(answer: JsonElement): List<Pair<String, List<Item>>> =
-        deep(answer, "musicCarouselShelfRenderer").mapNotNull { shelf ->
-            val header = shelf.o("header")?.o("musicCarouselShelfBasicHeaderRenderer")
-            val title = text(header?.o("title")).orEmpty()
-            val items = cards(shelf)
-            if (items.isEmpty()) null else title to items
-        }
-
     /** The token of the answer's next page, when there is one. */
     fun continuation(answer: JsonElement): String? =
         deep(answer, "nextContinuationData").firstNotNullOfOrNull { it.s("continuation") }

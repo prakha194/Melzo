@@ -49,7 +49,7 @@
     <string name="browse_all">Browse all</string>
     <string name="home_error">Couldn\'t load Home.\nCheck your connection and try again.</string>
     <string name="home_retry">Try again</string>
-    <string name="home_empty">Nothing to show yet.\n\nSign in to YouTube Music in Settings \u203a Accounts for your library, and add an extension to search and play music.</string>
+    <string name="home_empty">Nothing to show yet.</string>
     <string name="spotify_account">Account</string>
     <string name="spotify_user">User</string>
     <string name="list_view">Show as list</string>

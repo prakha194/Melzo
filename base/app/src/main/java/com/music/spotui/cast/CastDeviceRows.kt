@@ -37,7 +37,7 @@ import com.music.spotui.ui.theme.AppMuted
 import com.music.spotui.ui.theme.AppText
 
 /**
- * The Cast devices of the network in the device picker: Spoon's songs (extensions, downloads,
+ * The Cast devices of the network in the device picker: Orpheon's songs (extensions, downloads,
  * the phone's files) are cast to them. While casting: back to this phone, and the device's volume.
  */
 @Composable
@@ -63,7 +63,7 @@ fun CastDeviceRows(onDismiss: () -> Unit) {
             CastPlayback.stop(back = true); onDismiss()
         }
     }
-    // Only a song Spoon plays itself can be cast: nothing plays from Spotify here.
+    // Only a song Orpheon plays itself can be cast: nothing plays from Spotify here.
     if (ownSong) CastDiscovery.devices.filter { it.id != casting?.id }.forEach { d ->
         CastRow(Icons.Default.Cast, d.name, d.model.ifBlank { stringResource(R.string.cast_device_detail) }) {
             CastPlayback.start(d)

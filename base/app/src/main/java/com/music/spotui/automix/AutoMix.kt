@@ -188,12 +188,12 @@ object AutoMix {
     fun changeSegue(value: Boolean) { segue = value; Graph.app.getSharedPreferences(PREFS, 0).edit().putBoolean("automix_segue", value).apply(); com.music.spotui.di.LocalPlayer.autoMixSettingsChanged() }
     val segueActive: Boolean get() = segue && style == 0
 
-    /** The Spoon planner (on by default), else the compact one it replaces, kept as a way back. */
+    /** The Orpheon planner (on by default), else the compact one it replaces, kept as a way back. */
     var orpheon by mutableStateOf(Graph.app.getSharedPreferences(PREFS, 0).getBoolean("automix_orpheon", true))
         private set
-    fun changeSpoon(value: Boolean) { orpheon = value; Graph.app.getSharedPreferences(PREFS, 0).edit().putBoolean("automix_orpheon", value).apply(); com.music.spotui.di.LocalPlayer.autoMixSettingsChanged() }
+    fun changeOrpheon(value: Boolean) { orpheon = value; Graph.app.getSharedPreferences(PREFS, 0).edit().putBoolean("automix_orpheon", value).apply(); com.music.spotui.di.LocalPlayer.autoMixSettingsChanged() }
 
-    /** The [app.myspoti.automix.segue.MixIdea]s the Spoon planner plays with, as their bits: each is one switch of the Mix Lab. */
+    /** The [app.myspoti.automix.segue.MixIdea]s the Orpheon planner plays with, as their bits: each is one switch of the Mix Lab. */
     var ideas by mutableStateOf(Graph.app.getSharedPreferences(PREFS, 0).getInt("automix_ideas",
         if (app.myspoti.engine.BuildConfig.APPLICATION_ID == "app.myspoti.automixlab") app.myspoti.automix.segue.MixIdea.DEFAULT else 0))
         private set
@@ -204,7 +204,7 @@ object AutoMix {
         com.music.spotui.di.LocalPlayer.autoMixSettingsChanged()
     }
 
-    /** The tempo gap the Spoon planner may close when the listener asks for the narrowest range. */
+    /** The tempo gap the Orpheon planner may close when the listener asks for the narrowest range. */
     private const val ORPHEON_NARROW_TEMPO = 0.06
 
     /** The policy's decision for two analysed songs. The listener's settings may only tighten its limits. */
@@ -213,7 +213,7 @@ object AutoMix {
         val s = settings()
         val d = app.myspoti.automix.segue.SeguePolicy.decide(app.myspoti.automix.segue.SegueRequest(a, b, (earliestExit * 1e6).toLong(),
             listenerRate = (listener * app.myspoti.automix.segue.SegueFormat.RATE_NOMINAL).toLong(),
-            // The Spoon planner ramps both songs and keeps its own tempo limits (see SpoonTuning): the
+            // The Orpheon planner ramps both songs and keeps its own tempo limits (see OrpheonTuning): the
             // listener's range, made for one song held at a fixed speed, only narrows it at its smallest.
             maxRatePpm = if (orpheon && tempoRange > 0) null else ((if (orpheon) ORPHEON_NARROW_TEMPO else s.maxStretch) * 1e6).toLong(),
             maxBars = s.maxBars, eq = djEq, harmonic = harmonic, sameAlbum = sameAlbum,

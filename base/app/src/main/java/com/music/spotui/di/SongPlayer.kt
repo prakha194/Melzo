@@ -1139,7 +1139,7 @@ object SongPlayer {
     val routing: Boolean get() = routingState.value != null && SystemClock.elapsedRealtime() < routingUntil
 
     /**
-     * Spoon plays nothing from the music account: a song plays from the extensions, the phone's
+     * Orpheon plays nothing from the music account: a song plays from the extensions, the phone's
      * files or the downloads, or not at all, and the user is offered Spotify's own app for it
      * ([com.music.spotui.ui.components.NoSource]).
      */

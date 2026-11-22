@@ -44,6 +44,7 @@ import com.music.spotui.di.Graph
 import com.music.spotui.ui.components.AboutSheet
 import com.music.spotui.ui.components.SupporterBadge
 import com.music.spotui.ui.components.SupporterSheet
+import com.music.spotui.ui.components.SupportSheet
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.immersive.components.ImmersiveCover
 import com.music.spotui.ui.immersive.components.immersiveClickable
@@ -170,7 +171,15 @@ internal fun ImmersiveProfileSheet(onOpen: (route: String) -> Unit, onDismiss: (
             ) {
                 onOpen(Routes.Extensions.route)
             }
-            // Support: removed in this build. About: the credit and two buttons.
+            // Donations: always here, never in the way.
+            var support by remember { mutableStateOf(false) }
+            if (support) SupportSheet(onDismiss = { support = false })
+            SheetRow(
+                stringResource(R.string.support_title),
+                stringResource(R.string.support_row_detail),
+                titleColor = Immersive.Accent,
+            ) { support = true }
+            // About: version, Discord, source code and Ko-fi.
             var about by remember { mutableStateOf(false) }
             if (about) AboutSheet(onDismiss = { about = false })
             SheetRow(stringResource(R.string.lbl_bio), stringResource(R.string.about_detail)) {

@@ -175,7 +175,7 @@ object WatchLan {
 
     private fun announce(context: Context, port: Int, id: String) = runCatching {
         val nsd = context.getSystemService(android.net.nsd.NsdManager::class.java) ?: return@runCatching
-        val info = android.net.nsd.NsdServiceInfo().apply { serviceName = "Spoon-$id"; serviceType = "_orpheon._tcp"; setPort(port) }
+        val info = android.net.nsd.NsdServiceInfo().apply { serviceName = "Orpheon-$id"; serviceType = "_orpheon._tcp"; setPort(port) }
         val listener = object : android.net.nsd.NsdManager.RegistrationListener {
             override fun onServiceRegistered(i: android.net.nsd.NsdServiceInfo) {}
             override fun onRegistrationFailed(i: android.net.nsd.NsdServiceInfo, code: Int) { Logbook.log("watch: not announced on the network ($code)") }

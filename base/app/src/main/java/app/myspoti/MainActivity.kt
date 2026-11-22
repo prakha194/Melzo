@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         // Existing users, once, right after the update: the new look, live. Never after the
                         // onboarding, whose look step asked it already (LookPref.offered, read live).
-                        if (false && com.music.spotui.ui.screens.Onboarding.lookOfferShown(
+                        if (com.music.spotui.ui.screens.Onboarding.lookOfferShown(
                                 entry, showLook, false, inPip, com.music.spotui.data.preferences.LookPref.offered, tv)) {
                             if (com.music.spotui.data.preferences.LookPref.look == com.music.spotui.data.preferences.Look.IMMERSIVE) {
                                 androidx.compose.runtime.LaunchedEffect(Unit) {
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity() {
                         // An extension's sign-in page, in a web view of its own.
                         com.music.spotui.extensions.ExtensionAuthHost()
                         // Beta and dev builds only: hold the faint dot to copy the recent logs.
-                        if (false && (com.music.spotui.data.api.UpdateChecker.isBeta || app.myspoti.engine.BuildConfig.DEBUG))
+                        if (com.music.spotui.data.api.UpdateChecker.isBeta || app.myspoti.engine.BuildConfig.DEBUG)
                             com.music.spotui.ui.components.BetaLogButton(
                                 androidx.compose.ui.Modifier.align(androidx.compose.ui.Alignment.BottomEnd))
                         // Picture-in-picture: the clip alone, over the app (which stays composed underneath,

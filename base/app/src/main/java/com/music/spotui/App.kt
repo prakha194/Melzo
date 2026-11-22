@@ -49,8 +49,7 @@ fun App() {
     // "See the extensions" in the dialog a download shows when no download extension is installed.
     LaunchedEffect(Unit) { com.music.spotui.ui.components.DownloadAsk.openRoute.collect { r -> runCatching { navController.navigateSingleTop(r) } } }
 
-    // The app's own update card and donation reminder stay off; a newer release on GitHub is
-    // announced by ReleaseNotice (Update now / Not now, opening the release page).
+    // A newer release of Spoon is offered here ("Update now" / "Not now"). No donation reminder.
     com.music.spotui.ui.components.ReleaseNotice()
     // The playlists at the top of the library, fetched ahead on Wi-Fi (see PagePrefetch).
     LaunchedEffect(Unit) { com.music.spotui.data.api.PagePrefetch.start() }

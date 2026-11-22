@@ -246,7 +246,7 @@ class CliReceiver : BroadcastReceiver() {
                 null -> Unit
                 "enabled" -> { val on = c.value == "on"; a.set(on); com.music.spotui.di.LocalPlayer.autoMixChanged(on) }
                 "segue" -> a.changeSegue(c.value == "on")
-                "orpheon" -> a.changeSpoon(c.value == "on")
+                "orpheon" -> a.changeOrpheon(c.value == "on")
                 "ideas" -> app.myspoti.automix.segue.MixIdea.values().forEach { a.changeIdea(it, c.value == "on") }
                 "session-dj" -> a.changeSessionDj(c.value == "on")
                 "album-order" -> a.changeAlbumOrder(c.value == "on")

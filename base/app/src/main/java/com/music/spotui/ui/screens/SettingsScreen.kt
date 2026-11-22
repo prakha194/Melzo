@@ -462,12 +462,26 @@ fun SettingsScreen(navController: NavController) {
             }
             if (tab == 5) {
             Section(R.string.settings_section_app)
-            // The version, the credit to the owner, and the two About buttons (support, source code).
-            Text(stringResource(R.string.settings_about_version, app.myspoti.engine.BuildConfig.VERSION_NAME),
-                color = AppText, fontSize = 16.sp, modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp))
-            com.music.spotui.ui.components.AboutCredit(Modifier.padding(top = 4.dp))
-            com.music.spotui.ui.components.AboutButtons(Modifier.padding(top = 6.dp))
-            androidx.compose.foundation.layout.Spacer(Modifier.height(com.music.spotui.ui.components.bottomBarsSpace()))
+            AboutRow()
+            // A18: the launch check can be turned off; the manual check below keeps working.
+            OptionRow(
+                label = stringResource(R.string.settings_auto_update_title),
+                detail = stringResource(R.string.settings_auto_update_detail),
+                checked = com.music.spotui.data.preferences.AutoUpdateCheckPref.on,
+                onChecked = { com.music.spotui.data.preferences.AutoUpdateCheckPref.set(ctx, it) },
+            )
+            // The report a tester hands us. The engine's log is otherwise reachable only through
+            // adb logcat, which the person reporting the bug cannot run.
+            Column(
+                Modifier.fillMaxWidth().clickable {
+                    val file = runCatching { app.myspoti.host.android.Logbook.export(ctx) }.getOrNull()
+                    if (file != null) shareDiagnosticReport(ctx, file)
+                    else android.widget.Toast.makeText(ctx, ctx.getString(R.string.diagnostic_export_failed), android.widget.Toast.LENGTH_SHORT).show()
+                }.padding(horizontal = 20.dp, vertical = 10.dp),
+            ) {
+                Text(stringResource(R.string.diagnostic_export_title), color = AppText, fontSize = 16.sp)
+                Text(stringResource(R.string.diagnostic_export_detail), color = AppMuted, fontSize = 12.sp)
+            }
             }
             if (tab == 6) {
             // The account provider: where the library is read from (one at a time).
@@ -695,10 +709,10 @@ private fun TransitionsRow() {
             checked = automix.segue, onChecked = automix::changeSegue)
         if (!automix.segueActive) OptionRow(stringResource(R.string.settings_automix_session), stringResource(R.string.settings_automix_session_detail),
             checked = automix.sessionDj, onChecked = automix::changeSessionDj)
-        // The planner: Spoon by default, the earlier one as a way back.
+        // The planner: Orpheon by default, the earlier one as a way back.
         OptionRow(stringResource(R.string.settings_automix_orpheon), stringResource(R.string.settings_automix_orpheon_detail),
-            checked = automix.orpheon, onChecked = automix::changeSpoon)
-        // Each Spoon idea on its own switch, only in the Mix Lab build, so their text is not translated.
+            checked = automix.orpheon, onChecked = automix::changeOrpheon)
+        // Each Orpheon idea on its own switch, only in the Mix Lab build, so their text is not translated.
         if (app.myspoti.engine.BuildConfig.APPLICATION_ID == "app.myspoti.automixlab") {
             for (idea in app.myspoti.automix.segue.MixIdea.values()) OptionRow(idea.title, idea.detail,
                 checked = automix.hasIdea(idea), enabled = automix.orpheon, onChecked = { automix.changeIdea(idea, it) })
@@ -903,39 +917,21 @@ private fun AccountProviderRows() {
             }
         }
     }
-    val provider = pref.id
-    val isYtm = provider == app.myspoti.api.account.AccountProviders.YTMUSIC
-    val isSpotify = provider == app.myspoti.api.account.AccountProviders.SPOTIFY
-    if (!isYtm && !isSpotify) return
+    if (pref.id != app.myspoti.api.account.AccountProviders.YTMUSIC) return
     val ytm = com.music.spotui.di.YtmRuntime
-    val sp = com.music.spotui.di.SpotifyRuntime
     var signingIn by remember { mutableStateOf(false) }
-    val signedIn = if (isSpotify) sp.signedIn else ytm.signedIn
     Column(
-        Modifier.fillMaxWidth().clickable {
-            if (signedIn) { if (isSpotify) sp.signOutAsync() else ytm.signOut() } else signingIn = true
-        }.padding(horizontal = 20.dp, vertical = 10.dp),
+        Modifier.fillMaxWidth().clickable { if (ytm.signedIn) ytm.signOut() else signingIn = true }
+            .padding(horizontal = 20.dp, vertical = 10.dp),
     ) {
+        Text(stringResource(if (ytm.signedIn) R.string.settings_ytm_sign_out else R.string.settings_ytm_account_title), color = AppText, fontSize = 16.sp)
         Text(
-            if (isSpotify) (if (signedIn) "Sign out of Spotify" else "Spotify account")
-            else stringResource(if (signedIn) R.string.settings_ytm_sign_out else R.string.settings_ytm_account_title),
-            color = AppText, fontSize = 16.sp,
-        )
-        Text(
-            if (isSpotify) {
-                if (signedIn) "Signed in. Your liked songs and playlists are read from Spotify.\nSpotify plays no audio: songs still come from your extensions, files and Live Radio."
-                else "Sign in to read your liked songs and playlists from Spotify."
-            } else {
-                stringResource(if (signedIn) R.string.settings_ytm_signed_in else R.string.settings_ytm_signed_out) + "\n" +
-                    stringResource(R.string.settings_ytm_sync_note)
-            },
+            stringResource(if (ytm.signedIn) R.string.settings_ytm_signed_in else R.string.settings_ytm_signed_out) + "\n" +
+                stringResource(R.string.settings_ytm_sync_note),
             color = AppMuted, fontSize = 12.sp,
         )
     }
-    if (signingIn) {
-        if (isSpotify) com.music.spotui.ui.components.SpotifySignInDialog(onDismiss = { signingIn = false })
-        else com.music.spotui.ui.components.YtmSignInDialog(onDismiss = { signingIn = false })
-    }
+    if (signingIn) com.music.spotui.ui.components.YtmSignInDialog(onDismiss = { signingIn = false })
 }
 
 /** Screen rotation: portrait (default), automatic or landscape. */

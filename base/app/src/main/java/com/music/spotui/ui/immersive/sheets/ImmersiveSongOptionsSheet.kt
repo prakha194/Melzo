@@ -336,7 +336,7 @@ fun ImmersiveSongOptionsSheet(
             if (!com.music.spotui.data.preferences.PlayerCapsulePref.shown) {
                 ImmersiveSheetRow(Icons.Rounded.Devices, stringResource(R.string.listen_on)) { showDevices = true }
             }
-            // "Stats for nerds" removed in this build.
+            ImmersiveSheetRow(Icons.Rounded.Analytics, stringResource(R.string.nerd_title)) { showNerd = true }
         }
         // Entries from extensions (menu.items), after the app's own; each names its extension.
         if (hasId) com.music.spotui.extensions.ExtensionMenuEntries(

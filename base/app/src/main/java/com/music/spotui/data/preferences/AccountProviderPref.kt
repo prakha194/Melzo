@@ -26,6 +26,5 @@ object AccountProviderPref {
         id = v
         prefs(c).edit().putString(KEY, v).apply()
         com.music.spotui.di.YtmRuntime.startIfChosen()
-        com.music.spotui.di.SpotifyRuntime.startIfChosen()
     }
 }

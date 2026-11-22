@@ -588,7 +588,7 @@ private fun CrossfadePage(back: () -> Unit) {
             }
             row {
                 ImmersiveSwitchRow(stringResource(R.string.settings_automix_orpheon), checked = automix.orpheon,
-                    onChecked = automix::changeSpoon, detail = stringResource(R.string.settings_automix_orpheon_detail))
+                    onChecked = automix::changeOrpheon, detail = stringResource(R.string.settings_automix_orpheon_detail))
             }
             // The session DJ steers the older planner only: the data-plan transitions decide on their own.
             if (!automix.segueActive) row {
@@ -1067,18 +1067,44 @@ private fun LyricsLanguagePage(back: () -> Unit) {
 @Composable
 private fun AppPage(navController: NavController, back: () -> Unit) {
     val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val check = com.music.spotui.data.api.rememberUpdateCheckState(ctx)
     ImmersivePage(title = stringResource(R.string.settings_section_app), onBack = back) {
-        immersiveGroup("about") {
+        immersiveGroup("updates") {
             row {
-                ImmersiveGroupRow(
-                    stringResource(R.string.settings_about_version, app.myspoti.engine.BuildConfig.VERSION_NAME),
-                    detail = "Spoon is made by Prashant \u00b7 GNU GPL v3 \u00b7 based on Orpheon by kota-zo",
-                )
+                ImmersiveSwitchRow(stringResource(R.string.settings_auto_update_title), checked = com.music.spotui.data.preferences.AutoUpdateCheckPref.on,
+                    onChecked = { com.music.spotui.data.preferences.AutoUpdateCheckPref.set(ctx, it) }, detail = stringResource(R.string.settings_auto_update_detail))
             }
             row {
+                val known = com.music.spotui.updateRelease.value ?: remember { com.music.spotui.data.api.UpdateChecker.known(ctx) }
+                val detail = buildString {
+                    if (known != null) appendLine(ctx.getString(R.string.settings_update_available, known.version))
+                    check.message?.takeIf { known == null || check.isError }?.let { appendLine(it) }
+                    append(check.lastCheckedText)
+                }
                 ImmersiveGroupRow(
-                    "Source code", detail = "github.com/prakha194/Spotify",
-                    onClick = { com.music.spotui.ui.components.openExternal(ctx, com.music.spotui.ui.components.SOURCE_URL) },
+                    stringResource(R.string.settings_about_version, app.myspoti.engine.BuildConfig.VERSION_NAME),
+                    detail = detail,
+                    detailColor = if (check.isError) Immersive.Destructive else Immersive.TextSecondary,
+                    onClick = if (known != null) ({ com.music.spotui.updateRelease.value = known }) else null,
+                    trailing = {
+                        if (check.checking) androidx.compose.material3.CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp, color = Immersive.Accent)
+                        else androidx.compose.material3.IconButton(onClick = { scope.launch { check.run() } }) {
+                            androidx.compose.material3.Icon(Icons.Rounded.Refresh, stringResource(R.string.settings_update_refresh), tint = Immersive.Accent)
+                        }
+                    },
+                )
+            }
+        }
+        immersiveGroup("repair") {
+            row {
+                ImmersiveGroupRow(
+                    stringResource(R.string.diagnostic_export_title), detail = stringResource(R.string.diagnostic_export_detail),
+                    onClick = {
+                        val file = runCatching { app.myspoti.host.android.Logbook.export(ctx) }.getOrNull()
+                        if (file != null) shareDiagnosticReport(ctx, file)
+                        else android.widget.Toast.makeText(ctx, ctx.getString(R.string.diagnostic_export_failed), android.widget.Toast.LENGTH_SHORT).show()
+                    },
                 )
             }
         }

@@ -348,7 +348,7 @@ fun SongOptionsSheet(
                 if (!com.music.spotui.data.preferences.PlayerSourceLinePref.shown) {
                     MenuRow(Icons.Outlined.GraphicEq, stringResource(R.string.quality_sheet_title)) { showQuality = true }
                 }
-                // "Stats for nerds" removed in this build.
+                MenuRow(Icons.Outlined.Analytics, stringResource(R.string.nerd_title)) { showNerd = true }
             }
             // Entries from extensions (menu.items), after the app's own; each names its extension.
             if (hasId) com.music.spotui.extensions.ExtensionMenuEntries(

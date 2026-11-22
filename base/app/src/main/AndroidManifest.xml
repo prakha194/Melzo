@@ -37,7 +37,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:banner="@drawable/tv_banner"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Spoon"
+        android:theme="@style/Theme.Orpheon"
         android:usesCleartextTraffic="false">
         <!-- Samsung DeX: the app keeps running (and playing) when the window moves to or from DeX. -->
         <meta-data android:name="com.samsung.android.keepalive.density" android:value="true" />
@@ -96,7 +96,7 @@
             android:supportsPictureInPicture="true"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|keyboard|navigation|density"
             android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.Spoon">
+            android:theme="@style/Theme.Orpheon">
             <!-- Desktop windows (Samsung DeX, freeform): opens in a landscape window, resizable. -->
             <layout
                 android:defaultWidth="1100dp"
