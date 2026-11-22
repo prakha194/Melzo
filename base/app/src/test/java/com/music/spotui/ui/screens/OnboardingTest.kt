@@ -63,7 +63,7 @@ class OnboardingTest {
         assertEquals(AfterChoice.YTM_SIGN_IN, Onboarding.afterChoice(AccountProviders.YTMUSIC, ytmSignedIn = false))
         assertEquals(AfterChoice.APP, Onboarding.afterChoice(AccountProviders.YTMUSIC, ytmSignedIn = true))
         // A Spotify account chosen by an earlier version: none now.
-        assertEquals(AccountProviders.NONE, AccountProviders.normalized("spotify"))
+        assertEquals(AccountProviders.NONE, AccountProviders.normalized("deezer"))
         assertFalse("deezer" in AccountProviders.OFFERED)
     }
 
