@@ -36,6 +36,16 @@ import com.music.spotui.ui.theme.tone
 import java.net.HttpURLConnection
 import java.net.URL
 
+/** Opens the release page outside the app; a browser missing is not worth a crash. */
+private fun openReleasePage(context: Context) {
+    runCatching {
+        context.startActivity(
+            android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(RELEASES_PAGE))
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+    }
+}
+
 /** The release page a newer build sends people to. */
 const val RELEASES_PAGE = "https://github.com/prakha194/Spotify/releases/latest"
 private const val LATEST_RELEASE_API = "https://api.github.com/repos/prakha194/Spotify/releases/latest"
@@ -126,7 +136,7 @@ fun ReleaseNotice() {
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.padding(top = 22.dp).fillMaxWidth().height(48.dp)
                     .clip(RoundedCornerShape(50)).background(AppAccent)
-                    .pressable(0.96f) { openExternal(context, RELEASES_PAGE); close() },
+                    .pressable(0.96f) { openReleasePage(context); close() },
             ) {
                 Text("Update now", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
