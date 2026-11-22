@@ -11,7 +11,7 @@ activityCompose = "1.10.0"
 lifecycleRuntime = "2.9.0"
 media = "1.8.0"
 okhttp = "5.5.1"
-serialization = "1.11.0"
+serialization = "1.13.0"
 coroutines = "1.11.0"
 # Compose Multiplatform, for the desktop app (Linux, Windows).
 composeMultiplatform = "1.12.2"
