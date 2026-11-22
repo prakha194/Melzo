@@ -12,11 +12,16 @@ import app.myspoti.api.Uri
  */
 object AccountProviders {
     const val YTMUSIC = "ytmusic"
+    const val SPOTIFY = "spotify"
     const val DEEZER = "deezer"
     const val NONE = "none"
 
-    /** The choices offered now, in the order shown. Deezer is left out: see the research notes (no documented web player control). */
-    val OFFERED = listOf(NONE, YTMUSIC)
+    /**
+ * The choices offered now, in the order shown. Deezer is left out: see the research notes (no
+ * documented web player control). Spotify is here for its account's library (liked songs,
+ * playlists) and its metadata; it is not a playback source.
+ */
+    val OFFERED = listOf(NONE, YTMUSIC, SPOTIFY)
 
     /** [stored] if it is a choice offered now, else [fallback] (a Spotify account chosen before: none now). */
     fun normalized(stored: String?, fallback: String = NONE): String = stored?.takeIf { it in OFFERED } ?: fallback

@@ -227,6 +227,8 @@ private fun AccountStep(onNext: () -> Unit, beforeSignIn: Boolean = false) {
     val pref = com.music.spotui.data.preferences.AccountProviderPref
     val ytm = com.music.spotui.di.YtmRuntime
     var signingIn by remember { mutableStateOf(false) }
+    var spotifySigningIn by remember { mutableStateOf(false) }
+    val spotify = com.music.spotui.di.SpotifyRuntime
     // Continue with YouTube Music while signed out: its sign-in first, the next step once signed in.
     var nextOnceSignedIn by remember { mutableStateOf(false) }
     if (nextOnceSignedIn) LaunchedEffect(ytm.signedIn, pref.id) {
@@ -253,6 +255,9 @@ private fun AccountStep(onNext: () -> Unit, beforeSignIn: Boolean = false) {
             val detail = when (id) {
                 app.myspoti.api.account.AccountProviders.YTMUSIC ->
                     if (ytm.signedIn) stringResource(R.string.settings_ytm_signed_in) else stringResource(R.string.setup_account_ytm_detail)
+                app.myspoti.api.account.AccountProviders.SPOTIFY ->
+                    if (spotify.signedIn) "Signed in: your liked songs and playlists are read from Spotify"
+                    else "Sign in to read your liked songs, your playlists and your artist pages from Spotify"
                 else -> stringResource(R.string.setup_account_none_detail)
             }
             Column(
@@ -273,12 +278,18 @@ private fun AccountStep(onNext: () -> Unit, beforeSignIn: Boolean = false) {
                         Text(stringResource(R.string.settings_ytm_sign_in_title), color = accent, fontWeight = FontWeight.Bold)
                     }
                 }
+                if (selected && id == app.myspoti.api.account.AccountProviders.SPOTIFY && !spotify.signedIn) {
+                    TextButton(onClick = { spotifySigningIn = true }) {
+                        Text("Sign in to Spotify", color = accent, fontWeight = FontWeight.Bold)
+                    }
+                }
             }
         }
         Spacer(Modifier.height(12.dp))
         SetupButton(stringResource(R.string.setup_continue), next, Modifier.fillMaxWidth().height(50.dp).riseIn(row))
     }
     if (signingIn) com.music.spotui.ui.components.YtmSignInDialog(onDismiss = { signingIn = false })
+    if (spotifySigningIn) com.music.spotui.ui.components.SpotifySignInDialog(onDismiss = { spotifySigningIn = false })
 }
 
 /** Where the user is in the steps: the current one a longer green dash. */

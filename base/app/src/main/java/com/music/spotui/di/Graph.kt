@@ -20,6 +20,7 @@ object Graph {
         com.music.spotui.data.catalog.CatalogRuntime.install()
         // The YouTube Music account, when chosen: its hidden page, once signed in.
         com.music.spotui.di.YtmRuntime.startIfChosen()
+        com.music.spotui.di.SpotifyRuntime.startIfChosen()
         // The crossfade length (0 = off), in the player from the first song on.
         com.music.spotui.data.preferences.applyCrossfade(com.music.spotui.data.preferences.getCrossfadeSeconds(application))
         com.music.spotui.data.local.ListenHistory.init(application)

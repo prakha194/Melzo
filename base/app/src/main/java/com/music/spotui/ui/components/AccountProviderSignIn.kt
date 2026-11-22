@@ -34,6 +34,7 @@ import com.music.spotui.di.YtmRuntime
 @Composable
 fun accountProviderLabel(id: String): String = when (id) {
     AccountProviders.YTMUSIC -> "YouTube Music"
+    AccountProviders.SPOTIFY -> "Spotify"
     AccountProviders.DEEZER -> "Deezer"
     else -> stringResource(R.string.settings_account_provider_none)
 }
@@ -58,6 +59,38 @@ fun YtmSignInDialog(onDismiss: () -> Unit) {
                 factory = { ctx ->
                     YtmRuntime.host.signInView(ctx, Ytm.SIGN_IN_URL, finished = Ytm::signInDone, signedIn = Ytm::signedIn) { ok ->
                         YtmRuntime.signInFinished(ok)
+                        onDismiss()
+                    }
+                },
+                onRelease = { it.destroy() },
+            )
+        }
+    }
+}
+
+/**
+ * Spotify's own sign-in page, full screen, for the user to sign in themself. It closes once the flow
+ * is back on the player; the session is then the page's, and the Web API is read with its token.
+ */
+@Composable
+fun SpotifySignInDialog(onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+        Column(Modifier.fillMaxSize().background(Color(0xFF121212)).statusBarsPadding().navigationBarsPadding().imePadding()) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.settings_sign_in_close), tint = Color.White)
+                }
+                Text("Spotify", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+            AndroidView(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                factory = { ctx ->
+                    com.music.spotui.di.SpotifyRuntime.host.signInView(
+                        ctx, com.music.spotui.di.SpotifyRuntime.SIGN_IN_URL,
+                        finished = com.music.spotui.di.SpotifyRuntime::signInDone,
+                        signedIn = com.music.spotui.di.SpotifyRuntime::signedIn,
+                    ) { ok ->
+                        com.music.spotui.di.SpotifyRuntime.signInFinishedAsync(ok)
                         onDismiss()
                     }
                 },

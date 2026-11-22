@@ -924,14 +924,39 @@ class Api constructor(
         merged
     }.getOrNull()
 
+    /** The chosen account is Spotify and its session is in place: its library is read on the Web API. */
+    private fun spotifyOn(): Boolean = com.music.spotui.di.SpotifyRuntime.signedIn &&
+        com.music.spotui.data.preferences.AccountProviderPref.id == app.myspoti.api.account.AccountProviders.SPOTIFY
+
+    private val spotifyLib by lazy {
+        SpotifyAccountLibrary { force -> com.music.spotui.di.SpotifyRuntime.token(force) }
+    }
+
+    /** The Spotify account's playlists, as Your Library shows them. */
+    private suspend fun spotifyEntries(): List<LibraryEntry> = runCatching {
+        spotifyLib.playlists().map { p ->
+            LibraryEntry(
+                spotifyId = p.uri.substringAfterLast(':'), name = p.name,
+                subtitle = context.getString(R.string.lbl_playlist) + (p.owner?.let { " • $it" } ?: ""),
+                coverUri = cover(p.images), isPlaylist = true, uri = p.uri,
+            )
+        }
+    }.getOrDefault(emptyList())
+
     private val LIKED_PAGE = 50
 
     /** The newest Liked Songs: one page of 50. */
     private suspend fun likedHead(): List<SongsModel> =
-        api.library.likedTracks(0, 50).items.map { songOf(it.track).copy(addedAt = it.addedAt.orEmpty()) }
+        if (spotifyOn()) spotifyLib.likedTracks(0, 50).items.map { songOf(it) }
+        else api.library.likedTracks(0, 50).items.map { songOf(it.track).copy(addedAt = it.addedAt.orEmpty()) }
 
     private suspend fun allLiked(onPage: suspend (List<SongsModel>) -> Unit): List<SongsModel> {
         fun songs(p: app.myspoti.api.Page<app.myspoti.api.SavedTrack>) = p.items.map { songOf(it.track).copy(addedAt = it.addedAt.orEmpty()) }
+        if (spotifyOn()) {
+            val head = spotifyLib.likedTracks(0, LIKED_PAGE)
+            return PagedFetch.inOrder(head.items.map { songOf(it) }, head.total, LIKED_PAGE,
+                fetch = { o -> spotifyLib.likedTracks(o, LIKED_PAGE).items.map { songOf(it) } }, onBatch = onPage)
+        }
         val first = api.library.likedTracks(0, LIKED_PAGE)
         return PagedFetch.inOrder(songs(first), first.total, LIKED_PAGE, fetch = { o -> songs(api.library.likedTracks(o, LIKED_PAGE)) }, onBatch = onPage)
     }
@@ -1031,10 +1056,13 @@ class Api constructor(
         // The first songs are asked for together with the playlist's details, not after them.
         val flowScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.currentCoroutineContext())
         fun startFirstPage() = flowScope.async(Dispatchers.IO) {
-            runCatching { api.playlists.tracks(uri, 0, 100) }
+            runCatching { if (spotifyOn()) spotifyLib.playlistTracks(uri, 0, 100) else api.playlists.tracks(uri, 0, 100) }
         }
         var firstPage = if (fresh == null) startFirstPage() else null
-        val pl = runCatching { api.playlists.playlist(uri) }.getOrElse {
+        val pl = runCatching {
+            if (spotifyOn()) spotifyLib.playlist(uri) ?: throw java.io.IOException("spotify: playlist not found")
+            else api.playlists.playlist(uri)
+        }.getOrElse {
             firstPage?.cancel()
             emit(Response.Error(context.getString(R.string.playlist_not_found))); return@flow
         }
@@ -1090,7 +1118,16 @@ class Api constructor(
             if (offsets.isNotEmpty()) {
                 val gate = kotlinx.coroutines.sync.Semaphore(PLAYLIST_PARALLEL)
                 coroutineScope {
-                    val jobs = offsets.map { o -> async(Dispatchers.IO) { gate.withPermit { runCatching { api.playlists.tracks(uri, o, PLAYLIST_PAGE) }.getOrNull() } } }
+                    val jobs = offsets.map { o ->
+                        async(Dispatchers.IO) {
+                            gate.withPermit {
+                                runCatching {
+                                    if (spotifyOn()) spotifyLib.playlistTracks(uri, o, PLAYLIST_PAGE)
+                                    else api.playlists.tracks(uri, o, PLAYLIST_PAGE)
+                                }.getOrNull()
+                            }
+                        }
+                    }
                     var lastEmit = System.currentTimeMillis()
                     for ((i, job) in jobs.withIndex()) {
                         val page = job.await()
@@ -1156,7 +1193,9 @@ class Api constructor(
         if (HomeCache.libraryRoot == null) HomeCache.libraryRoot = withContext(Dispatchers.IO) { ScreenCache.libraryRoot.read() }
         HomeCache.libraryRoot?.let { emit(Response.Success(it)) } ?: emit(Response.Loading())
         if (!ready()) { if (HomeCache.libraryRoot == null) emit(Response.Error(notSignedIn())); return@flow }
-        runCatching { listOf(likedEntry()) + libraryLevel(null).mapNotNull(::entryOf) }.fold(
+        runCatching {
+            listOf(likedEntry()) + if (spotifyOn()) spotifyEntries() else libraryLevel(null).mapNotNull(::entryOf)
+        }.fold(
             onSuccess = { HomeCache.libraryRoot = it; ScreenCache.libraryRoot.write(it); PagePrefetch.schedule(it); emit(Response.Success(it)) },
             onFailure = { Log.e("Api", "getLibraryRoot failed", it); if (HomeCache.libraryRoot == null) emit(Response.Error(it.message ?: "error")) },
         )

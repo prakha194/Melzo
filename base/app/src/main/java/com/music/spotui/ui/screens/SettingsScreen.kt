@@ -903,21 +903,39 @@ private fun AccountProviderRows() {
             }
         }
     }
-    if (pref.id != app.myspoti.api.account.AccountProviders.YTMUSIC) return
+    val provider = pref.id
+    val isYtm = provider == app.myspoti.api.account.AccountProviders.YTMUSIC
+    val isSpotify = provider == app.myspoti.api.account.AccountProviders.SPOTIFY
+    if (!isYtm && !isSpotify) return
     val ytm = com.music.spotui.di.YtmRuntime
+    val sp = com.music.spotui.di.SpotifyRuntime
     var signingIn by remember { mutableStateOf(false) }
+    val signedIn = if (isSpotify) sp.signedIn else ytm.signedIn
     Column(
-        Modifier.fillMaxWidth().clickable { if (ytm.signedIn) ytm.signOut() else signingIn = true }
-            .padding(horizontal = 20.dp, vertical = 10.dp),
+        Modifier.fillMaxWidth().clickable {
+            if (signedIn) { if (isSpotify) sp.signOutAsync() else ytm.signOut() } else signingIn = true
+        }.padding(horizontal = 20.dp, vertical = 10.dp),
     ) {
-        Text(stringResource(if (ytm.signedIn) R.string.settings_ytm_sign_out else R.string.settings_ytm_account_title), color = AppText, fontSize = 16.sp)
         Text(
-            stringResource(if (ytm.signedIn) R.string.settings_ytm_signed_in else R.string.settings_ytm_signed_out) + "\n" +
-                stringResource(R.string.settings_ytm_sync_note),
+            if (isSpotify) (if (signedIn) "Sign out of Spotify" else "Spotify account")
+            else stringResource(if (signedIn) R.string.settings_ytm_sign_out else R.string.settings_ytm_account_title),
+            color = AppText, fontSize = 16.sp,
+        )
+        Text(
+            if (isSpotify) {
+                if (signedIn) "Signed in. Your liked songs and playlists are read from Spotify.\nSpotify plays no audio: songs still come from your extensions, files and Live Radio."
+                else "Sign in to read your liked songs and playlists from Spotify."
+            } else {
+                stringResource(if (signedIn) R.string.settings_ytm_signed_in else R.string.settings_ytm_signed_out) + "\n" +
+                    stringResource(R.string.settings_ytm_sync_note)
+            },
             color = AppMuted, fontSize = 12.sp,
         )
     }
-    if (signingIn) com.music.spotui.ui.components.YtmSignInDialog(onDismiss = { signingIn = false })
+    if (signingIn) {
+        if (isSpotify) com.music.spotui.ui.components.SpotifySignInDialog(onDismiss = { signingIn = false })
+        else com.music.spotui.ui.components.YtmSignInDialog(onDismiss = { signingIn = false })
+    }
 }
 
 /** Screen rotation: portrait (default), automatic or landscape. */
