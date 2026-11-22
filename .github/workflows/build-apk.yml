@@ -18,7 +18,7 @@ jobs:
           java-version: '21'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           # The 'tools' package was removed from the SDK repository; asking for it
           # makes sdkmanager fail with "Failed to find package 'tools'" (exit 1).
