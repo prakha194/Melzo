@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Активність друзів</string>
+    <string name="friends_now">Зараз</string>
+    <string name="friends_refresh">Оновити</string>
+</resources>

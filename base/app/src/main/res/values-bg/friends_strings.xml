@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Активност на приятели</string>
+    <string name="friends_now">Сега</string>
+    <string name="friends_refresh">Опресняване</string>
+</resources>

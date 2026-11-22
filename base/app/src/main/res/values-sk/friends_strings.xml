@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Aktivita priateľov</string>
+    <string name="friends_now">Teraz</string>
+    <string name="friends_refresh">Obnoviť</string>
+</resources>

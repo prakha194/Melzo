@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Activitat dels amics</string>
+    <string name="friends_now">Ara</string>
+    <string name="friends_refresh">Actualitza</string>
+</resources>

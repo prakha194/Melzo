@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stats_tab_phone">Auf diesem Telefon</string>
+    <string name="stats_range_short">Letzte 4 Wochen</string>
+    <string name="stats_range_medium">Letzte 6 Monate</string>
+    <string name="stats_range_long">Letztes Jahr</string>
+    <string name="stats_artists_ranked">%1$d Künstler in deinem Hörverlauf</string>
+    <string name="stats_weekly_minutes">Minuten pro Woche</string>
+    <string name="stats_this_week">Diese Woche: %1$d Min.</string>
+    <string name="stats_listening_stats">Hörstatistiken</string>
+    <string name="friends_title">Freundesaktivität</string>
+    <string name="friends_now">Jetzt</string>
+    <string name="friends_refresh">Aktualisieren</string>
+    <string name="artist_top_short">Dein Künstler Nr. %1$d der letzten 4 Wochen</string>
+    <string name="artist_top_medium">Dein Künstler Nr. %1$d der letzten 6 Monate</string>
+    <string name="artist_top_long">Dein Künstler Nr. %1$d des letzten Jahres</string>
+</resources>

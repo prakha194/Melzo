@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">दोस्तों की गतिविधि</string>
+    <string name="friends_now">अभी</string>
+    <string name="friends_refresh">रीफ़्रेश करें</string>
+</resources>

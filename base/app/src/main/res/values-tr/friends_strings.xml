@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Arkadaş etkinliği</string>
+    <string name="friends_now">Şimdi</string>
+    <string name="friends_refresh">Yenile</string>
+</resources>

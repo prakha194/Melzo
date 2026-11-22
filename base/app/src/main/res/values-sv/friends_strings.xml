@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Vänaktivitet</string>
+    <string name="friends_now">Nu</string>
+    <string name="friends_refresh">Uppdatera</string>
+</resources>

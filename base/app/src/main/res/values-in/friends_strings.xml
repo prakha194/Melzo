@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Aktivitas teman</string>
+    <string name="friends_now">Sekarang</string>
+    <string name="friends_refresh">Muat ulang</string>
+</resources>

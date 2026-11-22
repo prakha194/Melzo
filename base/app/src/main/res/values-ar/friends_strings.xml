@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">نشاط الأصدقاء</string>
+    <string name="friends_now">الآن</string>
+    <string name="friends_refresh">تحديث</string>
+</resources>

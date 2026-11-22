@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">የጓደኞች እንቅስቃሴ</string>
+    <string name="friends_now">አሁን</string>
+    <string name="friends_refresh">አድስ</string>
+</resources>

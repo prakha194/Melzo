@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">நண்பர்களின் செயல்பாடு</string>
+    <string name="friends_now">இப்போது</string>
+    <string name="friends_refresh">புதுப்பி</string>
+</resources>

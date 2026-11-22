@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Vriende-aktiwiteit</string>
+    <string name="friends_now">Nou</string>
+    <string name="friends_refresh">Herlaai</string>
+</resources>

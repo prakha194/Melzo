@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Actividade dos amigos</string>
+    <string name="friends_now">Agora</string>
+    <string name="friends_refresh">Actualizar</string>
+</resources>

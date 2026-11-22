@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Hoạt động của bạn bè</string>
+    <string name="friends_now">Bây giờ</string>
+    <string name="friends_refresh">Làm mới</string>
+</resources>

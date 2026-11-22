@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stats_tab_phone">En este teléfono</string>
+    <string name="stats_range_short">Últimas 4 semanas</string>
+    <string name="stats_range_medium">Últimos 6 meses</string>
+    <string name="stats_range_long">Último año</string>
+    <string name="stats_artists_ranked">%1$d artistas en tu historial de escucha</string>
+    <string name="stats_weekly_minutes">Minutos por semana</string>
+    <string name="stats_this_week">Esta semana: %1$d min</string>
+    <string name="stats_listening_stats">Estadísticas de escucha</string>
+    <string name="friends_title">Actividad de amigos</string>
+    <string name="friends_now">Ahora</string>
+    <string name="friends_refresh">Actualizar</string>
+    <string name="artist_top_short">Tu artista n.º %1$d de las últimas 4 semanas</string>
+    <string name="artist_top_medium">Tu artista n.º %1$d de los últimos 6 meses</string>
+    <string name="artist_top_long">Tu artista n.º %1$d del último año</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">Activitatea prietenilor</string>
+    <string name="friends_now">Acum</string>
+    <string name="friends_refresh">Reîmprospătează</string>
+</resources>

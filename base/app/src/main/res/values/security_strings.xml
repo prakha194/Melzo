@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_attest">Prove this is Orpheon</string>
+    <string name="action_ui_style">Change the look</string>
+</resources>

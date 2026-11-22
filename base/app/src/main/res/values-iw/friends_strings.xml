@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="friends_title">פעילות חברים</string>
+    <string name="friends_now">עכשיו</string>
+    <string name="friends_refresh">רענון</string>
+</resources>
