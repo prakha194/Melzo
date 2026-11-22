@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 
 private val repo get() = BuildConfig.UPDATE_REPO.ifBlank { "Kirisos-Guna/myspoti" }
 val REPO_URL get() = "https://github.com/prakha194/Spotify"
+const val COFFEE_URL = "https://prakha194.github.io/buy-me-a-coffee/"
 
 private fun openUrl(context: Context, url: String) {
     runCatching {
@@ -84,6 +85,14 @@ fun AboutSheet(onDismiss: () -> Unit) {
                 color = AppMuted, fontSize = 12.sp,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 8.dp))
             AboutRow("Source code", "github.com/prakha194/Spotify") { openUrl(context, REPO_URL) }
+            Text("Your contribution helps keep running Spoon", color = AppMuted, fontSize = 12.sp,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp))
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp)
+                    .fillMaxWidth().height(48.dp).clip(RoundedCornerShape(50))
+                    .background(Color(0xFFFFDD00)).pressable(0.96f) { openUrl(context, COFFEE_URL) },
+            ) { Text("Buy developer a coffee", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
         }
     }
 }
