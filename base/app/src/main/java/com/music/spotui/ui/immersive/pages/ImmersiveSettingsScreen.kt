@@ -1077,13 +1077,7 @@ private fun AppPage(navController: NavController, back: () -> Unit) {
             }
             row {
                 ImmersiveGroupRow(
-                    "Support", detail = "github.com/prakha194",
-                    onClick = { com.music.spotui.ui.components.openExternal(ctx, com.music.spotui.ui.components.SUPPORT_URL) },
-                )
-            }
-            row {
-                ImmersiveGroupRow(
-                    "Source code", detail = "github.com/kota-zo/Orpheon",
+                    "Source code", detail = "github.com/prakha194/Spotify",
                     onClick = { com.music.spotui.ui.components.openExternal(ctx, com.music.spotui.ui.components.SOURCE_URL) },
                 )
             }

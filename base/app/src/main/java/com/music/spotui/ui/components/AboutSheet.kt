@@ -40,7 +40,7 @@ import com.music.spotui.ui.theme.AppAccent
 
 /** The two links this build's About offers: the builder's support page and the owner's source code. */
 const val SUPPORT_URL = "https://github.com/prakha194/"
-const val SOURCE_URL = "https://github.com/kota-zo/Orpheon"
+const val SOURCE_URL = "https://github.com/prakha194/Spotify"
 
 /** Opens [url] outside the app; a browser missing is not worth a crash. */
 fun openExternal(context: Context, url: String) {
@@ -69,11 +69,6 @@ fun AboutCredit(modifier: Modifier = Modifier, muted: Color = AppMuted) {
 fun AboutButtons(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     Column(modifier.fillMaxWidth()) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp).fillMaxWidth().height(48.dp)
-                .clip(RoundedCornerShape(50)).background(AppAccent).pressable(0.96f) { openExternal(context, SUPPORT_URL) },
-        ) { Text("Support", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp).fillMaxWidth().height(48.dp)
