@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Orpheon's own texts (English default, French, Italian). -->
+<!-- Spoon's own texts (English default, French, Italian). -->
 <resources>
     <string name="welcome_lead">Sua música,</string>
     <string name="welcome_rotate_lyrics">com letras palavra por palavra.</string>
@@ -45,7 +45,7 @@
     <string name="library_empty">Sua Biblioteca está vazia</string>
     <string name="background_playback_title">Reprodução em segundo plano</string>
     <string name="background_playback_off">Desative a otimização de bateria para que o Android não pause o app em segundo plano.</string>
-    <string name="background_playback_samsung">A Samsung ainda pode colocar o Orpheon em repouso com a tela apagada. Adicione-o aos Apps que nunca hibernam: Configurações &gt; Bateria &gt; Limites de uso em segundo plano.</string>
+    <string name="background_playback_samsung">A Samsung ainda pode colocar o Spoon em repouso com a tela apagada. Adicione-o aos Apps que nunca hibernam: Configurações &gt; Bateria &gt; Limites de uso em segundo plano.</string>
     <string name="background_playback_open">Abrir configurações do app</string>
     <plurals name="local_files_count">
         <item quantity="one">%d faixa</item>
@@ -54,7 +54,7 @@
     <string name="local_files_none_subtitle">Não encontramos nenhum arquivo de áudio reproduzível neste dispositivo. Quando houver, eles aparecerão aqui.</string>
     <string name="downloads_empty_title">Baixe para ouvir offline</string>
     <string name="downloads_empty_subtitle">Toque em Baixar no menu de uma música, ou no botão de download de um álbum ou playlist.</string>
-    <string name="downloads_source">Da sua extensão de fonte de downloads, verificado com a gravação original. Mantido apenas dentro do Orpheon.</string>
+    <string name="downloads_source">Da sua extensão de fonte de downloads, verificado com a gravação original. Mantido apenas dentro do Spoon.</string>
     <string name="downloads_size">%1$s neste celular</string>
     <string name="downloads_lists">Álbuns e playlists</string>
     <string name="downloads_singles">Músicas</string>
@@ -70,7 +70,7 @@
     <string name="playlist_not_found">Playlist não encontrada</string>
     <string name="browse_new_releases">Novos lançamentos</string>
     <string name="language_auto">Automático</string>
-    <string name="language_auto_detail">O idioma do seu celular, quando o Orpheon o tiver (inglês, chinês, francês, alemão, grego, italiano, polonês, português, russo, espanhol), inglês nos demais casos</string>
+    <string name="language_auto_detail">O idioma do seu celular, quando o Spoon o tiver (inglês, chinês, francês, alemão, grego, italiano, polonês, português, russo, espanhol), inglês nos demais casos</string>
     <string name="restart_player_title">Reiniciar o player</string>
     <string name="ad_now">Anúncio</string>
     <string name="track_unavailable_region">Indisponível na sua região</string>
@@ -85,21 +85,21 @@
     <string name="local_added_to">Adicionada a %1$s</string>
     <string name="local_playlist_empty">Adicione músicas de Arquivos locais com o botão +.</string>
     <string name="download_kept_by_list">Continua baixada: uma playlist baixada a mantém</string>
-    <string name="support_title">Apoie o Orpheon</string>
+    <string name="support_title">Apoie o Spoon</string>
     <string name="support_scan">Escaneie com o celular</string>
     <string name="support_action">Apoiar no Ko-fi</string>
     <string name="support_decline">Não, obrigado</string>
     <string name="support_row_detail">Uma pequena doação no Ko-fi ou no GitHub Sponsors ajuda a manter o app</string>
     <string name="supporter_perks_title">Vantagens de apoiador</string>
     <string name="supporter_perks_detail">Cor de destaque, ícone do app e um selo, como agradecimento</string>
-    <string name="supporter_perks_locked">Liberado ao apoiar o Orpheon. Vale a sua palavra: nada é verificado.</string>
-    <string name="supporter_i_supported">Eu apoiei o Orpheon</string>
+    <string name="supporter_perks_locked">Liberado ao apoiar o Spoon. Vale a sua palavra: nada é verificado.</string>
+    <string name="supporter_i_supported">Eu apoiei o Spoon</string>
     <string name="supporter_how">Como você o apoiou?</string>
     <string name="supporter_once">Uma doação</string>
     <string name="supporter_monthly">Todo mês</string>
     <string name="supporter_badge">Apoiador</string>
     <string name="supporter_thanks_title">Obrigado pelo seu apoio!</string>
-    <string name="supporter_thanks_body">Se o Orpheon ainda é útil para você, uma nova pequena doação ajuda a mantê-lo vivo.</string>
+    <string name="supporter_thanks_body">Se o Spoon ainda é útil para você, uma nova pequena doação ajuda a mantê-lo vivo.</string>
     <string name="support_again">Apoiar novamente</string>
     <string name="supporter_accent">Cor de destaque</string>
     <string name="supporter_icon">Ícone do app</string>
@@ -120,7 +120,7 @@
     <string name="song_radio_name">Rádio de %1$s</string>
     <string name="local_files_find_hint">Buscar em Arquivos locais</string>
     <string name="data_saver_title">Economia de dados</string>
-    <string name="data_saver_summary">Em dados móveis, o Orpheon não usa dados: só tocam as músicas baixadas e os Arquivos locais</string>
+    <string name="data_saver_summary">Em dados móveis, o Spoon não usa dados: só tocam as músicas baixadas e os Arquivos locais</string>
     <string name="data_saver_blocked">Economia de dados: em dados móveis, só tocam as músicas baixadas e os Arquivos locais</string>
     <string name="new_releases_followed">De artistas que você segue</string>
     <string name="new_releases_latest">Últimos lançamentos</string>
@@ -188,7 +188,7 @@
     <string name="track_sort_artist">Artista</string>
     <string name="track_sort_album">Álbum</string>
     <string name="track_sort_duration">Duração</string>
-    <string name="setup_title">Configurar o Orpheon</string>
+    <string name="setup_title">Configurar o Spoon</string>
     <string name="setup_subtitle">Permita o que quiser; você pode mudar isso depois nas configurações do celular.</string>
     <string name="setup_notifications_title">Notificações</string>
     <string name="setup_notifications_detail">Controles na tela de bloqueio e na barra de notificações</string>
@@ -200,14 +200,14 @@
     <string name="setup_battery_detail">A música continua tocando com a tela apagada</string>
     <string name="setup_enable">Permitir</string>
     <string name="setup_continue">Continuar</string>
-    <string name="setup_intro_title">Como o Orpheon funciona</string>
+    <string name="setup_intro_title">Como o Spoon funciona</string>
     <string name="setup_intro_subtitle">Três coisas para saber antes de começar.</string>
     <string name="setup_intro_more_detail">Letras palavra por palavra, vídeos oficiais, estatísticas de audição e dois visuais à escolha.</string>
     <string name="setup_ext_title">Extensões</string>
     <string name="setup_ext_audio_title">Outras fontes de áudio</string>
     <string name="setup_ext_audio_detail">Uma extensão pode tocar suas músicas a partir de outra fonte, na qualidade que ela oferece.</string>
     <string name="setup_ext_download_title">Downloads</string>
-    <string name="setup_ext_download_detail">Os downloads e outras fontes de áudio vêm de extensões. Instale uma extensão da comunidade na próxima página para baixar músicas e ouvir offline. As músicas ficam criptografadas no Orpheon.</string>
+    <string name="setup_ext_download_detail">Os downloads e outras fontes de áudio vêm de extensões. Instale uma extensão da comunidade na próxima página para baixar músicas e ouvir offline. As músicas ficam criptografadas no Spoon.</string>
     <string name="setup_ext_home">Ir para o Início</string>
     <string name="downloads_need_source_title">Os downloads precisam de uma extensão</string>
     <string name="downloads_need_source_detail">As músicas são baixadas por extensões. Nenhuma está instalada ainda: abra a loja de Extensões e instale uma extensão da comunidade para baixar.</string>
@@ -215,7 +215,7 @@
     <string name="setup_ext_more_detail">Seções do Início, páginas e ferramentas adicionadas pelos autores.</string>
     <string name="setup_ext_safe_title">Você continua no controle</string>
     <string name="setup_ext_safe_detail">Antes de instalar uma, ela mostra o que pode fazer. Ela pergunta de novo para qualquer coisa a mais, e você pode removê-la a qualquer momento.</string>
-    <string name="setup_ext_where">Encontre-as em Configurações, Extensões, no GitHub, GitLab e Codeberg. Elas são escritas por seus autores, não pelo Orpheon.</string>
+    <string name="setup_ext_where">Encontre-as em Configurações, Extensões, no GitHub, GitLab e Codeberg. Elas são escritas por seus autores, não pelo Spoon.</string>
     <string name="setup_ext_browse">Ver as extensões</string>
     <string name="local_folders_button">Pastas</string>
     <string name="local_folders_title">Pastas</string>
@@ -281,7 +281,7 @@
     <string name="quality_now_unknown">Ainda desconhecida: inicie uma música</string>
     <string name="update_downloading">Baixando… %1$d%%</string>
     <string name="update_installing">Instalando…</string>
-    <string name="update_needs_permission">Para atualizar, permita que o Orpheon instale apps e volte aqui.</string>
+    <string name="update_needs_permission">Para atualizar, permita que o Spoon instale apps e volte aqui.</string>
     <string name="update_allow">Permitir</string>
     <string name="update_failed">A atualização falhou: %1$s</string>
     <string name="update_retry">Tentar novamente</string>
@@ -363,7 +363,7 @@
     <string name="share_as_image">Compartilhar como imagem</string>
     <string name="settings_autoplay_title">Reprodução automática</string>
     <string name="settings_autoplay_detail">Quando sua música acabar, continuar tocando músicas semelhantes</string>
-    <string name="myspoti_shuffle_title">Modo aleatório do Orpheon</string>
+    <string name="myspoti_shuffle_title">Modo aleatório do Spoon</string>
     <string name="settings_crossfade_title">Crossfade</string>
     <string name="settings_crossfade_off">Desativado</string>
     <string name="settings_crossfade_seconds">%1$ds</string>
@@ -438,7 +438,7 @@
     <string name="playlist_invite_join">Entrar</string>
     <string name="playlist_invite_joined">Agora você é colaborador</string>
     <string name="settings_keep_playing_title">Continuar tocando após fechar o app</string>
-    <string name="settings_keep_playing_detail">Desativado: fechar o Orpheon pelos apps recentes interrompe a música</string>
+    <string name="settings_keep_playing_detail">Desativado: fechar o Spoon pelos apps recentes interrompe a música</string>
     <string name="recommended_songs_from_name">Com base no nome desta playlist</string>
     <string name="recommended_songs_from_songs">Com base no que há nesta playlist</string>
     <string name="recommended_songs_refresh">Atualizar</string>
@@ -662,7 +662,7 @@
     <string name="settings_dynamic_color_title">Cores dinâmicas (Material You)</string>
     <string name="settings_dynamic_color_detail">A cor de destaque do visual Classic vem do seu papel de parede. O visual Immersive mantém as cores da capa tocando.</string>
     <string name="settings_system_font_title">Fonte do sistema</string>
-    <string name="settings_system_font_detail">Mostra o texto do app com a fonte do seu celular em vez da do Orpheon</string>
+    <string name="settings_system_font_detail">Mostra o texto do app com a fonte do seu celular em vez da do Spoon</string>
     <string name="settings_download_lyrics_title">Baixar letras com as músicas</string>
     <string name="settings_download_lyrics_detail">Uma música baixada guarda a letra, exibida sem conexão</string>
     <string name="settings_section_storage">Armazenamento</string>
@@ -688,7 +688,7 @@
     <string name="notify_releases_channel">Lançamentos</string>
     <string name="notify_release_title">Novo de %1$s</string>
     <string name="settings_release_notify">Notificações de lançamentos</string>
-    <string name="settings_release_notify_detail">Uma notificação quando um artista que você segue lança algo, verificado a cada poucas horas enquanto o Orpheon está aberto</string>
+    <string name="settings_release_notify_detail">Uma notificação quando um artista que você segue lança algo, verificado a cada poucas horas enquanto o Spoon está aberto</string>
     <string name="quality_streaming_very_high">Muito alta</string>
     <string name="login_help_button">Ajuda</string>
     <string name="login_help_title">Problemas para entrar?</string>

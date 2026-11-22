@@ -27,3 +27,18 @@ Changes, all in the app module:
 6. **New launcher icon** (`drawable-*dpi/ic_launcher_foreground.png`, `drawable/ic_launcher_background.xml`).
 
 Everything else is upstream Orpheon 1.0.0, unchanged.
+
+## Later changes (Spoon build)
+
+7. **Renamed to Spoon** across the app: the launcher label, the About sheet, the welcome text and
+   every string that named the app. `applicationId` stays `app.orpheon`, so the app installs over
+   the previous build.
+8. **About** now credits "Spoon is made by Prashant", with the upstream credit to kota-zo and the
+   GNU GPL v3 notice kept on the next line.
+9. **New-release notice** (`ui/components/ReleaseNotice.kt`): a few seconds after launch the app
+   asks GitHub for the latest release of `prakha194/Spotify` and, if it is newer than the installed
+   version, shows one card with **Update now** (opens the release page) and **Not now** (that
+   version is not offered again).
+10. **Stable signing**: `base/keystore/` now holds a keystore that CI reuses, so each new build
+    installs over the previous one instead of asking for an uninstall.
+11. The empty Home now says what to do instead of only "Nothing to show yet".

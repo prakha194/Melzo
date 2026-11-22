@@ -50,16 +50,16 @@ fun openExternal(context: Context, url: String) {
 }
 
 /**
- * Who made Orpheon, and what this build is: the credit the GPL asks for, and the honest note that
+ * Who made Spoon, and what this build is: the credit the GPL asks for, and the honest note that
  * this APK is a modified build and not the project's official release.
  */
 @Composable
 fun AboutCredit(modifier: Modifier = Modifier, muted: Color = AppMuted) {
     Column(modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
-        Text("Orpheon is made by kota-zo.", color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-        Text("Free and open source, under the GNU GPL v3.",
+        Text("Spoon is made by Prashant.", color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+        Text("Free and open source, under the GNU GPL v3. Based on Orpheon by kota-zo.",
             color = muted, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
-        Text("This APK is a modified build of Orpheon, not the official release.",
+        Text("This APK is a modified build, not an official release.",
             color = muted, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
     }
 }
@@ -101,7 +101,7 @@ fun AboutSheet(onDismiss: () -> Unit) {
                     modifier = Modifier.size(56.dp).clip(RoundedCornerShape(14.dp)).background(tone(0xFF121212)),
                 )
                 Column(Modifier.padding(start = 14.dp)) {
-                    Text("Orpheon", color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("Spoon", color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text("${stringResource(R.string.lbl_version)} ${BuildConfig.VERSION_NAME}",
                         color = AppMuted, fontSize = 13.sp)
                 }

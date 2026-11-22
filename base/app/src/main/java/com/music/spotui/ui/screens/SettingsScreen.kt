@@ -695,10 +695,10 @@ private fun TransitionsRow() {
             checked = automix.segue, onChecked = automix::changeSegue)
         if (!automix.segueActive) OptionRow(stringResource(R.string.settings_automix_session), stringResource(R.string.settings_automix_session_detail),
             checked = automix.sessionDj, onChecked = automix::changeSessionDj)
-        // The planner: Orpheon by default, the earlier one as a way back.
+        // The planner: Spoon by default, the earlier one as a way back.
         OptionRow(stringResource(R.string.settings_automix_orpheon), stringResource(R.string.settings_automix_orpheon_detail),
-            checked = automix.orpheon, onChecked = automix::changeOrpheon)
-        // Each Orpheon idea on its own switch, only in the Mix Lab build, so their text is not translated.
+            checked = automix.orpheon, onChecked = automix::changeSpoon)
+        // Each Spoon idea on its own switch, only in the Mix Lab build, so their text is not translated.
         if (app.myspoti.engine.BuildConfig.APPLICATION_ID == "app.myspoti.automixlab") {
             for (idea in app.myspoti.automix.segue.MixIdea.values()) OptionRow(idea.title, idea.detail,
                 checked = automix.hasIdea(idea), enabled = automix.orpheon, onChecked = { automix.changeIdea(idea, it) })

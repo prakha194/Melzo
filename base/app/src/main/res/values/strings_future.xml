@@ -2,7 +2,7 @@
 <resources>
     <string name="settings_native_audio_title">Native player (experimental)</string>
     <string name="settings_native_audio_detail">The account\'s songs are played by the app\'s own player instead of the hidden web page. Being tried: sorted lists play in their own order, and some controls may lag.</string>
-    <string name="brand_name" translatable="false">Orpheon</string>
+    <string name="brand_name" translatable="false">Spoon</string>
     <string name="welcome_rotate_sources">from the sources you choose.</string>
     <string name="welcome_rotate_mix">mixed like a DJ set.</string>
     <string name="album_label">Label: %1$s</string>

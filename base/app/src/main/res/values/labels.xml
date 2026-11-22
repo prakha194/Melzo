@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Labels written for Orpheon. -->
+<!-- Labels written for Spoon. -->
 <resources>
     <string name="lbl_like_add">Add to liked songs</string>
     <string name="lbl_liked_songs">Liked songs</string>

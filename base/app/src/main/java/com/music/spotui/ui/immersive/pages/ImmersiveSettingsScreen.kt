@@ -588,7 +588,7 @@ private fun CrossfadePage(back: () -> Unit) {
             }
             row {
                 ImmersiveSwitchRow(stringResource(R.string.settings_automix_orpheon), checked = automix.orpheon,
-                    onChecked = automix::changeOrpheon, detail = stringResource(R.string.settings_automix_orpheon_detail))
+                    onChecked = automix::changeSpoon, detail = stringResource(R.string.settings_automix_orpheon_detail))
             }
             // The session DJ steers the older planner only: the data-plan transitions decide on their own.
             if (!automix.segueActive) row {
@@ -1072,7 +1072,7 @@ private fun AppPage(navController: NavController, back: () -> Unit) {
             row {
                 ImmersiveGroupRow(
                     stringResource(R.string.settings_about_version, app.myspoti.engine.BuildConfig.VERSION_NAME),
-                    detail = "Orpheon is made by kota-zo \u00b7 GNU GPL v3 \u00b7 this APK is a modified build",
+                    detail = "Spoon is made by Prashant \u00b7 GNU GPL v3 \u00b7 based on Orpheon by kota-zo",
                 )
             }
             row {

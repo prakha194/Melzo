@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Orpheon's own texts (English default, French, Italian). -->
+<!-- Spoon's own texts (English default, French, Italian). -->
 <resources>
     <string name="welcome_lead">你的音乐，</string>
     <string name="welcome_rotate_lyrics">逐字歌词。</string>
@@ -53,7 +53,7 @@
     <string name="library_empty">你的音乐库是空的</string>
     <string name="background_playback_title">后台播放</string>
     <string name="background_playback_off">请关闭电池优化，以免 Android 在后台暂停应用。</string>
-    <string name="background_playback_samsung">息屏后，三星系统仍可能让 Orpheon 进入休眠。请将其加入“永不休眠的应用”：设置 &gt; 电池 &gt; 后台使用限制。</string>
+    <string name="background_playback_samsung">息屏后，三星系统仍可能让 Spoon 进入休眠。请将其加入“永不休眠的应用”：设置 &gt; 电池 &gt; 后台使用限制。</string>
     <string name="background_playback_open">打开应用设置</string>
     <plurals name="local_files_count">
         <item quantity="other">%d 首曲目</item>
@@ -61,7 +61,7 @@
     <string name="local_files_none_subtitle">在此设备上没有找到可播放的音频文件。有文件后会显示在这里。</string>
     <string name="downloads_empty_title">下载后可离线收听</string>
     <string name="downloads_empty_subtitle">点按歌曲菜单中的“下载”，或专辑、播放列表的下载按钮。</string>
-    <string name="downloads_source">无损 FLAC，已与原始录音核对。仅保存在 Orpheon 内。</string>
+    <string name="downloads_source">无损 FLAC，已与原始录音核对。仅保存在 Spoon 内。</string>
     <string name="downloads_size">此手机上占用 %1$s</string>
     <string name="download_unavailable">未找到匹配的录音</string>
     <string name="download_retry">重试</string>
@@ -72,7 +72,7 @@
     <string name="playlist_not_found">未找到播放列表</string>
     <string name="browse_new_releases">新发行</string>
     <string name="language_auto">自动</string>
-    <string name="language_auto_detail">若 Orpheon 支持手机的语言则使用该语言（中文、德语、俄语、法语、希腊语、葡萄牙语、波兰语、西班牙语、意大利语、英语），否则使用英语</string>
+    <string name="language_auto_detail">若 Spoon 支持手机的语言则使用该语言（中文、德语、俄语、法语、希腊语、葡萄牙语、波兰语、西班牙语、意大利语、英语），否则使用英语</string>
     <string name="restart_player_title">重启播放器</string>
     <string name="ad_now">广告</string>
     <string name="track_unavailable_region">在你所在的地区不可用</string>
@@ -88,21 +88,21 @@
     <string name="local_playlist_empty">点按“本地文件”中的 + 按钮来添加歌曲。</string>
     <string name="download_kept_by_list">仍保留下载：已下载的播放列表包含它</string>
     <string name="download_kept_by_named">仍保留下载：已下载的“%1$s”包含它</string>
-    <string name="support_title">支持 Orpheon</string>
+    <string name="support_title">支持 Spoon</string>
     <string name="support_scan">用手机扫描</string>
     <string name="support_action">在 Ko-fi 上支持</string>
     <string name="support_decline">不用了</string>
     <string name="support_row_detail">在 Ko-fi 或 GitHub Sponsors 上的小额捐助有助于应用持续更新</string>
     <string name="supporter_perks_title">支持者福利</string>
     <string name="supporter_perks_detail">强调色、应用图标和徽章，以表谢意</string>
-    <string name="supporter_perks_locked">支持 Orpheon 后解锁。全凭自觉：不会进行任何验证。</string>
-    <string name="supporter_i_supported">我已支持 Orpheon</string>
+    <string name="supporter_perks_locked">支持 Spoon 后解锁。全凭自觉：不会进行任何验证。</string>
+    <string name="supporter_i_supported">我已支持 Spoon</string>
     <string name="supporter_how">你是如何支持的？</string>
     <string name="supporter_once">一次捐助</string>
     <string name="supporter_monthly">每月</string>
     <string name="supporter_badge">支持者</string>
     <string name="supporter_thanks_title">感谢你的支持！</string>
-    <string name="supporter_thanks_body">如果 Orpheon 仍然对你有帮助，再次小额捐助能帮助它继续下去。</string>
+    <string name="supporter_thanks_body">如果 Spoon 仍然对你有帮助，再次小额捐助能帮助它继续下去。</string>
     <string name="support_again">再次支持</string>
     <string name="supporter_accent">强调色</string>
     <string name="supporter_icon">应用图标</string>
@@ -123,7 +123,7 @@
     <string name="song_radio_name">%1$s 电台</string>
     <string name="local_files_find_hint">在本地文件中查找</string>
     <string name="data_saver_title">流量节省</string>
-    <string name="data_saver_summary">使用移动数据时，Orpheon 不使用流量：只播放已下载的歌曲和本地文件</string>
+    <string name="data_saver_summary">使用移动数据时，Spoon 不使用流量：只播放已下载的歌曲和本地文件</string>
     <string name="data_saver_blocked">流量节省：使用移动数据时，只播放已下载的歌曲和本地文件</string>
     <string name="new_releases_followed">来自你关注的艺人</string>
     <string name="new_releases_latest">最新发行</string>
@@ -191,7 +191,7 @@
     <string name="track_sort_artist">艺人</string>
     <string name="track_sort_album">专辑</string>
     <string name="track_sort_duration">时长</string>
-    <string name="setup_title">设置 Orpheon</string>
+    <string name="setup_title">设置 Spoon</string>
     <string name="setup_subtitle">按需授权；之后可在手机设置中更改。</string>
     <string name="setup_notifications_title">通知</string>
     <string name="setup_notifications_detail">在锁屏和通知栏中控制播放</string>
@@ -203,7 +203,7 @@
     <string name="setup_battery_detail">息屏后音乐继续播放</string>
     <string name="setup_enable">允许</string>
     <string name="setup_continue">继续</string>
-    <string name="setup_intro_title">Orpheon 如何运作</string>
+    <string name="setup_intro_title">Spoon 如何运作</string>
     <string name="setup_intro_subtitle">开始前需要知道的三件事。</string>
     <string name="setup_intro_more_detail">逐字歌词、官方视频、收听统计，还有两种外观可选。</string>
     <string name="setup_ext_title">扩展</string>
@@ -214,7 +214,7 @@
     <string name="setup_ext_more_detail">由作者添加的首页板块、页面和工具。</string>
     <string name="setup_ext_safe_title">一切由你掌控</string>
     <string name="setup_ext_safe_detail">安装前，它会显示可以做什么。需要更多权限时会再次询问，你也可以随时移除。</string>
-    <string name="setup_ext_where">在 设置 › 扩展 中查找，来源包括 GitHub、GitLab 和 Codeberg。扩展由其作者编写，而非 Orpheon。</string>
+    <string name="setup_ext_where">在 设置 › 扩展 中查找，来源包括 GitHub、GitLab 和 Codeberg。扩展由其作者编写，而非 Spoon。</string>
     <string name="setup_ext_browse">查看扩展</string>
     <string name="local_folders_button">文件夹</string>
     <string name="local_folders_title">文件夹</string>
@@ -259,7 +259,7 @@
     <string name="quality_now_unknown">暂时未知：请先播放一首歌</string>
     <string name="update_downloading">正在下载… %1$d%%</string>
     <string name="update_installing">正在安装…</string>
-    <string name="update_needs_permission">要更新，请允许 Orpheon 安装应用，然后回到这里。</string>
+    <string name="update_needs_permission">要更新，请允许 Spoon 安装应用，然后回到这里。</string>
     <string name="update_allow">允许</string>
     <string name="update_failed">更新失败：%1$s</string>
     <string name="update_retry">重试</string>
@@ -333,7 +333,7 @@
     <string name="share_as_image">以图片分享</string>
     <string name="settings_autoplay_title">自动播放</string>
     <string name="settings_autoplay_detail">音乐播放完后，继续播放类似的歌曲</string>
-    <string name="myspoti_shuffle_title">Orpheon 随机播放</string>
+    <string name="myspoti_shuffle_title">Spoon 随机播放</string>
     <string name="settings_crossfade_title">淡入淡出（曲目淡入淡出，不重叠）</string>
     <string name="settings_crossfade_off">关</string>
     <string name="settings_crossfade_seconds">%1$d 秒</string>
@@ -401,7 +401,7 @@
     <string name="playlist_invite_join">加入</string>
     <string name="playlist_invite_joined">你现在是协作者</string>
     <string name="settings_keep_playing_title">关闭应用后继续播放</string>
-    <string name="settings_keep_playing_detail">关闭后，从最近任务中关闭 Orpheon 会停止音乐</string>
+    <string name="settings_keep_playing_detail">关闭后，从最近任务中关闭 Spoon 会停止音乐</string>
     <string name="recommended_songs_from_name">根据此播放列表的名称</string>
     <string name="recommended_songs_from_songs">根据此播放列表中的内容</string>
     <string name="recommended_songs_refresh">刷新</string>
@@ -567,7 +567,7 @@
         <item quantity="other">接下来将播放 %d 首歌曲</item>
     </plurals>
     <string name="queue_list_none">这些歌曲都无法加入队列</string>
-    <string name="setup_ext_download_detail">下载和其他音频来源都来自扩展。在下一页安装一个社区扩展即可下载歌曲并离线收听。歌曲在 Orpheon 中保持加密。</string>
+    <string name="setup_ext_download_detail">下载和其他音频来源都来自扩展。在下一页安装一个社区扩展即可下载歌曲并离线收听。歌曲在 Spoon 中保持加密。</string>
     <string name="setup_ext_home">跳到首页</string>
     <string name="show_filter_all">默认顺序</string>
     <string name="show_filter_all_played">所有单集都已收听。</string>
@@ -676,7 +676,7 @@
     <string name="settings_dynamic_color_title">动态取色 (Material You)</string>
     <string name="settings_dynamic_color_detail">经典外观的强调色取自你的壁纸。沉浸式外观保留正在播放的封面颜色。</string>
     <string name="settings_system_font_title">系统字体</string>
-    <string name="settings_system_font_detail">用手机的字体显示应用文字，而不是 Orpheon 自带的字体</string>
+    <string name="settings_system_font_detail">用手机的字体显示应用文字，而不是 Spoon 自带的字体</string>
     <string name="settings_download_lyrics_title">下载歌曲时一并下载歌词</string>
     <string name="settings_download_lyrics_detail">已下载的歌曲会保留歌词，无网络时也能显示</string>
     <string name="settings_section_storage">存储空间</string>
@@ -702,7 +702,7 @@
     <string name="notify_releases_channel">新发行</string>
     <string name="notify_release_title">%1$s 的新作品</string>
     <string name="settings_release_notify">新发行通知</string>
-    <string name="settings_release_notify_detail">你关注的艺人发布新作品时发送通知，Orpheon 运行时每隔几小时检查一次</string>
+    <string name="settings_release_notify_detail">你关注的艺人发布新作品时发送通知，Spoon 运行时每隔几小时检查一次</string>
     <string name="quality_streaming_very_high">极高</string>
     <string name="login_help_button">帮助</string>
     <string name="login_help_title">登录遇到问题？</string>

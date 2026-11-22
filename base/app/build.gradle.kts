@@ -15,7 +15,7 @@ val keystoreProperties = Properties().apply {
 
 // -PautomixLab: a test app with its own data, installed alongside every regular/dev build.
 val automixLab = findProperty("automixLab") != null
-// -Pclean: a debug build as its own app ("Orpheon Clean", id suffix .clean), next to every other one.
+// -Pclean: a debug build as its own app ("Spoon Clean", id suffix .clean), next to every other one.
 val cleanApp = findProperty("clean") != null
 
 
@@ -41,7 +41,7 @@ android {
     compileSdk = 37
 
     // Two channels that install side by side: betas ("2.0.0-beta.3") stay "app.orpheon.beta",
-    // signed with the first key, as "Orpheon Beta"; releases are "app.orpheon",
+    // signed with the first key, as "Spoon Beta"; releases are "app.orpheon",
     // signed with their own key, as "Orpheon". (Provisional ids: the rename from Myspoti.)
     // Local builds (no version given) are on the beta side, like the phone test builds.
     val version = (findProperty("appVersionName") as String?) ?: "1.0.0"
@@ -49,7 +49,7 @@ android {
     val beta = findProperty("appVersionName") == null || version.contains("-beta")
     defaultConfig {
         applicationId = if (automixLab) "app.myspoti.automixlab" else if (beta) "app.orpheon.beta" else "app.orpheon"
-        manifestPlaceholders["appLabel"] = if (automixLab) "Myspoti Mix Lab" else if (beta) "Orpheon Beta" else "Orpheon"
+        manifestPlaceholders["appLabel"] = if (automixLab) "Myspoti Mix Lab" else if (beta) "Spoon Beta" else "Spoon"
         // The adb command line (com.music.spotui.cli): betas and debug builds only.
         manifestPlaceholders["cliEnabled"] = beta.toString()
         minSdk = 29
@@ -93,6 +93,8 @@ android {
                 storePassword = keystoreProperties.getProperty("storePassword")
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
+                // PKCS12 (.p12) and JKS both work: the type comes from keystore.properties.
+                storeType = keystoreProperties.getProperty("storeType") ?: "JKS"
             }
         }
     }
@@ -102,7 +104,7 @@ android {
             // Installs next to the release apps (own data, own sign-in).
             if (cleanApp) applicationIdSuffix = ".clean"
             else if (!automixLab) applicationIdSuffix = ".dev"
-            manifestPlaceholders["appLabel"] = if (cleanApp) "Orpheon Clean" else if (automixLab) "Myspoti Mix Lab" else "Orpheon dev"
+            manifestPlaceholders["appLabel"] = if (cleanApp) "Spoon Clean" else if (automixLab) "Myspoti Mix Lab" else "Spoon dev"
             manifestPlaceholders["cliEnabled"] = "true"
             buildConfigField("String", "UPDATE_REPO", "\"\"")
         }
@@ -114,7 +116,7 @@ android {
             // beta on the test phone without replacing the signed beta installed there.
             if (findProperty("overDev") != null && !automixLab) {
                 applicationIdSuffix = ".dev"
-                manifestPlaceholders["appLabel"] = "Orpheon dev"
+                manifestPlaceholders["appLabel"] = "Spoon dev"
                 buildConfigField("String", "UPDATE_REPO", "\"\"")
             }
             // The Mix Lab stays drivable from the CLI in its optimised build, as in its debug one.

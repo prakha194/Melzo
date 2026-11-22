@@ -24,15 +24,19 @@ jobs:
           # makes sdkmanager fail with "Failed to find package 'tools'" (exit 1).
           packages: 'platform-tools'
 
-      - name: Generate a signing key for this build
+      - name: Signing key (only when the repo has none)
         working-directory: base
         run: |
-          mkdir -p keystore
-          keytool -genkeypair -keystore keystore/release.jks -alias orpheon \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass orpheon2026 -keypass orpheon2026 \
-            -dname "CN=Orpheon Modified Build, O=Prakha, C=IN"
-          printf 'storeFile=release.jks\nstorePassword=orpheon2026\nkeyAlias=orpheon\nkeyPassword=orpheon2026\n' > keystore/keystore.properties
+          if [ -f keystore/keystore.properties ]; then
+            echo "Using the keystore committed in the repo: each build installs over the last."
+          else
+            mkdir -p keystore
+            keytool -genkeypair -keystore keystore/release.jks -alias spoon \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass spoon2026 -keypass spoon2026 \
+              -dname "CN=Spoon Modified Build, O=Prashant, C=IN"
+            printf 'storeFile=release.jks\nstorePassword=spoon2026\nkeyAlias=spoon\nkeyPassword=spoon2026\n' > keystore/keystore.properties
+          fi
 
       - name: Build the release APK
         working-directory: base
@@ -43,14 +47,14 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew :app:assembleRelease \
-            -PappVersionName=1.0.1 \
-            -PappVersionCode=201 \
+            -PappVersionName=1.0.2 \
+            -PappVersionCode=202 \
             -Pabis=arm64-v8a,armeabi-v7a \
             --no-daemon --stacktrace
 
       - name: Upload the APK
         uses: actions/upload-artifact@v4
         with:
-          name: orpheon-apk
+          name: spoon-apk
           path: base/app/build/outputs/apk/release/*.apk
           if-no-files-found: error

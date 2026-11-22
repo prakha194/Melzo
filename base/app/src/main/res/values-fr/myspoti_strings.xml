@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Orpheon's own texts (English default, French). -->
+<!-- Spoon's own texts (English default, French). -->
 <resources>
     <string name="welcome_lead">Ta musique,</string>
     <string name="welcome_rotate_lyrics">avec les paroles mot par mot.</string>
     <string name="welcome_rotate_offline">hors ligne, grâce aux extensions.</string>
     <string name="welcome_login">Commencer</string>
-    <string name="welcome_privacy">Aucun compte nécessaire : Orpheon joue tes fichiers, la radio en direct et les extensions que tu choisis.</string>
+    <string name="welcome_privacy">Aucun compte nécessaire : Spoon joue tes fichiers, la radio en direct et les extensions que tu choisis.</string>
     <string name="remove_from_liked">Retirer des Titres likés</string>
     <string name="repeat_on">Répéter : activé</string>
     <string name="repeat_one">Répéter le titre</string>
@@ -59,7 +59,7 @@
     <string name="background_playback_title">Lecture en arrière-plan</string>
     <string name="background_playback_on">L\'optimisation de la batterie est désactivée : la musique continue écran éteint.</string>
     <string name="background_playback_off">Désactive l\'optimisation de la batterie pour qu\'Android ne mette pas l\'app en pause en arrière-plan.</string>
-    <string name="background_playback_samsung">Samsung peut encore mettre Orpheon en veille écran éteint. Ajoutez-le aux « Applications jamais en veille » : Réglages &gt; Batterie &gt; Limites d\'utilisation en arrière-plan.</string>
+    <string name="background_playback_samsung">Samsung peut encore mettre Spoon en veille écran éteint. Ajoutez-le aux « Applications jamais en veille » : Réglages &gt; Batterie &gt; Limites d\'utilisation en arrière-plan.</string>
     <string name="background_playback_open">Ouvrir les réglages de l\'app</string>
     <plurals name="local_files_count">
         <item quantity="one">%d titre</item>
@@ -68,7 +68,7 @@
     <string name="local_files_none_subtitle">Aucun fichier audio lisible n\'a été trouvé sur cet appareil. Ils apparaîtront ici dès qu\'il y en aura.</string>
     <string name="downloads_empty_title">Téléchargez pour écouter hors connexion</string>
     <string name="downloads_empty_subtitle">Touchez Télécharger dans le menu d\'un titre, ou le bouton de téléchargement d\'un album ou d\'une playlist.</string>
-    <string name="downloads_source">Depuis votre extension de source de téléchargement, vérifié avec l\'enregistrement original. Gardé dans Orpheon uniquement.</string>
+    <string name="downloads_source">Depuis votre extension de source de téléchargement, vérifié avec l\'enregistrement original. Gardé dans Spoon uniquement.</string>
     <string name="downloads_size">%1$s sur ce téléphone</string>
     <string name="downloads_lists">Albums et playlists</string>
     <string name="downloads_singles">Titres</string>
@@ -86,8 +86,8 @@
     <string name="playlist_not_found">Playlist introuvable</string>
     <string name="browse_new_releases">Nouveautés</string>
     <string name="language_auto">Automatique</string>
-    <string name="language_auto_detail">La langue du téléphone quand Orpheon l\'a (allemand, anglais, chinois, espagnol, français, grec, italien, polonais, portugais, russe), sinon l\'anglais</string>
-    <string name="language_partial_note">Autres langues : certains textes d\'Orpheon restent en anglais.</string>
+    <string name="language_auto_detail">La langue du téléphone quand Spoon l\'a (allemand, anglais, chinois, espagnol, français, grec, italien, polonais, portugais, russe), sinon l\'anglais</string>
+    <string name="language_partial_note">Autres langues : certains textes d\'Spoon restent en anglais.</string>
     <string name="restart_player_title">Redémarrer le lecteur</string>
     <string name="restart_player_detail">Si la musique ne répond plus : relance le lecteur</string>
     <string name="ad_now">Publicité</string>
@@ -106,22 +106,22 @@
     <string name="playlist_change_refused">La modification de cette playlist n\'a pas abouti</string>
     <string name="download_kept_by_list">Reste téléchargé : une playlist téléchargée le contient</string>
     <string name="download_kept_by_named">Reste téléchargé : « %1$s » est téléchargé et le contient</string>
-    <string name="support_title">Soutenir Orpheon</string>
-    <string name="support_body">Orpheon est gratuit et développé sur mon temps libre. Si vous l\'appréciez, un petit don aide à le faire avancer.</string>
+    <string name="support_title">Soutenir Spoon</string>
+    <string name="support_body">Spoon est gratuit et développé sur mon temps libre. Si vous l\'appréciez, un petit don aide à le faire avancer.</string>
     <string name="support_scan">Scanne avec ton téléphone</string>
     <string name="support_action">Soutenir sur Ko-fi</string>
     <string name="support_decline">Non merci</string>
     <string name="support_row_detail">Un petit don sur Ko-fi ou GitHub Sponsors aide l\'app à avancer</string>
     <string name="supporter_perks_title">Avantages Soutien</string>
     <string name="supporter_perks_detail">Couleur d\'accent, icône de l\'app et badge, pour dire merci</string>
-    <string name="supporter_perks_locked">Débloqués en soutenant Orpheon. C\'est sur l\'honneur : rien n\'est vérifié.</string>
-    <string name="supporter_i_supported">J\'ai soutenu Orpheon</string>
+    <string name="supporter_perks_locked">Débloqués en soutenant Spoon. C\'est sur l\'honneur : rien n\'est vérifié.</string>
+    <string name="supporter_i_supported">J\'ai soutenu Spoon</string>
     <string name="supporter_how">Comment avez-vous soutenu ?</string>
     <string name="supporter_once">Un don</string>
     <string name="supporter_monthly">Chaque mois</string>
     <string name="supporter_badge">Soutien</string>
     <string name="supporter_thanks_title">Merci pour votre soutien !</string>
-    <string name="supporter_thanks_body">Si Orpheon vous sert toujours, un nouveau petit don aide à continuer.</string>
+    <string name="supporter_thanks_body">Si Spoon vous sert toujours, un nouveau petit don aide à continuer.</string>
     <string name="support_again">Soutenir à nouveau</string>
     <string name="supporter_accent">Couleur d\'accent</string>
     <string name="supporter_icon">Icône de l\'app</string>
@@ -144,7 +144,7 @@
     <string name="song_radio_name">Radio de %1$s</string>
     <string name="local_files_find_hint">Rechercher dans les fichiers locaux</string>
     <string name="data_saver_title">Économiseur de données</string>
-    <string name="data_saver_summary">En données mobiles, Orpheon n\'utilise aucune donnée : seuls les sons téléchargés et les fichiers locaux sont lus</string>
+    <string name="data_saver_summary">En données mobiles, Spoon n\'utilise aucune donnée : seuls les sons téléchargés et les fichiers locaux sont lus</string>
     <string name="data_saver_blocked">Économiseur de données : en données mobiles, seuls les sons téléchargés et les fichiers locaux sont lus</string>
     <string name="new_releases_followed">Des artistes que vous suivez</string>
     <string name="new_releases_latest">Dernières sorties</string>
@@ -187,7 +187,7 @@
     <string name="recap_top_tracks">Titres les plus écoutés</string>
     <string name="recap_top_artists">Artistes les plus écoutés</string>
     <string name="recap_top_albums">Albums les plus écoutés</string>
-    <string name="recap_private_note">Compte tout ce qui est joué dans Orpheon (extensions, téléchargements, fichiers locaux). Reste sur ce téléphone et n\'est jamais envoyé nulle part.</string>
+    <string name="recap_private_note">Compte tout ce qui est joué dans Spoon (extensions, téléchargements, fichiers locaux). Reste sur ce téléphone et n\'est jamais envoyé nulle part.</string>
     <string name="recap_detail">Vos écoutes, téléchargements et fichiers locaux compris</string>
     <string name="track_credits">Crédits</string>
     <string name="exclude_taste">Exclure de votre profil d\'écoute</string>
@@ -214,7 +214,7 @@
     <string name="track_sort_artist">Artiste</string>
     <string name="track_sort_album">Album</string>
     <string name="track_sort_duration">Durée</string>
-    <string name="setup_title">Configurer Orpheon</string>
+    <string name="setup_title">Configurer Spoon</string>
     <string name="setup_subtitle">Autorisez ce que vous voulez ; vous pourrez changer plus tard dans les réglages du téléphone.</string>
     <string name="setup_notifications_title">Notifications</string>
     <string name="setup_notifications_detail">Contrôles sur l\'écran verrouillé et dans les notifications</string>
@@ -226,16 +226,16 @@
     <string name="setup_battery_detail">La musique continue écran éteint</string>
     <string name="setup_enable">Autoriser</string>
     <string name="setup_continue">Continuer</string>
-    <string name="setup_intro_title">Comment marche Orpheon</string>
+    <string name="setup_intro_title">Comment marche Spoon</string>
     <string name="setup_intro_subtitle">Trois choses à savoir avant de commencer.</string>
     <string name="setup_intro_spotify_title">Ta musique</string>
-    <string name="setup_intro_spotify_detail">Tes fichiers, la radio en direct et les extensions que tu installes. Orpheon n\'héberge aucune musique.</string>
+    <string name="setup_intro_spotify_detail">Tes fichiers, la radio en direct et les extensions que tu installes. Spoon n\'héberge aucune musique.</string>
     <string name="setup_intro_more_title">Un lecteur à ta façon</string>
     <string name="setup_intro_more_detail">Paroles mot à mot, clips officiels, statistiques d\'écoute et deux styles au choix.</string>
     <string name="setup_intro_ext_title">Le son vient de toi</string>
     <string name="setup_intro_ext_detail">Tes propres fichiers, la radio, et des extensions faites par la communauté pour d\'autres sources. On y revient juste après.</string>
     <string name="setup_ext_title">Extensions</string>
-    <string name="setup_ext_subtitle">Orpheon lit tes fichiers et la radio tel quel. Les extensions sont des modules facultatifs, faits par la communauté, qui ajoutent d\'autres sources.</string>
+    <string name="setup_ext_subtitle">Spoon lit tes fichiers et la radio tel quel. Les extensions sont des modules facultatifs, faits par la communauté, qui ajoutent d\'autres sources.</string>
     <string name="setup_ext_audio_title">D\'autres sources audio</string>
     <string name="setup_ext_audio_detail">Une extension peut lire tes titres depuis une autre source, dans la qualité qu\'elle propose.</string>
     <string name="setup_ext_download_title">Téléchargements</string>
@@ -243,7 +243,7 @@
     <string name="setup_ext_more_detail">Des sections d\'accueil, des pages et des outils ajoutés par leurs auteurs.</string>
     <string name="setup_ext_safe_title">Tu gardes la main</string>
     <string name="setup_ext_safe_detail">Avant l\'installation, elle montre ce qu\'elle peut faire. Elle redemande pour tout le reste, et tu peux la supprimer quand tu veux.</string>
-    <string name="setup_ext_where">Tu les trouves dans Paramètres, Extensions, depuis GitHub, GitLab et Codeberg. Elles sont écrites par leurs auteurs, pas par Orpheon.</string>
+    <string name="setup_ext_where">Tu les trouves dans Paramètres, Extensions, depuis GitHub, GitLab et Codeberg. Elles sont écrites par leurs auteurs, pas par Spoon.</string>
     <string name="setup_ext_browse">Voir les extensions</string>
     <string name="local_folders_button">Dossiers</string>
     <string name="local_folders_title">Dossiers</string>
@@ -281,7 +281,7 @@
     <string name="quality_download_hires">FLAC Hi-Res</string>
     <string name="quality_download_hires_detail">24 bits quand il existe, fichiers environ trois fois plus lourds</string>
     <string name="setup_quality_title">Qualité du son</string>
-    <string name="setup_quality_subtitle">Choisissez comment Orpheon enregistre votre musique. Vous pourrez le changer plus tard dans les Réglages.</string>
+    <string name="setup_quality_subtitle">Choisissez comment Spoon enregistre votre musique. Vous pourrez le changer plus tard dans les Réglages.</string>
     <string name="setup_look_title">Choisissez votre style</string>
     <string name="setup_look_subtitle">Regardez l\'aperçu, puis choisissez celui qui vous plaît.</string>
     <string name="look_classic">Classique</string>
@@ -311,7 +311,7 @@
     <string name="quality_now_unknown">Pas encore connue : lancez un titre</string>
     <string name="update_downloading">Téléchargement… %1$d%%</string>
     <string name="update_installing">Installation…</string>
-    <string name="update_needs_permission">Pour mettre à jour, autorisez Orpheon à installer des applications, puis revenez ici.</string>
+    <string name="update_needs_permission">Pour mettre à jour, autorisez Spoon à installer des applications, puis revenez ici.</string>
     <string name="update_allow">Autoriser</string>
     <string name="update_failed">La mise à jour a échoué : %1$s</string>
     <string name="update_retry">Réessayer</string>
@@ -394,9 +394,9 @@
     <string name="share_as_image">Partager en image</string>
     <string name="settings_autoplay_title">Lecture automatique</string>
     <string name="settings_autoplay_detail">Quand votre musique se termine, continuer avec des titres similaires</string>
-    <string name="myspoti_shuffle_title">Lecture aléatoire Orpheon</string>
+    <string name="myspoti_shuffle_title">Lecture aléatoire Spoon</string>
     <string name="myspoti_shuffle_detail">Avec la lecture aléatoire activée, une playlist, un album ou les titres likés jouent chaque titre une fois, dans un ordre aléatoire, avant de recommencer.</string>
-    <string name="myspoti_shuffle_imposed">La lecture aléatoire Orpheon est désactivée pour cette liste.</string>
+    <string name="myspoti_shuffle_imposed">La lecture aléatoire Spoon est désactivée pour cette liste.</string>
     <string name="settings_automix_title">AutoMix</string>
     <string name="settings_automix_detail">Transitions façon DJ entre les morceaux des extensions, des téléchargements et des fichiers locaux : chaque morceau est analysé une fois (temps, mesures, phrases, tonalité) et le suivant entre sur le temps, au même tempo, avec un échange des basses. Les morceaux impossibles à caler ont une coupe sur le temps ou un fondu. Les flux sont analysés sur un réseau non limité, ou en données mobiles si vous l\'autorisez ci-dessous.</string>
     <string name="settings_crossfade_title">Fondu enchaîné</string>
@@ -472,7 +472,7 @@
     <string name="playlist_invite_join">Rejoindre</string>
     <string name="playlist_invite_joined">Vous collaborez maintenant à cette playlist</string>
     <string name="settings_keep_playing_title">Continuer la lecture après fermeture</string>
-    <string name="settings_keep_playing_detail">Désactivé : fermer Orpheon depuis les apps récentes arrête la musique</string>
+    <string name="settings_keep_playing_detail">Désactivé : fermer Spoon depuis les apps récentes arrête la musique</string>
     <string name="recommended_songs_from_name">Selon le nom de cette playlist</string>
     <string name="recommended_songs_from_songs">Selon le contenu de cette playlist</string>
     <string name="recommended_songs_refresh">Actualiser</string>
@@ -612,7 +612,7 @@
         <item quantity="other">%d titres seront lus ensuite</item>
     </plurals>
     <string name="queue_list_none">Aucun de ces titres ne peut être mis en file</string>
-    <string name="setup_ext_download_detail">Les téléchargements et les autres sources audio viennent des extensions. Installez une extension communautaire à la page suivante pour télécharger des titres et écouter hors ligne. Les titres restent chiffrés dans Orpheon.</string>
+    <string name="setup_ext_download_detail">Les téléchargements et les autres sources audio viennent des extensions. Installez une extension communautaire à la page suivante pour télécharger des titres et écouter hors ligne. Les titres restent chiffrés dans Spoon.</string>
     <string name="setup_ext_home">Passer à l\'accueil</string>
     <string name="setup_account_title">Votre compte musical</string>
     <string name="setup_account_subtitle">Votre bibliothèque, vos playlists et vos recommandations en viennent. Un seul à la fois, modifiable dans les Réglages.</string>
@@ -735,7 +735,7 @@
     <string name="settings_dynamic_color_title">Couleurs dynamiques (Material You)</string>
     <string name="settings_dynamic_color_detail">L\'accent du look Classique vient de ton fond d\'écran. Le look Immersif garde les couleurs de la pochette en cours.</string>
     <string name="settings_system_font_title">Police du système</string>
-    <string name="settings_system_font_detail">Affiche le texte de l\'app avec la police de ton téléphone au lieu de celle de Orpheon</string>
+    <string name="settings_system_font_detail">Affiche le texte de l\'app avec la police de ton téléphone au lieu de celle de Spoon</string>
     <string name="settings_download_lyrics_title">Télécharger les paroles avec les titres</string>
     <string name="settings_download_lyrics_detail">Un titre téléchargé garde ses paroles, affichées sans connexion</string>
     <string name="settings_section_storage">Stockage</string>
@@ -763,7 +763,7 @@
     <string name="settings_automix_diagnostics_privacy">L’historique à l’écran est limité à 60 événements. Les rapports copiés ne contiennent que des événements sûrs, sans noms de morceaux, adresses ni identifiants.</string>
     <string name="settings_automix_diagnostics_cue">%1$s : %2$s, sortie %3$d–%4$d ms ; entrée %5$d–%6$d ms</string>
     <string name="settings_automix_intro_title">Comment marche AutoMix</string>
-    <string name="settings_automix_intro_text">AutoMix mixe les morceaux que joue Orpheon : ceux des extensions, les téléchargements et les fichiers du téléphone.\n\nChaque morceau est analysé une fois (temps, mesures, tonalité). Les flux sont analysés en Wi-Fi, ou en données mobiles si vous l\'autorisez ; un morceau pas analysé à temps change en fondu.</string>
+    <string name="settings_automix_intro_text">AutoMix mixe les morceaux que joue Spoon : ceux des extensions, les téléchargements et les fichiers du téléphone.\n\nChaque morceau est analysé une fois (temps, mesures, tonalité). Les flux sont analysés en Wi-Fi, ou en données mobiles si vous l\'autorisez ; un morceau pas analysé à temps change en fondu.</string>
     <string name="settings_automix_intro_ok">Compris</string>
     <string name="automix_reason_spotify">Pas de mix pour l\'instant : ce morceau change seulement en fondu.</string>
     <string name="automix_reason_cast">Pas de mix pour l\'instant : sur un appareil Cast, les morceaux changent sans mix.</string>
@@ -775,7 +775,7 @@
     <string name="notify_releases_channel">Nouveautés</string>
     <string name="notify_release_title">Nouveau de %1$s</string>
     <string name="settings_release_notify">Notifications des nouveautés</string>
-    <string name="settings_release_notify_detail">Une notification quand un artiste que tu suis sort quelque chose, vérifié toutes les quelques heures pendant que Orpheon tourne</string>
+    <string name="settings_release_notify_detail">Une notification quand un artiste que tu suis sort quelque chose, vérifié toutes les quelques heures pendant que Spoon tourne</string>
     <string name="quality_streaming_very_high">Très élevée</string>
     <string name="login_help_button">Aide</string>
     <string name="login_help_title">Un souci pour te connecter ?</string>

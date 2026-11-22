@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Orpheon's own texts (English default, French, Italian, Greek). -->
+<!-- Spoon's own texts (English default, French, Italian, Greek). -->
 <resources>
     <string name="welcome_lead">Η μουσική σου,</string>
     <string name="welcome_rotate_lyrics">με στίχους λέξη προς λέξη.</string>
@@ -53,7 +53,7 @@
     <string name="library_empty">Η Βιβλιοθήκη σου είναι άδεια</string>
     <string name="background_playback_title">Αναπαραγωγή στο παρασκήνιο</string>
     <string name="background_playback_off">Απενεργοποίησε τη βελτιστοποίηση μπαταρίας, ώστε το Android να μην σταματά την εφαρμογή στο παρασκήνιο.</string>
-    <string name="background_playback_samsung">Η Samsung μπορεί και πάλι να βάλει το Orpheon σε αναστολή με την οθόνη σβηστή. Πρόσθεσέ το στις «Εφαρμογές που δεν μπαίνουν ποτέ σε αναστολή»: Ρυθμίσεις &gt; Μπαταρία &gt; Όρια χρήσης στο παρασκήνιο.</string>
+    <string name="background_playback_samsung">Η Samsung μπορεί και πάλι να βάλει το Spoon σε αναστολή με την οθόνη σβηστή. Πρόσθεσέ το στις «Εφαρμογές που δεν μπαίνουν ποτέ σε αναστολή»: Ρυθμίσεις &gt; Μπαταρία &gt; Όρια χρήσης στο παρασκήνιο.</string>
     <string name="background_playback_open">Άνοιγμα ρυθμίσεων εφαρμογής</string>
     <plurals name="local_files_count">
         <item quantity="one">%d κομμάτι</item>
@@ -62,7 +62,7 @@
     <string name="local_files_none_subtitle">Δεν βρέθηκαν αρχεία ήχου που να μπορούν να παιχτούν σε αυτή τη συσκευή. Όταν υπάρχουν, θα εμφανίζονται εδώ.</string>
     <string name="downloads_empty_title">Κάνε λήψη για να ακούς εκτός σύνδεσης</string>
     <string name="downloads_empty_subtitle">Πάτα Λήψη στο μενού ενός τραγουδιού, ή το κουμπί λήψης ενός άλμπουμ ή μιας playlist.</string>
-    <string name="downloads_source">Lossless FLAC, ελεγμένο με την αρχική ηχογράφηση. Μένει αποθηκευμένο μόνο μέσα στο Orpheon.</string>
+    <string name="downloads_source">Lossless FLAC, ελεγμένο με την αρχική ηχογράφηση. Μένει αποθηκευμένο μόνο μέσα στο Spoon.</string>
     <string name="downloads_size">%1$s σε αυτό το τηλέφωνο</string>
     <string name="download_unavailable">Δεν βρέθηκε αντίστοιχη ηχογράφηση</string>
     <string name="download_retry">Δοκίμασε ξανά</string>
@@ -71,7 +71,7 @@
     <string name="playlist_not_found">Η playlist δεν βρέθηκε</string>
     <string name="browse_new_releases">Νέες κυκλοφορίες</string>
     <string name="language_auto">Αυτόματη</string>
-    <string name="language_auto_detail">Η γλώσσα του τηλεφώνου σου, όταν το Orpheon τη διαθέτει (αγγλικά, γαλλικά, γερμανικά, ελληνικά, ισπανικά, ιταλικά, κινεζικά, πολωνικά, πορτογαλικά, ρωσικά), αλλιώς αγγλικά</string>
+    <string name="language_auto_detail">Η γλώσσα του τηλεφώνου σου, όταν το Spoon τη διαθέτει (αγγλικά, γαλλικά, γερμανικά, ελληνικά, ισπανικά, ιταλικά, κινεζικά, πολωνικά, πορτογαλικά, ρωσικά), αλλιώς αγγλικά</string>
     <string name="restart_player_title">Επανεκκίνηση του player</string>
     <string name="local_playlist_subtitle">Σε αυτή τη συσκευή</string>
     <string name="local_playlist_new">Playlist σε αυτή τη συσκευή</string>
@@ -82,21 +82,21 @@
     <string name="local_playlist_empty">Πρόσθεσε τραγούδια από τα Τοπικά αρχεία με το κουμπί + τους.</string>
     <string name="download_kept_by_list">Εξακολουθεί να έχει ληφθεί: τη διατηρεί μια playlist που έχει ληφθεί</string>
     <string name="download_kept_by_named">Εξακολουθεί να έχει ληφθεί: το «%1$s» έχει ληφθεί και το περιέχει</string>
-    <string name="support_title">Στήριξε το Orpheon</string>
+    <string name="support_title">Στήριξε το Spoon</string>
     <string name="support_scan">Σάρωσε με το κινητό σου</string>
     <string name="support_action">Στήριξε στο Ko-fi</string>
     <string name="support_decline">Όχι, ευχαριστώ</string>
     <string name="support_row_detail">Μια μικρή δωρεά στο Ko-fi ή στο GitHub Sponsors βοηθά την εφαρμογή να συνεχίσει</string>
     <string name="supporter_perks_title">Ανταμοιβές υποστηρικτή</string>
     <string name="supporter_perks_detail">Χρώμα τόνου, εικονίδιο εφαρμογής και σήμα, ως ευχαριστία</string>
-    <string name="supporter_perks_locked">Ξεκλειδώνεται με τη στήριξη του Orpheon. Βασίζεται στον λόγο σου: δεν ελέγχεται τίποτα.</string>
-    <string name="supporter_i_supported">Έχω στηρίξει το Orpheon</string>
+    <string name="supporter_perks_locked">Ξεκλειδώνεται με τη στήριξη του Spoon. Βασίζεται στον λόγο σου: δεν ελέγχεται τίποτα.</string>
+    <string name="supporter_i_supported">Έχω στηρίξει το Spoon</string>
     <string name="supporter_how">Πώς το στήριξες;</string>
     <string name="supporter_once">Μία δωρεά</string>
     <string name="supporter_monthly">Κάθε μήνα</string>
     <string name="supporter_badge">Υποστηρικτής</string>
     <string name="supporter_thanks_title">Ευχαριστούμε για τη στήριξή σου!</string>
-    <string name="supporter_thanks_body">Αν το Orpheon εξακολουθεί να σου είναι χρήσιμο, μια νέα μικρή δωρεά βοηθά να συνεχίσει.</string>
+    <string name="supporter_thanks_body">Αν το Spoon εξακολουθεί να σου είναι χρήσιμο, μια νέα μικρή δωρεά βοηθά να συνεχίσει.</string>
     <string name="support_again">Στήριξε ξανά</string>
     <string name="supporter_accent">Χρώμα τόνου</string>
     <string name="supporter_icon">Εικονίδιο εφαρμογής</string>
@@ -117,7 +117,7 @@
     <string name="song_radio_name">Ραδιόφωνο: %1$s</string>
     <string name="local_files_find_hint">Αναζήτηση στα Τοπικά αρχεία</string>
     <string name="data_saver_title">Εξοικονόμηση δεδομένων</string>
-    <string name="data_saver_summary">Με δεδομένα κινητής, το Orpheon δεν χρησιμοποιεί δεδομένα: παίζουν μόνο τα ληφθέντα τραγούδια και τα Τοπικά αρχεία</string>
+    <string name="data_saver_summary">Με δεδομένα κινητής, το Spoon δεν χρησιμοποιεί δεδομένα: παίζουν μόνο τα ληφθέντα τραγούδια και τα Τοπικά αρχεία</string>
     <string name="data_saver_blocked">Εξοικονόμηση δεδομένων: με δεδομένα κινητής, παίζουν μόνο τα ληφθέντα τραγούδια και τα Τοπικά αρχεία</string>
     <string name="new_releases_followed">Από καλλιτέχνες που ακολουθείς</string>
     <string name="new_releases_latest">Τελευταίες κυκλοφορίες</string>
@@ -163,7 +163,7 @@
     <string name="track_sort_artist">Καλλιτέχνης</string>
     <string name="track_sort_album">Άλμπουμ</string>
     <string name="track_sort_duration">Διάρκεια</string>
-    <string name="setup_title">Ρύθμιση του Orpheon</string>
+    <string name="setup_title">Ρύθμιση του Spoon</string>
     <string name="setup_subtitle">Επίτρεψε ό,τι θέλεις· μπορείς να το αλλάξεις αργότερα στις ρυθμίσεις του τηλεφώνου.</string>
     <string name="setup_notifications_title">Ειδοποιήσεις</string>
     <string name="setup_notifications_detail">Χειριστήρια στην κλειδωμένη οθόνη και στο πάνελ ειδοποιήσεων</string>
@@ -175,7 +175,7 @@
     <string name="setup_battery_detail">Η μουσική συνεχίζει με την οθόνη σβηστή</string>
     <string name="setup_enable">Επίτρεψε</string>
     <string name="setup_continue">Συνέχεια</string>
-    <string name="setup_intro_title">Πώς δουλεύει το Orpheon</string>
+    <string name="setup_intro_title">Πώς δουλεύει το Spoon</string>
     <string name="setup_intro_subtitle">Τρία πράγματα πριν ξεκινήσεις.</string>
     <string name="setup_intro_more_detail">Στίχοι λέξη προς λέξη, επίσημα βίντεο, στατιστικά ακρόασης και δύο εμφανίσεις για να διαλέξεις.</string>
     <string name="setup_ext_title">Επεκτάσεις</string>
@@ -186,7 +186,7 @@
     <string name="setup_ext_more_detail">Ενότητες αρχικής, σελίδες και εργαλεία από τους δημιουργούς τους.</string>
     <string name="setup_ext_safe_title">Εσύ έχεις τον έλεγχο</string>
     <string name="setup_ext_safe_detail">Πριν την εγκατάσταση δείχνει τι μπορεί να κάνει. Για οτιδήποτε άλλο ρωτά ξανά, και μπορείς να την αφαιρέσεις όποτε θέλεις.</string>
-    <string name="setup_ext_where">Θα τις βρεις στις Ρυθμίσεις, Επεκτάσεις, από GitHub, GitLab και Codeberg. Τις γράφουν οι δημιουργοί τους, όχι το Orpheon.</string>
+    <string name="setup_ext_where">Θα τις βρεις στις Ρυθμίσεις, Επεκτάσεις, από GitHub, GitLab και Codeberg. Τις γράφουν οι δημιουργοί τους, όχι το Spoon.</string>
     <string name="setup_ext_browse">Δες τις επεκτάσεις</string>
     <string name="local_folders_button">Φάκελοι</string>
     <string name="local_folders_title">Φάκελοι</string>
@@ -231,7 +231,7 @@
     <string name="quality_now_unknown">Ακόμα άγνωστο: ξεκίνα ένα τραγούδι</string>
     <string name="update_downloading">Λήψη… %1$d%%</string>
     <string name="update_installing">Εγκατάσταση…</string>
-    <string name="update_needs_permission">Για να ενημερωθείς, επίτρεψε στο Orpheon να εγκαθιστά εφαρμογές και μετά επέστρεψε εδώ.</string>
+    <string name="update_needs_permission">Για να ενημερωθείς, επίτρεψε στο Spoon να εγκαθιστά εφαρμογές και μετά επέστρεψε εδώ.</string>
     <string name="update_allow">Επίτρεψε</string>
     <string name="update_failed">Η ενημέρωση απέτυχε: %1$s</string>
     <string name="update_retry">Δοκίμασε ξανά</string>
@@ -294,7 +294,7 @@
     <string name="share_as_image">Κοινοποίηση ως εικόνα</string>
     <string name="settings_autoplay_title">Αυτόματη αναπαραγωγή</string>
     <string name="settings_autoplay_detail">Όταν τελειώνει η μουσική σου, συνεχίζει με παρόμοια τραγούδια</string>
-    <string name="myspoti_shuffle_title">Τυχαία σειρά Orpheon</string>
+    <string name="myspoti_shuffle_title">Τυχαία σειρά Spoon</string>
     <string name="settings_rotation_title">Περιστροφή οθόνης</string>
     <string name="settings_rotation_portrait">Κατακόρυφη</string>
     <string name="settings_rotation_auto">Αυτόματη</string>
@@ -399,7 +399,7 @@
     <string name="player_forward_15">Μπροστά 15 δευτερόλεπτα</string>
     <string name="player_sleep_timer">Χρονοδιακόπτης ύπνου</string>
     <string name="settings_keep_playing_title">Συνέχιση αναπαραγωγής μετά το κλείσιμο</string>
-    <string name="settings_keep_playing_detail">Απενεργοποιημένο: το κλείσιμο του Orpheon από τις πρόσφατες εφαρμογές σταματά τη μουσική</string>
+    <string name="settings_keep_playing_detail">Απενεργοποιημένο: το κλείσιμο του Spoon από τις πρόσφατες εφαρμογές σταματά τη μουσική</string>
     <string name="recommended_songs_from_name">Με βάση το όνομα αυτής της playlist</string>
     <string name="recommended_songs_from_songs">Με βάση το περιεχόμενο αυτής της playlist</string>
     <string name="recommended_songs_refresh">Ανανέωση</string>
@@ -567,7 +567,7 @@
         <item quantity="other">%d τραγούδια θα παίξουν μετά</item>
     </plurals>
     <string name="queue_list_none">Κανένα από αυτά τα τραγούδια δεν μπορεί να μπει στην ουρά</string>
-    <string name="setup_ext_download_detail">Οι λήψεις και άλλες πηγές ήχου προέρχονται από επεκτάσεις. Εγκαταστήστε μια επέκταση της κοινότητας στην επόμενη σελίδα για να κατεβάζετε τραγούδια και να ακούτε εκτός σύνδεσης. Τα τραγούδια μένουν κρυπτογραφημένα στο Orpheon.</string>
+    <string name="setup_ext_download_detail">Οι λήψεις και άλλες πηγές ήχου προέρχονται από επεκτάσεις. Εγκαταστήστε μια επέκταση της κοινότητας στην επόμενη σελίδα για να κατεβάζετε τραγούδια και να ακούτε εκτός σύνδεσης. Τα τραγούδια μένουν κρυπτογραφημένα στο Spoon.</string>
     <string name="setup_ext_home">Μετάβαση στην Αρχική</string>
     <string name="show_filter_all">Προεπιλεγμένη σειρά</string>
     <string name="show_filter_all_played">Όλα τα επεισόδια έχουν ακουστεί.</string>
@@ -676,7 +676,7 @@
     <string name="settings_dynamic_color_title">Δυναμικά χρώματα (Material You)</string>
     <string name="settings_dynamic_color_detail">Το χρώμα έμφασης της εμφάνισης «Κλασική» προέρχεται από την ταπετσαρία σου. Η εμφάνιση «Εμβυθιστική» κρατά τα χρώματα του εξώφυλλου που παίζει.</string>
     <string name="settings_system_font_title">Γραμματοσειρά συστήματος</string>
-    <string name="settings_system_font_detail">Εμφανίζει το κείμενο της εφαρμογής με τη γραμματοσειρά του τηλεφώνου σου αντί για αυτή του Orpheon</string>
+    <string name="settings_system_font_detail">Εμφανίζει το κείμενο της εφαρμογής με τη γραμματοσειρά του τηλεφώνου σου αντί για αυτή του Spoon</string>
     <string name="settings_download_lyrics_title">Λήψη στίχων μαζί με τα τραγούδια</string>
     <string name="settings_download_lyrics_detail">Ένα τραγούδι που έχει ληφθεί κρατά τους στίχους του, που εμφανίζονται χωρίς σύνδεση</string>
     <string name="settings_section_storage">Αποθηκευτικός χώρος</string>
@@ -702,7 +702,7 @@
     <string name="notify_releases_channel">Νέες κυκλοφορίες</string>
     <string name="notify_release_title">Νέο από %1$s</string>
     <string name="settings_release_notify">Ειδοποιήσεις νέων κυκλοφοριών</string>
-    <string name="settings_release_notify_detail">Μια ειδοποίηση όταν ένας καλλιτέχνης που ακολουθείς κυκλοφορεί κάτι, με έλεγχο κάθε λίγες ώρες όσο τρέχει το Orpheon</string>
+    <string name="settings_release_notify_detail">Μια ειδοποίηση όταν ένας καλλιτέχνης που ακολουθείς κυκλοφορεί κάτι, με έλεγχο κάθε λίγες ώρες όσο τρέχει το Spoon</string>
     <string name="quality_streaming_very_high">Πολύ υψηλή</string>
     <string name="login_help_button">Βοήθεια</string>
     <string name="login_help_title">Πρόβλημα με τη σύνδεση;</string>

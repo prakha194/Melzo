@@ -250,7 +250,7 @@ fun DevicesSheet(onDismiss: () -> Unit) {
                     com.music.spotui.cast.CastPlayback.device.value == null)
                     Text(stringResource(R.string.no_devices), color = AppText.copy(alpha = 0.7f), modifier = Modifier.padding(20.dp))
             }
-            // Cast devices, for the songs Orpheon plays itself.
+            // Cast devices, for the songs Spoon plays itself.
             com.music.spotui.cast.CastDeviceRows(onDismiss)
             // Bluetooth: pair or pick headphones and speakers in the system settings.
             Column(
