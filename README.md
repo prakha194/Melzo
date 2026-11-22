@@ -1,4 +1,4 @@
-Orpheonpoon
+Spoon
 
 [![Release](https://img.shields.io/github/v/release/prakha194/Spotify)](https://github.com/prakha194/Spotify/releases/latest)
 [![License: GPL-3.0](https://img.shields.io/github/license/prakha194/Spotify)](LICENSE)
