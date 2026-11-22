@@ -20,7 +20,7 @@ No ads added by the app, no tracking, nothing sent to the developer. A free Spot
 </p>
 
 <p align="center">
-  <a href="https://prakha194.github.io/buy-me-a-coffee/"><img src="https://img.shields.io/badge/Buy_me_a_coffee-%E2%98%95-FFDD00?style=for-the-badge" alt="Buy me a coffee" height="44"></a>
+  <a href="https://prakha194.github.io/buy-me-a-coffee/"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee" height="44"></a>
   <a href="https://github.com/sponsors/prakha194"><img src="https://img.shields.io/badge/Sponsor_on_GitHub-%E2%9D%A4-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor on GitHub" height="44"></a>
 </p>
 
