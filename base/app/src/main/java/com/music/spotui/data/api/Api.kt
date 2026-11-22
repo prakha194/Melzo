@@ -404,10 +404,62 @@ class Api constructor(
         return list
     }
 
+    /**
+     * YouTube Music's home page for the signed-in account, as Home sections: each carousel of the
+     * page is one shelf, in the page's order. Only cards Home can draw are kept (albums, playlists,
+     * artists); a page with no such card gives null, and the caller falls back.
+     */
+    private suspend fun ytmHome(): HomeFeedModel? = withContext(Dispatchers.IO) {
+        val answer = com.music.spotui.di.YtmRuntime.account.api.browse("FEmusic_home")
+        val sections = app.myspoti.ytmusic.YtmParse.shelves(answer).mapNotNull { (title, items) ->
+            val mapped = items.mapNotNull(::ytmItem).distinctBy { it::class.simpleName + "|" + it.name.lowercase() }
+            if (mapped.isEmpty()) null else HomeSection(title = title, items = mapped)
+        }.filter { it.items.isNotEmpty() }
+        if (sections.isNotEmpty()) return@withContext HomeFeedModel(sections = sections)
+        // The page gave nothing Home can draw (signed out of the page, an empty account): the
+        // account's own playlists still fill it.
+        val playlists = runCatching {
+            com.music.spotui.di.YtmRuntime.account.library.playlists().take(20).map { p ->
+                HomeItem.Playlist(
+                    name = p.name, imageUrl = cover(p.images),
+                    subtitle = context.getString(R.string.lbl_playlist), id = p.uri.substringAfterLast(':'),
+                )
+            }
+        }.getOrDefault(emptyList())
+        if (playlists.isEmpty()) null else HomeFeedModel(sections = listOf(HomeSection(title = "Your playlists", items = playlists)))
+    }
+
+    /** One card of the YouTube Music page, as Home draws it. A song has no card on Home: skipped. */
+    private fun ytmItem(i: app.myspoti.ytmusic.YtmParse.Item): HomeItem? = when (i) {
+        is app.myspoti.ytmusic.YtmParse.Item.AlbumItem -> HomeItem.Album(
+            id = i.album.uri.substringAfterLast(':'), name = i.album.name, imageUrl = cover(i.album.images),
+            subtitle = context.getString(R.string.lbl_type_album),
+            artists = i.album.artists.joinToString(", ") { it.name },
+        )
+        is app.myspoti.ytmusic.YtmParse.Item.PlaylistItem -> HomeItem.Playlist(
+            name = i.playlist.name, imageUrl = cover(i.playlist.images),
+            subtitle = context.getString(R.string.lbl_playlist), id = i.playlist.uri.substringAfterLast(':'),
+        )
+        is app.myspoti.ytmusic.YtmParse.Item.ArtistItem -> HomeItem.Artist(
+            name = i.artist.name, imageUrl = cover(i.artist.images), id = i.artist.uri.substringAfterLast(':'),
+        )
+        is app.myspoti.ytmusic.YtmParse.Item.Song -> null
+    }
+
     /** [facet]: "" (all), "music-chip", "podcasts-chip", "audiobooks-chip", or a sub-chip Spotify sent (HomeSubChips). */
     suspend fun getHomeFeed(facet: String = ""): Flow<Response<HomeFeedModel>> = flow {
         val cached = if (facet.isEmpty()) HomeCache.home ?: diskHome() else HomeCache.facets[facet]
         cached?.let { emit(Response.Success(it)) } ?: emit(Response.Loading())
+        // A YouTube Music account is chosen: Home is that account's own home page (its shelves, in
+        // its order), not the service feed this build has none of.
+        if (com.music.spotui.di.YtmRuntime.chosen && com.music.spotui.di.YtmRuntime.signedIn) {
+            val feed = runCatching { ytmHome() }.getOrNull()
+            if (feed != null) {
+                if (facet.isEmpty()) HomeCache.home = feed else HomeCache.facets[facet] = feed
+                emit(Response.Success(feed))
+                return@flow
+            }
+        }
         if (!ready()) { if (cached == null) emit(Response.Error(notSignedIn())); return@flow }
         // Any facet Spotify offers: a top chip, or one opened beside it (Music > Following).
         runCatching { api.home.feed(facet, itemsPerShelf = 20) }.fold(
