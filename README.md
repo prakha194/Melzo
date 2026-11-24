@@ -12,4 +12,4 @@ Static site, no build step: open `index.html` or serve the folder.
 - `support.html` — help, bug reports, common fixes
 - `sitemap.xml`, `robots.txt`, `manifest.webmanifest`, `img/og.png` — SEO and social preview
 
-Published with GitHub Pages from `main`. Made by Prashant (@prakha194).
+Published with GitHub Pages from the `website` branch (root). Made by Prashant (@prakha194).
