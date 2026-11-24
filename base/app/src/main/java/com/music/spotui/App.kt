@@ -51,6 +51,8 @@ fun App() {
 
     // A newer release of Spoon is offered here ("Update now" / "Not now"). No donation reminder.
     com.music.spotui.ui.components.ReleaseNotice()
+    // Once a week at most: a short "support the developer" card with "No thanks".
+    com.music.spotui.ui.components.SupportPrompt()
     // The playlists at the top of the library, fetched ahead on Wi-Fi (see PagePrefetch).
     LaunchedEffect(Unit) { com.music.spotui.data.api.PagePrefetch.start() }
 

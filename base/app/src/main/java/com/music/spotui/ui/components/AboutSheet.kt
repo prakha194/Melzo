@@ -46,6 +46,7 @@ import kotlinx.coroutines.launch
 private val repo get() = BuildConfig.UPDATE_REPO.ifBlank { "Kirisos-Guna/myspoti" }
 val REPO_URL get() = "https://github.com/prakha194/Spotify"
 const val COFFEE_URL = "https://prakha194.github.io/buy-me-a-coffee/"
+const val SPONSOR_URL = "https://github.com/sponsors/prakha194"
 
 private fun openUrl(context: Context, url: String) {
     runCatching {
@@ -72,20 +73,20 @@ fun AboutSheet(onDismiss: () -> Unit) {
                     modifier = Modifier.size(56.dp).clip(RoundedCornerShape(14.dp)).background(tone(0xFF121212)),
                 )
                 Column(Modifier.padding(start = 14.dp)) {
-                    Text("Spoon", color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("Melzo", color = AppText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text("${stringResource(R.string.settings_item_version_title)} ${BuildConfig.VERSION_NAME}",
                         color = AppMuted, fontSize = 13.sp)
                 }
             }
             Text(stringResource(R.string.about_free), color = AppMuted, fontSize = 13.sp,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp))
-            Text("Spoon is made by Prashant.", color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+            Text("Melzo is made by Prashant.", color = AppText, fontSize = 15.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp))
             Text("Free and open source, under the GNU GPL v3. Based on Myspoti/Orpheon by kota-zo.",
                 color = AppMuted, fontSize = 12.sp,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 8.dp))
             AboutRow("Source code", "github.com/prakha194/Spotify") { openUrl(context, REPO_URL) }
-            Text("Your contribution helps keep running Spoon", color = AppMuted, fontSize = 12.sp,
+            Text("Your contribution helps keep running Melzo", color = AppMuted, fontSize = 12.sp,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp))
             Box(
                 contentAlignment = Alignment.Center,
@@ -93,6 +94,12 @@ fun AboutSheet(onDismiss: () -> Unit) {
                     .fillMaxWidth().height(48.dp).clip(RoundedCornerShape(50))
                     .background(Color(0xFFFFDD00)).pressable(0.96f) { openUrl(context, COFFEE_URL) },
             ) { Text("Buy developer a coffee", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 8.dp)
+                    .fillMaxWidth().height(48.dp).clip(RoundedCornerShape(50))
+                    .background(Color(0xFFEA4AAA)).pressable(0.96f) { openUrl(context, SPONSOR_URL) },
+            ) { Text("Sponsor on GitHub", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold) }
         }
     }
 }

@@ -61,7 +61,7 @@ private fun latestTag(): String? = runCatching {
         connectTimeout = 8_000
         readTimeout = 8_000
         setRequestProperty("Accept", "application/vnd.github+json")
-        setRequestProperty("User-Agent", "Spoon-Android")
+        setRequestProperty("User-Agent", "Melzo-Android")
     }
     try {
         if (connection.responseCode == 200) {
@@ -108,6 +108,7 @@ fun ReleaseNotice() {
                 // "Not now" is a pause, not a silence: after REPEAT_MS the card is offered again,
                 // and keeps coming back every REPEAT_MS until the app is updated.
                 if (dismissed != latest || System.currentTimeMillis() - dismissedAt >= REPEAT_MS) {
+                    prefs.edit().putLong("shown_at", System.currentTimeMillis()).apply()
                     tag = latest; return@LaunchedEffect
                 }
             }
@@ -137,11 +138,11 @@ fun ReleaseNotice() {
                 modifier = Modifier.size(64.dp).clip(RoundedCornerShape(18.dp)).background(tone(0xFF181818)),
             )
             Text(
-                "A new version of Spoon is available",
+                "A new version of Melzo is available",
                 color = AppText, fontSize = 19.sp, fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center, modifier = Modifier.padding(top = 16.dp),
             )
-            Text("Spoon $version", color = AppMuted, fontSize = 14.sp, modifier = Modifier.padding(top = 6.dp))
+            Text("Melzo $version", color = AppMuted, fontSize = 14.sp, modifier = Modifier.padding(top = 6.dp))
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.padding(top = 22.dp).fillMaxWidth().height(48.dp)

@@ -26,7 +26,7 @@ val ABI_NAMES = mapOf("arm64-v8a" to "ARMv8", "armeabi-v7a" to "ARMv7")
  * so their update check, which installs only its own package, opens the release page for these
  * instead of trying an APK it cannot install over itself.
  */
-val APK_NAME = "Spoon"
+val APK_NAME = "Melzo"
 
 android {
     testOptions {
@@ -49,7 +49,7 @@ android {
         // One app for every channel: stable and beta updates install over each other (the channel is a
         // setting in About), so both are "app.myspoti", signed with the same key.
         applicationId = if (automixLab) "app.myspoti.automixlab" else "app.myspoti"
-        manifestPlaceholders["appLabel"] = if (automixLab) "Myspoti Mix Lab" else "Spoon"
+        manifestPlaceholders["appLabel"] = if (automixLab) "Myspoti Mix Lab" else "Melzo"
         // The adb command line (com.music.spotui.cli): betas and debug builds only.
         manifestPlaceholders["cliEnabled"] = beta.toString()
         minSdk = 29
@@ -104,7 +104,7 @@ android {
 
     buildTypes {
         debug {
-            manifestPlaceholders["appLabel"] = if (automixLab) "Myspoti Mix Lab" else "Spoon"
+            manifestPlaceholders["appLabel"] = if (automixLab) "Myspoti Mix Lab" else "Melzo"
             manifestPlaceholders["cliEnabled"] = "true"
             buildConfigField("String", "UPDATE_REPO", "\"\"")
         }

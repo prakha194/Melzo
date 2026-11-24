@@ -156,7 +156,8 @@ object UpdateChecker {
         val version = release.optString("tag_name").removePrefix("v")
         val named = "${if (beta) "$name-Beta" else name}-$version"
         val byName = (0 until assets.length()).map { assets.getJSONObject(it) }.associateBy { it.optString("name") }
-        return abis.filter { it in RELEASE_ABIS }.map { "$named-${RELEASE_ABIS.getValue(it)}.apk" }
+        // One universal APK first (what this repository publishes), then the per-ABI ones.
+        return (listOf("$named-universal.apk") + abis.filter { it in RELEASE_ABIS }.map { "$named-${RELEASE_ABIS.getValue(it)}.apk" })
             .firstNotNullOfOrNull { byName[it] }?.optString("browser_download_url").orEmpty()
     }
 
