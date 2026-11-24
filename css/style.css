@@ -425,3 +425,177 @@ details.faq p { color: var(--muted); margin: 10px 0 0; }
 }
 
 section[id] { scroll-margin-top: 84px; }
+
+/* ---------- donate badges (same everywhere) ---------- */
+.donate-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 0 0 18px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 18px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  text-decoration: none;
+  line-height: 1;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.badge:hover { text-decoration: none; filter: brightness(1.1); transform: translateY(-1px); }
+.badge-sm { font-size: 0.68rem; padding: 7px 13px; gap: 7px; }
+.badge-coffee { background: #ffdd00; color: #111; }
+.badge-sponsor { background: #ea4aaa; color: #fff; }
+
+/* ---------- screenshot slider ---------- */
+.slider { position: relative; }
+.slider-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 4px 2px 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  outline: none;
+}
+.slider-track::-webkit-scrollbar { display: none; }
+.slider-track:focus-visible { box-shadow: 0 0 0 2px var(--accent); border-radius: 22px; }
+
+.slide {
+  margin: 0;
+  flex: 0 0 auto;
+  width: min(260px, 74vw);
+  scroll-snap-align: center;
+  text-align: center;
+}
+.slide img {
+  width: 100%;
+  height: auto;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  background: var(--card);
+}
+.slide figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.slider-btn {
+  position: absolute;
+  top: 42%;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(20, 22, 26, 0.92);
+  color: var(--text);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.slider-btn:hover { background: var(--accent); color: #04170a; border-color: var(--accent); }
+.slider-prev { left: -6px; }
+.slider-next { right: -6px; }
+
+.slider-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+}
+.slider-dots .dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: #3a3f47;
+  cursor: pointer;
+  transition: background 0.2s ease, width 0.2s ease;
+}
+.slider-dots .dot.on { background: var(--accent); width: 22px; border-radius: 5px; }
+
+/* ---------- compact feature tiles ---------- */
+.grid { gap: 12px; }
+.card { padding: 16px 18px; border-radius: 15px; }
+.card h3 { font-size: 0.97rem; margin-bottom: 6px; }
+.card p { font-size: 0.87rem; line-height: 1.55; }
+.card .ico {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  margin-bottom: 10px;
+}
+.card .ico svg { width: 17px; height: 17px; }
+
+/* ---------- extension page extras ---------- */
+.icon-pair {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 4px 0 20px;
+}
+.icon-pair figure { margin: 0; text-align: center; }
+.icon-pair img { border-radius: 18px; border: 1px solid var(--line); }
+.icon-pair figcaption { font-size: 0.74rem; color: var(--muted); margin-top: 6px; letter-spacing: 0.04em; }
+.icon-plus { color: var(--muted); font-size: 1.2rem; }
+
+.copy-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+.copy-box code {
+  font-size: 0.82rem;
+  color: var(--text);
+  word-break: break-all;
+}
+.copy-btn {
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #04170a;
+  font-weight: 650;
+  font-size: 0.8rem;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.copy-btn.copied { background: var(--accent-2); }
+
+.rate-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
+.rate-pill {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+@media (max-width: 700px) {
+  .slider-prev { left: 0; }
+  .slider-next { right: 0; }
+  .donate-row { gap: 8px; }
+}

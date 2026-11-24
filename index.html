@@ -34,7 +34,7 @@
 <link rel="icon" href="img/favicon-64.png" sizes="64x64" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="css/style.css?v=2">
+<link rel="stylesheet" href="css/style.css?v=3">
 
 <script type="application/ld+json">
 {
@@ -103,6 +103,10 @@
         </a>
         <a class="btn btn-ghost" href="https://github.com/prakha194/Melzo">View source on GitHub</a>
       </div>
+      <div class="donate-row">
+        <a class="badge badge-sm badge-coffee" href="https://prakha194.github.io/buy-me-a-coffee/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"/><path d="M17 9h2.5a2.5 2.5 0 0 1 0 5H17"/><path d="M6 21h11"/></svg> Buy me a coffee</a>
+        <a class="badge badge-sm badge-sponsor" href="https://github.com/sponsors/prakha194" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9Z"/></svg> Sponsor on GitHub</a>
+      </div>
       <p class="meta-line">Android 10+ · <span id="dl-note">58 MB</span> · free · GPL-3.0 · no account with the developer</p>
     </div>
   </section>
@@ -116,16 +120,33 @@
       <figure class="shot-wide">
         <img src="img/banner.jpg" alt="Melzo in its two looks: the Immersive home and player, the Classic player and an artist page" width="1600" height="900" decoding="async">
       </figure>
-      <div class="shots">
-        <figure class="shot">
+      <div class="slider" id="shots-slider">
+        <button class="slider-btn slider-prev" type="button" aria-label="Previous screenshot">‹</button>
+        <div class="slider-track" id="shots-track" tabindex="0" aria-label="Screenshots of Melzo">
+        <figure class="slide">
           <img src="img/classic.jpg" alt="Melzo Classic look: home screen with playlists, daily mixes and the mini player" width="540" height="1098" decoding="async">
-          <figcaption>Classic</figcaption>
+          <figcaption>Classic · Home</figcaption>
         </figure>
-        <figure class="shot">
-          <img src="img/immersive.jpg" alt="Melzo Immersive look: home screen with full-bleed artwork and a floating player" width="540" height="1098" decoding="async">
-          <figcaption>Immersive</figcaption>
+        <figure class="slide">
+          <img src="img/classic-player.jpg" alt="Melzo Classic look: the full-screen player with lyrics" width="540" height="1098" decoding="async">
+          <figcaption>Classic · Player</figcaption>
         </figure>
+        <figure class="slide">
+          <img src="img/classic-artist.jpg" alt="Melzo Classic look: an artist page with popular tracks" width="540" height="1098" decoding="async">
+          <figcaption>Classic · Artist</figcaption>
+        </figure>
+        <figure class="slide">
+          <img src="img/immersive.jpg" alt="Melzo Immersive look: home screen with full-bleed artwork" width="540" height="1098" decoding="async">
+          <figcaption>Immersive · Home</figcaption>
+        </figure>
+        <figure class="slide">
+          <img src="img/immersive-player.jpg" alt="Melzo Immersive look: the player with large artwork and controls" width="540" height="1098" decoding="async">
+          <figcaption>Immersive · Player</figcaption>
+        </figure>
+        </div>
+        <button class="slider-btn slider-next" type="button" aria-label="Next screenshot">›</button>
       </div>
+      <div class="slider-dots" id="shots-dots" aria-label="Choose a screenshot"></div>
     </div>
   </section>
 
@@ -280,6 +301,6 @@
   </div>
 </footer>
 
-<script src="js/main.js?v=2" defer></script>
+<script src="js/main.js?v=3" defer></script>
 </body>
 </html>

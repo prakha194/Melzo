@@ -31,7 +31,7 @@
 <link rel="icon" href="img/favicon-64.png" sizes="64x64" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="css/style.css?v=2">
+<link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
 
@@ -58,6 +58,17 @@
 <main class="page">
   <div class="wrap">
     <h1>Melzo — Spotify Pro extension</h1>
+    <div class="icon-pair">
+      <figure>
+        <img src="img/app-icon.png" alt="Melzo app icon" width="76" height="76">
+        <figcaption>Melzo app</figcaption>
+      </figure>
+      <span class="icon-plus">+</span>
+      <figure>
+        <img src="img/icon.png" alt="Melzo — Spotify Pro extension icon" width="76" height="76">
+        <figcaption>Spotify Pro extension</figcaption>
+      </figure>
+    </div>
     <p class="updated">Version 1.0.5 · made by Prashant · free software</p>
 
     <div class="prose">
@@ -77,7 +88,12 @@
       <h2>Install</h2>
       <ol class="steps">
         <li>Open <strong>Melzo → Settings → Extensions → Store</strong>.</li>
-        <li>Paste the repository address <code>https://github.com/prakha194/Melzo-Extension</code> and install it.</li>
+        <li>Paste this address in the store and install it:
+          <span class="copy-box">
+            <code id="ext-url">https://github.com/prakha194/Melzo-Extension</code>
+            <button class="copy-btn" type="button" data-copy="https://github.com/prakha194/Melzo-Extension">Copy</button>
+          </span>
+        </li>
         <li>Go to <strong>Settings → Playback → audio sources</strong> and drag the extension <strong>above Spotify</strong>.</li>
         <li>Play any song. If a match is found, Melzo plays it from YouTube Music; otherwise it falls back to Spotify.</li>
       </ol>
@@ -92,6 +108,7 @@
       <p>Nothing is sent to the developer. The extension talks to YouTube Music because that is where the audio comes from.</p>
 
       <h2>Rate it</h2>
+      <p class="rate-row"><span class="rate-pill">👍 Rate it good</span><span class="rate-pill">👎 Rate it bad</span></p>
       <p>Melzo's store shows a rating for every extension, and the rating is a 👍 or 👎 reaction on the extension's own GitHub issue. If the extension works for you, <a href="https://github.com/prakha194/Melzo-Extension/issues/1">react with 👍 on the Ratings issue</a> — it takes one click and no sign-in to the app.</p>
 
       <h2>Good to know</h2>
@@ -131,6 +148,6 @@
   </div>
 </footer>
 
-<script src="js/main.js?v=2" defer></script>
+<script src="js/main.js?v=3" defer></script>
 </body>
 </html>
