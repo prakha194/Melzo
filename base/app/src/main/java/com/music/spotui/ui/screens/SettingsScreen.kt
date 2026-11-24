@@ -1235,7 +1235,15 @@ private fun AboutRow() {
     val known = live ?: remember { com.music.spotui.data.api.UpdateChecker.known(ctx) }
     Row(
         Modifier.fillMaxWidth()
-            .then(if (known != null) Modifier.clickable { com.music.spotui.updateRelease.value = known } else Modifier)
+            // The release's own page: the update card it used to open is not part of this build.
+            .then(if (known != null) Modifier.clickable {
+                runCatching {
+                    ctx.startActivity(
+                        android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(known.pageUrl))
+                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                }
+            } else Modifier)
             .padding(start = 20.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

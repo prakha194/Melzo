@@ -320,7 +320,7 @@
     <string name="settings_tab_about">About</string>
     <string name="settings_about_version">Version %1$s</string>
     <string name="settings_update_available">Version %1$s available</string>
-    <string name="settings_update_available_detail">Tap to download and install it</string>
+    <string name="settings_update_available_detail">Tap to open the release page</string>
     <string name="settings_section_app">App</string>
     <string name="quality_streaming_title">Streaming quality</string>
     <string name="quality_streaming_detail">What the player streams over the network.</string>
