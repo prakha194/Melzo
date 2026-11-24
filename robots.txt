@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://prakha194.github.io/melzo-website/sitemap.xml

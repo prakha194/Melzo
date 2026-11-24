@@ -1,0 +1,13 @@
+{
+  "name": "Melzo — Music App",
+  "short_name": "Melzo",
+  "description": "Official website of Melzo, a free ad-free music app for Android.",
+  "start_url": "./index.html",
+  "display": "browser",
+  "background_color": "#08090b",
+  "theme_color": "#08090b",
+  "icons": [
+    { "src": "img/icon.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

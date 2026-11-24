@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support — Melzo music app help, bugs and feature requests</title>
+<meta name="description" content="Melzo support: installation help, update problems, playback and download fixes, and how to report a bug or ask for a feature. Answers from the developer on GitHub.">
+<meta name="keywords" content="Melzo support, Melzo help, Melzo APK not installing, Melzo bug report, Melzo update problem">
+<meta name="author" content="Prashant">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#08090b">
+<link rel="canonical" href="https://prakha194.github.io/melzo-website/support.html">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Melzo">
+<meta property="og:locale" content="en_IN">
+<meta property="og:title" content="Support — Melzo">
+<meta property="og:description" content="Installation help, fixes for common problems, and how to reach the developer.">
+<meta property="og:url" content="https://prakha194.github.io/melzo-website/support.html">
+<meta property="og:image" content="https://prakha194.github.io/melzo-website/img/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Support — Melzo">
+<meta name="twitter:description" content="Installation help, fixes for common problems, and how to reach the developer.">
+<meta name="twitter:image" content="https://prakha194.github.io/melzo-website/img/og.png">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/style.css?v=1">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="index.html">
+      <img src="img/icon.png" alt="Melzo app icon" width="30" height="30">
+      Melzo
+    </a>
+    <button class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">☰</button>
+    <nav class="nav-links" id="nav-links" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="extensions.html">Extension</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="support.html" aria-current="page">Support</a>
+      <a class="nav-cta" href="https://github.com/prakha194/Melzo/releases/latest">Download</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <h1>Support</h1>
+    <p class="updated">Melzo is a one-person project. Every report is read; answers arrive on GitHub.</p>
+
+    <div class="prose">
+      <h2>Get help</h2>
+      <ul>
+        <li><strong>Something is broken</strong> — <a href="https://github.com/prakha194/Melzo/issues/new">open an issue</a> and say what happened.</li>
+        <li><strong>An idea for the app</strong> — open an issue with the label <em>enhancement</em>, or comment on an existing one.</li>
+        <li><strong>Extension problems</strong> — the Spotify Pro extension has its own tracker: <a href="https://github.com/prakha194/Melzo-Extension/issues">Melzo-Extension issues</a>.</li>
+        <li><strong>A security problem</strong> — do not post it publicly. Use GitHub's private report on the repository's Security tab.</li>
+      </ul>
+
+      <h2>Before you report a bug</h2>
+      <p>These three details make a fix possible on the first try:</p>
+      <ul>
+        <li>Your phone model and Android version</li>
+        <li>The Melzo version — Settings → About</li>
+        <li>What you did, what you expected, and what happened instead</li>
+      </ul>
+
+      <h2>Common problems</h2>
+
+      <details class="faq">
+        <summary>The APK will not install</summary>
+        <p>Android blocks installs from unknown sources by default. When the prompt appears, allow installs from your browser or file manager. If it still refuses, check that you have at least 100 MB free, and that you are not installing an older build over a newer one — uninstall the newer version first, or install the newest APK from the release page.</p>
+      </details>
+
+      <details class="faq">
+        <summary>"App not installed" after downloading again</summary>
+        <p>That usually means an older copy was signed differently, or the download was incomplete. Delete the file, download it again from the release page, and check it against the matching <code>.sha256</code> file. If you switched from another build of the same app family, uninstall the old one first — data will be lost, so export anything you need.</p>
+      </details>
+
+      <details class="faq">
+        <summary>Login fails or keeps asking me to sign in</summary>
+        <p>Sign in on Spotify's own page, not inside a webview that blocks cookies. If it loops, clear the app's storage, then sign in again. A network that blocks Spotify's login domains — some office and campus Wi-Fi — will cause this too; try mobile data.</p>
+      </details>
+
+      <details class="faq">
+        <summary>A song plays from Spotify even though the extension is installed</summary>
+        <p>Open Settings → Playback → audio sources and drag the extension <strong>above Spotify</strong>. If it is already first, the song may simply have no match on YouTube Music — the extension falls back to Spotify on purpose.</p>
+      </details>
+
+      <details class="faq">
+        <summary>Downloads fail or stop halfway</summary>
+        <p>Downloads need a stable connection and free storage of roughly the size of the playlist. Turn off battery saver for Melzo while downloading, and check that the app is allowed to use data in the background.</p>
+      </details>
+
+      <details class="faq">
+        <summary>The update is not showing up</summary>
+        <p>Update checks run when you open the app. If you installed from an APK, make sure that build can check for updates; otherwise download the newest APK from this site and install it over the old one — settings and downloads are kept.</p>
+      </details>
+
+      <details class="faq">
+        <summary>Where do I get the extension?</summary>
+        <p>From the store inside the app: Settings → Extensions → Store, then paste <code>https://github.com/prakha194/Melzo-Extension</code>. Full steps are on the <a href="extensions.html">extension page</a>.</p>
+      </details>
+
+      <h2>Response times</h2>
+      <p>Melzo is maintained in spare time. Simple questions usually get an answer within a few days; a fix takes as long as the bug deserves. Reproducible reports with a log or a screenshot move fastest.</p>
+
+      <h2>Support the project</h2>
+      <p>The best support costs nothing: use the app, report what breaks, and tell one friend who is tired of ads. If you want to give something back, the repository has a sponsor button.</p>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <a class="brand" href="index.html" style="margin-bottom:10px">
+          <img src="img/icon.png" alt="" width="30" height="30"> Melzo
+        </a>
+        <p style="margin:0;max-width:320px">Official website of the Melzo music app for Android.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="extensions.html">Extension</a>
+        <a href="about.html">About</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="support.html">Support</a>
+        <a href="https://github.com/prakha194/Melzo">GitHub</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Prashant · Made by Prashant (<a href="https://github.com/prakha194">@prakha194</a>)</span>
+      <span>Free software under the GNU GPL v3 · not affiliated with Spotify</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js?v=1" defer></script>
+</body>
+</html>

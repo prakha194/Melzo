@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Melzo — Spotify Pro Extension: YouTube Music audio and downloads</title>
+<meta name="description" content="The Melzo — Spotify Pro extension adds YouTube Music as an audio source inside Melzo: it searches in the song's own language, picks the official recording, and downloads it for offline play. Install steps, permissions and safety notes.">
+<meta name="keywords" content="Melzo extension, Melzo Spotify Pro, YouTube Music extension, audio source extension, Melzo downloads, myspoti extension">
+<meta name="author" content="Prashant">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#08090b">
+<link rel="canonical" href="https://prakha194.github.io/melzo-website/extensions.html">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Melzo">
+<meta property="og:locale" content="en_IN">
+<meta property="og:title" content="Melzo — Spotify Pro extension">
+<meta property="og:description" content="YouTube Music as an audio source inside Melzo, with multilingual matching and offline downloads.">
+<meta property="og:url" content="https://prakha194.github.io/melzo-website/extensions.html">
+<meta property="og:image" content="https://prakha194.github.io/melzo-website/img/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Melzo — Spotify Pro extension">
+<meta name="twitter:description" content="YouTube Music as an audio source inside Melzo, with multilingual matching and offline downloads.">
+<meta name="twitter:image" content="https://prakha194.github.io/melzo-website/img/og.png">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/style.css?v=1">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="index.html">
+      <img src="img/icon.png" alt="Melzo app icon" width="30" height="30">
+      Melzo
+    </a>
+    <button class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">☰</button>
+    <nav class="nav-links" id="nav-links" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="extensions.html" aria-current="page">Extension</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="support.html">Support</a>
+      <a class="nav-cta" href="https://github.com/prakha194/Melzo/releases/latest">Download</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <h1>Melzo — Spotify Pro extension</h1>
+    <p class="updated">Version 1.0.5 · made by Prashant · free software</p>
+
+    <div class="prose">
+      <p>Melzo plays whatever your Spotify account can play. The <strong>Spotify Pro</strong> extension goes one step further: it adds YouTube Music as an <em>audio source</em>, so Melzo can stream and download the official recording of the song you are listening to.</p>
+
+      <div class="note">
+        This is an extension for Melzo, not a separate app. Install Melzo first, then add the extension from the store inside the app.
+      </div>
+
+      <h2>What it does</h2>
+      <ul>
+        <li><strong>Playback</strong> — matches the title, artist and length of the song against YouTube Music's catalogue, searching in the song's own language, and streams the audio file it finds.</li>
+        <li><strong>Downloads</strong> — saves the same file through Melzo, so the track stays on your phone for offline listening.</li>
+        <li><strong>No match, no problem</strong> — a song it cannot match plays from Spotify exactly as before.</li>
+      </ul>
+
+      <h2>Install</h2>
+      <ol class="steps">
+        <li>Open <strong>Melzo → Settings → Extensions → Store</strong>.</li>
+        <li>Paste the repository address <code>https://github.com/prakha194/Melzo-Extension</code> and install it.</li>
+        <li>Go to <strong>Settings → Playback → audio sources</strong> and drag the extension <strong>above Spotify</strong>.</li>
+        <li>Play any song. If a match is found, Melzo plays it from YouTube Music; otherwise it falls back to Spotify.</li>
+      </ol>
+
+      <h2>Permissions it asks for</h2>
+      <p>Melzo shows every permission of an extension before you install it. This one asks for three:</p>
+      <ul>
+        <li><strong>Play audio from elsewhere</strong> (critical) — needed to hand a stream to the player.</li>
+        <li><strong>Provide downloads</strong> (critical) — needed to save a file for offline play.</li>
+        <li><strong>Use the internet</strong> — only these hosts: <code>music.youtube.com</code>, <code>youtubei.googleapis.com</code>, <code>*.googlevideo.com</code>.</li>
+      </ul>
+      <p>Nothing is sent to the developer. The extension talks to YouTube Music because that is where the audio comes from.</p>
+
+      <h2>Rate it</h2>
+      <p>Melzo's store shows a rating for every extension, and the rating is a 👍 or 👎 reaction on the extension's own GitHub issue. If the extension works for you, <a href="https://github.com/prakha194/Melzo-Extension/issues/1">react with 👍 on the Ratings issue</a> — it takes one click and no sign-in to the app.</p>
+
+      <h2>Good to know</h2>
+      <ul>
+        <li>Melzo and its extensions are independent projects, not affiliated with Spotify, YouTube or Google.</li>
+        <li>Downloading from YouTube Music is against that service's terms. Use the extension only with content you have the right to use, and support the artists you listen to.</li>
+        <li>The extension is free software under the GNU GPL v3. Source and releases: <a href="https://github.com/prakha194/Melzo-Extension">github.com/prakha194/Melzo-Extension</a>.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <a class="brand" href="index.html" style="margin-bottom:10px">
+          <img src="img/icon.png" alt="" width="30" height="30"> Melzo
+        </a>
+        <p style="margin:0;max-width:320px">Official website of the Melzo music app for Android.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="extensions.html">Extension</a>
+        <a href="about.html">About</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="support.html">Support</a>
+        <a href="https://github.com/prakha194/Melzo">GitHub</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Prashant · Made by Prashant (<a href="https://github.com/prakha194">@prakha194</a>)</span>
+      <span>Free software under the GNU GPL v3 · not affiliated with Spotify</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js?v=1" defer></script>
+</body>
+</html>

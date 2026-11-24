@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About Melzo — the music app, how it works, and who makes it</title>
+<meta name="description" content="About Melzo: a free, ad-free music app for Android that plays through your own Spotify account. How it works, what it needs, why it is open source, and who makes it.">
+<meta name="keywords" content="about Melzo, Melzo music app, who made Melzo, Melzo open source, Melzo Android requirements">
+<meta name="author" content="Prashant">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#08090b">
+<link rel="canonical" href="https://prakha194.github.io/melzo-website/about.html">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Melzo">
+<meta property="og:locale" content="en_IN">
+<meta property="og:title" content="About Melzo — the music app">
+<meta property="og:description" content="A free, ad-free music app for Android. How it works, what it needs, and who makes it.">
+<meta property="og:url" content="https://prakha194.github.io/melzo-website/about.html">
+<meta property="og:image" content="https://prakha194.github.io/melzo-website/img/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="About Melzo — the music app">
+<meta name="twitter:description" content="A free, ad-free music app for Android. How it works, what it needs, and who makes it.">
+<meta name="twitter:image" content="https://prakha194.github.io/melzo-website/img/og.png">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/style.css?v=1">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="index.html">
+      <img src="img/icon.png" alt="Melzo app icon" width="30" height="30">
+      Melzo
+    </a>
+    <button class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">☰</button>
+    <nav class="nav-links" id="nav-links" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="extensions.html">Extension</a>
+      <a href="about.html" aria-current="page">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="support.html">Support</a>
+      <a class="nav-cta" href="https://github.com/prakha194/Melzo/releases/latest">Download</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <h1>About Melzo</h1>
+    <p class="updated">The app, how it works, and who makes it.</p>
+
+    <div class="prose">
+      <p><strong>Melzo</strong> is a music app for Android. It is free, it is open source, and it adds no ads of its own. You sign in with your own Spotify account — a free one is enough — and the app plays your library, your playlists and your podcasts through Spotify's own player.</p>
+
+      <h2>Why it exists</h2>
+      <p>Because a music player should be fast, quiet and yours. Melzo keeps the parts people actually use — search, library, playlists, queue, lyrics, downloads — and drops the parts nobody asked for. No sign-up with the developer, no analytics, no tracking, no listening data leaving your phone for anyone but the streaming service you already use.</p>
+
+      <h2>How it works</h2>
+      <p>You sign in on Spotify's own login page, so the app never sees your password. Behind the scenes, Spotify's web player runs in a hidden view on your phone, using your phone's own DRM. Melzo draws its own native screens on top and controls it.</p>
+      <p>Because playback goes through Spotify's own player, your plays are reported to Spotify just like in a browser. They count for the artists, in your listening history and in your yearly recap.</p>
+
+      <h2>What you get</h2>
+      <ul>
+        <li>Home, search, browse, new releases and a library with folders</li>
+        <li>Artist, album, playlist and profile pages</li>
+        <li>Shuffle, Smart Shuffle, repeat, crossfade, sleep timer and a drag-to-reorder queue</li>
+        <li>Podcasts and audiobooks with their own player</li>
+        <li>Synced lyrics with translation, and song meanings</li>
+        <li>Offline downloads, and playback of your own local files</li>
+        <li>Spotify Connect, Bluetooth, lock screen, widget, Android Auto and Android TV</li>
+        <li>10-band equalizer, playback speed, data saver and battery saver</li>
+        <li>A private listening recap that stays on your phone</li>
+        <li>69 languages, AMOLED black and accent colours</li>
+        <li>Community extensions — extra audio sources, lyrics and downloads</li>
+      </ul>
+
+      <h2>What it needs</h2>
+      <ul>
+        <li>Android 10 or later</li>
+        <li>A Spotify account — free is enough</li>
+        <li>About 58 MB of space for the app</li>
+      </ul>
+
+      <h2>Built with</h2>
+      <p>Kotlin and Jetpack Compose, as a native Android app. Two looks ship inside it — Classic and Immersive — switchable in Settings → Display.</p>
+
+      <h2>Free software</h2>
+      <p>Melzo is released under the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License v3</a>. You can read every line, build it yourself, change it, and share your changes under the same licence. Source code and releases live on <a href="https://github.com/prakha194/Melzo">GitHub</a>.</p>
+
+      <h2>Who makes it</h2>
+      <p>Melzo is made by <strong>Prashant</strong> (<a href="https://github.com/prakha194">@prakha194</a>), a self-taught developer. It is a personal project, maintained in the open: bugs, ideas and pull requests are welcome on GitHub.</p>
+
+      <div class="note">
+        Melzo is not affiliated with Spotify or with any streaming service or content provider. You sign in with your own account and use the app at your own risk.
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <a class="brand" href="index.html" style="margin-bottom:10px">
+          <img src="img/icon.png" alt="" width="30" height="30"> Melzo
+        </a>
+        <p style="margin:0;max-width:320px">Official website of the Melzo music app for Android.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="extensions.html">Extension</a>
+        <a href="about.html">About</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="support.html">Support</a>
+        <a href="https://github.com/prakha194/Melzo">GitHub</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Prashant · Made by Prashant (<a href="https://github.com/prakha194">@prakha194</a>)</span>
+      <span>Free software under the GNU GPL v3 · not affiliated with Spotify</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js?v=1" defer></script>
+</body>
+</html>
