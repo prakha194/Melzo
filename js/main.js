@@ -163,3 +163,61 @@
     });
   });
 })();
+
+// ---- reveal on scroll, header state, reading progress ----
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // progress bar
+  var bar = document.createElement("div");
+  bar.className = "scroll-progress";
+  document.body.appendChild(bar);
+
+  // what fades in, and in what order
+  var targets = document.querySelectorAll(
+    ".hero-avatar, .eyebrow, .hero h1, .lead, .cta-row, .donate-row, .meta-line, " +
+    ".section-head, .card, .ext, .steps li, .shot-wide, .slider, .slider-dots, " +
+    ".page h1, .page .updated, .prose h2, .prose p, .prose ul, .prose .note, " +
+    ".icon-pair, .copy-box, .rate-row, details.faq, .contact-card, .site-footer .footer-top"
+  );
+
+  Array.prototype.forEach.call(targets, function (el, i) {
+    if (reduce) return;
+    el.setAttribute("data-reveal", "");
+    // stagger the tiles inside a grid so a row arrives one after another
+    var group = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+    el.style.transitionDelay = Math.min(group, 6) * 55 + "ms";
+  });
+
+  if ("IntersectionObserver" in window && !reduce) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add("is-in");
+          io.unobserve(e.target);
+        }
+      });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+    Array.prototype.forEach.call(targets, function (el) { io.observe(el); });
+  } else {
+    Array.prototype.forEach.call(targets, function (el) { el.classList.add("is-in"); });
+  }
+
+  // header + progress on scroll
+  var header = document.querySelector(".site-header");
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function () {
+      var y = window.scrollY || document.documentElement.scrollTop;
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = (h > 0 ? (y / h) * 100 : 0) + "%";
+      if (header) header.classList.toggle("scrolled", y > 8);
+      ticking = false;
+    });
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+})();
