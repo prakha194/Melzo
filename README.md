@@ -1,22 +1,22 @@
-Spoon
+Melzo
 
-[![Release](https://img.shields.io/github/v/release/prakha194/Spotify)](https://github.com/prakha194/Spotify/releases/latest)
-[![License: GPL-3.0](https://img.shields.io/github/license/prakha194/Spotify)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/prakha194/Spotify?style=social)](https://github.com/prakha194/Spotify/stargazers)
+[![Release](https://img.shields.io/github/v/release/prakha194/Melzo)](https://github.com/prakha194/Melzo/releases/latest)
+[![License: GPL-3.0](https://img.shields.io/github/license/prakha194/Melzo)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/prakha194/Melzo?style=social)](https://github.com/prakha194/Melzo/stargazers)
 
 **A free, open-source music player for Android, Android TV and Wear OS that plays through your own Spotify account.**
 
 No ads added by the app, no tracking, nothing sent to the developer. A free Spotify account is enough.
 
 > [!NOTE]
-> Spoon is released under GPL-3.0 and maintained by Prashant. 😎 — see [Credits](#credits). Spoon is not affiliated with Spotify.
+> Melzo is released under GPL-3.0 and maintained by Prashant. 😎 — see [Credits](#credits). Melzo is not affiliated with Spotify.
 
 <p align="center">
-  <img src="docs/screenshots/banner.jpg" alt="Spoon in its two looks: the Immersive home and player, the Classic player and an artist page" width="100%">
+  <img src="docs/screenshots/banner.jpg" alt="Melzo in its two looks: the Immersive home and player, the Classic player and an artist page" width="100%">
 </p>
 
 <p align="center">
-  <a href="https://github.com/prakha194/Spotify/releases/latest"><b>⬇ Download the latest release</b></a>
+  <a href="https://github.com/prakha194/Melzo/releases/latest"><b>⬇ Download the latest release</b></a>
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@ No ads added by the app, no tracking, nothing sent to the developer. A free Spot
 
 ## How it works
 
-You sign in on Spotify's own login page, so the app never sees your password. Behind the scenes, Spotify's official Web Player plays the music in a hidden view, using your phone's DRM. Spoon draws its own native screens on top and controls it.
+You sign in on Spotify's own login page, so the app never sees your password. Behind the scenes, Spotify's official Web Player plays the music in a hidden view, using your phone's DRM. Melzo draws its own native screens on top and controls it.
 
 Because playback goes through Spotify's own player, your plays are reported to Spotify just like in a browser. They count for the artists, in your listening history and in your Wrapped.
 
@@ -68,7 +68,7 @@ Because playback goes through Spotify's own player, your plays are reported to S
 
 ## Install
 
-1. Download the APK from the [latest release](https://github.com/prakha194/Spotify/releases/latest). Android 10 or later is required.
+1. Download the APK from the [latest release](https://github.com/prakha194/Melzo/releases/latest). Android 10 or later is required.
 2. Open it. Android asks once to allow installs from your browser or file manager.
 3. Tap **Log in with Spotify**, sign in, pick your sound quality, and you're in.
 
@@ -76,16 +76,16 @@ Each release carries:
 
 | File | For |
 |---|---|
-| `Spoon-<version>-universal.apk` | Every phone: 64-bit and 32-bit in one file. **Pick this one.** |
-| `Spoon-<version>-ARMv8.apk` | Most phones from the last ten years (64-bit), when a smaller file is published |
-| `Spoon-<version>-ARMv7.apk` | Older or entry-level 32-bit phones |
-| `Spoon-<version>-TV.apk` | Android TV and Google TV |
+| `Melzo-<version>-universal.apk` | Every phone: 64-bit and 32-bit in one file. **Pick this one.** |
+| `Melzo-<version>-ARMv8.apk` | Most phones from the last ten years (64-bit), when a smaller file is published |
+| `Melzo-<version>-ARMv7.apk` | Older or entry-level 32-bit phones |
+| `Melzo-<version>-TV.apk` | Android TV and Google TV |
 
 Every APK has a matching `.sha256` file if you want to check the download.
 
-**Updating:** Spoon tells you when a newer release is out — a card with **Update now** (opens the release page) and **Not now**. Because each build is signed, installing a new APK over an old one works only when both carry the same key; if Android refuses, uninstall the old Spoon first (your Spotify account and library are not affected).
+**Updating:** Melzo tells you when a newer release is out — a card with **Update now** (opens the release page) and **Not now**. Because each build is signed, installing a new APK over an old one works only when both carry the same key; if Android refuses, uninstall the old Melzo first (your Spotify account and library are not affected).
 
-**Coming from Myspoti or Orpheon?** Those are separate apps (`app.myspoti`, `app.orpheon`), so Spoon installs next to them. Uninstall the old one when you no longer need it.
+**Coming from Myspoti or Orpheon?** Those are separate apps (`app.myspoti`, `app.orpheon`), so Melzo installs next to them. Uninstall the old one when you no longer need it.
 
 ## Screenshots
 
@@ -114,15 +114,15 @@ Two looks, switched in Settings → Display.
 ## FAQ
 
 **Is it safe for my account?**
-Spoon talks to Spotify the same way the Web Player does, and you sign in on Spotify's own page. Ads play as Spotify sends them. See the [disclaimer](#disclaimer).
+Melzo talks to Spotify the same way the Web Player does, and you sign in on Spotify's own page. Ads play as Spotify sends them. See the [disclaimer](#disclaimer).
 
 **Spotify refused to play a song. What can I do?**
-Some new or free accounts are refused by Spotify. Open Settings → **Export a diagnostic report** and attach it to a [GitHub issue](https://github.com/prakha194/Spotify/issues). The report holds the app's recent log and your phone model — never your password or login tokens.
+Some new or free accounts are refused by Spotify. Open Settings → **Export a diagnostic report** and attach it to a [GitHub issue](https://github.com/prakha194/Melzo/issues). The report holds the app's recent log and your phone model — never your password or login tokens.
 
 **Do downloaded songs count in my Wrapped?**
-No. Downloaded songs play from your phone and aren't reported to Spotify. They still count in Spoon's own recap. Streamed songs count as usual.
+No. Downloaded songs play from your phone and aren't reported to Spotify. They still count in Melzo's own recap. Streamed songs count as usual.
 
-**Does Spoon download Spotify audio?**
+**Does Melzo download Spotify audio?**
 No. There's no DRM circumvention. Offline files come only from a download-source extension you choose to install.
 
 **Why is Home empty?**
@@ -167,13 +167,13 @@ Every push to `main` is built by GitHub Actions (`.github/workflows/build-apk.ym
 
 ## Support
 
-Spoon is free and made in spare time. If you enjoy it, you can [buy me a coffee](https://prakha194.github.io/buy-me-a-coffee/) or [sponsor on GitHub](https://github.com/sponsors/prakha194), also from **About** in the app. Nothing is locked behind a donation.
+Melzo is free and made in spare time. If you enjoy it, you can [buy me a coffee](https://prakha194.github.io/buy-me-a-coffee/) or [sponsor on GitHub](https://github.com/sponsors/prakha194), also from **About** in the app. Nothing is locked behind a donation.
 
-Bugs and requests: [GitHub issues](https://github.com/prakha194/Spotify/issues).
+Bugs and requests: [GitHub issues](https://github.com/prakha194/Melzo/issues).
 
 ## Credits
 
-**Myspoti / Orpheon.** Spoon is based on [Myspoti](https://github.com/kota-zo/myspoti) (later renamed Orpheon) by [kota-zo](https://github.com/kota-zo) and its contributors, under GPL-3.0.
+**Myspoti / Orpheon.** Melzo is based on [Myspoti](https://github.com/kota-zo/myspoti) (later renamed Orpheon) by [kota-zo](https://github.com/kota-zo) and its contributors, under GPL-3.0.
 
 **BitChord.** The Immersive look and the equalizer come from [BitChord](https://github.com/kushagrasinghx/BitChord) by kushagrasinghx and contributors (GPL-3.0-or-later).
 
@@ -184,8 +184,8 @@ Full notices: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ## Disclaimer
 
-Spoon is not affiliated with Spotify or with any streaming service or content provider. You sign in with your own account and use the app at your own risk. The maintainer is not liable for any misuse of the app or of the extensions installed in it. If you can, support the artists you listen to by subscribing or buying their music.
+Melzo is not affiliated with Spotify or with any streaming service or content provider. You sign in with your own account and use the app at your own risk. The maintainer is not liable for any misuse of the app or of the extensions installed in it. If you can, support the artists you listen to by subscribing or buying their music.
 
 ## License
 
-GPL-3.0. If you reuse this code you must credit Spoon and keep the licence notices, and publish your complete source under GPL-3.0. Closed-source or uncredited copies are violations of the licence.
+GPL-3.0. If you reuse this code you must credit Melzo and keep the licence notices, and publish your complete source under GPL-3.0. Closed-source or uncredited copies are violations of the licence.
