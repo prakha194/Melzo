@@ -664,7 +664,18 @@ private fun openLibraryEntry(entry: LibraryEntry, navController: NavController) 
     else if (entry.spotifyId == Api.HomeCache.DOWNLOADS_ID) navController.navigate(Routes.Downloads.route)
     else if (entry.spotifyId == Api.HomeCache.LOCAL_FILES_ID) navController.navigate(Routes.LocalFiles.route)
     else if (entry.spotifyId == com.music.spotui.radio.RadioFeaturePref.LIBRARY_ENTRY_ID) navController.navigate(Routes.LiveRadio.route)
-    else if (entry.spotifyId == Api.HomeCache.LIKED_SONGS_ID) navController.navigate(Routes.Liked.route)
+    else if (entry.spotifyId == Api.HomeCache.LIKED_SONGS_ID) {
+        com.music.spotui.data.api.LikedSource.yt = null
+        navController.navigate(Routes.Liked.route)
+    }
+    else if (entry.spotifyId == com.music.spotui.data.api.LIKED_YT_ID) {
+        com.music.spotui.data.api.LikedSource.yt = true
+        navController.navigate(Routes.Liked.route)
+    }
+    else if (entry.spotifyId == com.music.spotui.data.api.LIKED_SPOTIFY_ID) {
+        com.music.spotui.data.api.LikedSource.yt = false
+        navController.navigate(Routes.Liked.route)
+    }
     else if (entry.spotifyId == Api.HomeCache.EPISODES_ID) navController.navigate(Routes.Episodes.route)
     else if (entry.spotifyId == Api.HomeCache.NEW_EPISODES_ID) navController.navigate(Routes.NewEpisodes.route)
     else if (entry.isPlaylist) navController.navigate(playlistRoute(entry.spotifyId, entry.name))

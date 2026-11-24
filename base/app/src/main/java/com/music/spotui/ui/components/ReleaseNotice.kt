@@ -47,8 +47,8 @@ private fun openReleasePage(context: Context) {
 }
 
 /** The release page a newer build sends people to. */
-const val RELEASES_PAGE = "https://github.com/prakha194/Spotify/releases/latest"
-private const val LATEST_RELEASE_API = "https://api.github.com/repos/prakha194/Spotify/releases/latest"
+const val RELEASES_PAGE = "https://github.com/prakha194/Spoon/releases/latest"
+private const val LATEST_RELEASE_API = "https://api.github.com/repos/prakha194/Spoon/releases/latest"
 private const val NOTICE_PREFS = "release_notice"
 private const val KEY_DISMISSED = "dismissed_tag"
 private const val KEY_DISMISSED_AT = "dismissed_at"

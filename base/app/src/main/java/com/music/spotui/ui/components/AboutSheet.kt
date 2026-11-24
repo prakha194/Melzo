@@ -44,7 +44,7 @@ import com.music.spotui.ui.theme.AppAccent
 import kotlinx.coroutines.launch
 
 private val repo get() = BuildConfig.UPDATE_REPO.ifBlank { "Kirisos-Guna/myspoti" }
-val REPO_URL get() = "https://github.com/prakha194/Spotify"
+val REPO_URL get() = "https://github.com/prakha194/Spoon"
 const val COFFEE_URL = "https://prakha194.github.io/buy-me-a-coffee/"
 const val SPONSOR_URL = "https://github.com/sponsors/prakha194"
 
@@ -85,7 +85,7 @@ fun AboutSheet(onDismiss: () -> Unit) {
             Text("Free and open source, under the GNU GPL v3. Based on Myspoti/Orpheon by kota-zo.",
                 color = AppMuted, fontSize = 12.sp,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 8.dp))
-            AboutRow("Source code", "github.com/prakha194/Spotify") { openUrl(context, REPO_URL) }
+            AboutRow("Source code", "github.com/prakha194/Spoon") { openUrl(context, REPO_URL) }
             Text("Your contribution helps keep running Melzo", color = AppMuted, fontSize = 12.sp,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp))
             Box(

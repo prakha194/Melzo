@@ -47,10 +47,10 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew :app:assembleRelease \
-            -PappVersionName=1.0.10 \
-            -PappVersionCode=210 \
+            -PappVersionName=1.0.11 \
+            -PappVersionCode=211 \
             -Pabis=arm64-v8a,armeabi-v7a \
-            -PupdateRepo=prakha194/Spotify \
+            -PupdateRepo=prakha194/Spoon \
             --no-daemon --stacktrace
 
       - name: Upload the APK

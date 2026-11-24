@@ -47,6 +47,10 @@ import kotlinx.serialization.json.contentOrNull
  * The UI's data source, over [MyspotiApi]. Keeps the `Flow<Response<...>>` contract the
  * ViewModels use; every call maps the API's models to the UI's ones.
  */
+/** Your Library's second liked entry, when both accounts are signed in. */
+const val LIKED_YT_ID = "liked-yt"
+const val LIKED_SPOTIFY_ID = "liked-spotify"
+
 class Api constructor(
     private val context: android.content.Context = Graph.app,
 ) {
@@ -295,6 +299,21 @@ class Api constructor(
             MediaKind.COLLECTION -> HomeItem.Playlist(name = c.title, imageUrl = image.ifBlank { LIKED_COVER }, subtitle = context.getString(R.string.assisted_curation_search_playlist), id = LIKED_SONGS_ID)
             else -> null
         }
+    }
+
+    /** When both accounts are in place: one extra entry, for the liked list of the account not chosen. */
+    private fun bothLikedEntries(): List<LibraryEntry> {
+        if (!bothSignedIn()) return emptyList()
+        val yt = ytmSignedIn() && !ytmOn()
+        return listOf(
+            LibraryEntry(
+                spotifyId = if (yt) LIKED_YT_ID else LIKED_SPOTIFY_ID,
+                name = if (yt) "Liked Songs · YouTube Music" else "Liked Songs · Spotify",
+                subtitle = context.getString(R.string.assisted_curation_search_playlist),
+                coverUri = LIKED_COVER,
+                isPlaylist = true,
+            ),
+        )
     }
 
     private fun likedEntry() = LibraryEntry(
@@ -902,18 +921,32 @@ class Api constructor(
 
     /** The chosen account is YouTube Music and its session is in place. */
     private fun ytmOn(): Boolean =
-        com.music.spotui.di.YtmRuntime.chosen && com.music.spotui.di.YtmRuntime.account.signedIn.value
+        com.music.spotui.di.YtmRuntime.chosen && ytmSignedIn()
+
+    /** YouTube Music is signed in, whichever account is chosen (both may be). */
+    private fun ytmSignedIn(): Boolean =
+        runCatching { com.music.spotui.di.YtmRuntime.account.signedIn.value }.getOrDefault(false)
+
+    /** Spotify is signed in (the engine answers), whichever account is chosen. */
+    private fun spotifySignedIn(): Boolean =
+        runCatching { app.myspoti.host.android.MyspotiRuntime.api.ready.value }.getOrDefault(false)
+
+    /** Both accounts are in place: Your Library shows both liked lists. */
+    private fun bothSignedIn(): Boolean = ytmSignedIn() && spotifySignedIn()
+
+    /** The liked list being read: the YouTube one when its entry was opened, else the chosen account's. */
+    private fun likedIsYt(): Boolean = com.music.spotui.data.api.LikedSource.yt ?: ytmOn()
 
     private val LIKED_PAGE = 50
 
     /** The newest Liked Songs: one page of 50. */
     private suspend fun likedHead(): List<SongsModel> =
-        if (ytmOn()) com.music.spotui.di.YtmRuntime.account.library.likedTracks(0, 50).items.map { songOf(it) }
+        if (likedIsYt()) com.music.spotui.di.YtmRuntime.account.library.likedTracks(0, 50).items.map { songOf(it) }
         else api.library.likedTracks(0, 50).items.map { songOf(it.track).copy(addedAt = it.addedAt.orEmpty()) }
 
     private suspend fun allLiked(onPage: suspend (List<SongsModel>) -> Unit): List<SongsModel> {
         fun songs(p: app.myspoti.api.Page<app.myspoti.api.SavedTrack>) = p.items.map { songOf(it.track).copy(addedAt = it.addedAt.orEmpty()) }
-        if (ytmOn()) {
+        if (likedIsYt()) {
             val ytFirst = com.music.spotui.di.YtmRuntime.account.library.likedTracks(0, LIKED_PAGE)
             return PagedFetch.inOrder(ytFirst.items.map { songOf(it) }, ytFirst.total, LIKED_PAGE,
                 fetch = { o -> com.music.spotui.di.YtmRuntime.account.library.likedTracks(o, LIKED_PAGE).items.map { songOf(it) } },

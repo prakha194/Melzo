@@ -36,9 +36,6 @@ private const val KEY_LAST_SHOWN = "last_shown"
 
 private const val DAY_MS = 24 * 60 * 60 * 1000L
 
-/** A new install is left alone for this long before it is ever asked. */
-private const val QUIET_DAYS_MS = 2 * DAY_MS
-
 /** Asked at most this often: one a week. */
 private const val REPEAT_MS = 7 * DAY_MS
 
@@ -47,8 +44,8 @@ private const val YIELD_TO_UPDATE_MS = 5 * 60 * 1000L
 
 /**
  * "Support the developer", once a week: a short card that asks the user to keep Melzo going.
- * Never on a fresh install (two days first), never right after a release notice, and "No thanks"
- * puts it away for another week.
+ * Shown once soon after the install, then once a week; never right after a release notice, and
+ * "No thanks" puts it away for another week.
  */
 @Composable
 fun SupportPrompt() {
@@ -59,12 +56,8 @@ fun SupportPrompt() {
         val now = System.currentTimeMillis()
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val firstSeen = prefs.getLong(KEY_FIRST_SEEN, 0L)
-        if (firstSeen == 0L) {
-            // First launch with this build: start the quiet period, ask nothing today.
-            prefs.edit().putLong(KEY_FIRST_SEEN, now).apply()
-            return@LaunchedEffect
-        }
-        if (now - firstSeen < QUIET_DAYS_MS) return@LaunchedEffect
+        if (firstSeen == 0L) prefs.edit().putLong(KEY_FIRST_SEEN, now).apply()
+        // Shown once right after the install, then once a week.
         if (now - prefs.getLong(KEY_LAST_SHOWN, 0L) < REPEAT_MS) return@LaunchedEffect
         val noticeAt = context.getSharedPreferences("release_notice", Context.MODE_PRIVATE).getLong("shown_at", 0L)
         if (now - noticeAt < YIELD_TO_UPDATE_MS) return@LaunchedEffect
