@@ -9,7 +9,9 @@ Static site, no build step: open `index.html` or serve the folder.
 - `extensions.html` — the Spotify Pro extension
 - `about.html` — about the app
 - `privacy.html` — privacy policy (app and website)
-- `support.html` — help, bug reports, common fixes
+- `support.html` — help, bug reports, common fixes, donate buttons
+- `contact.html` — Telegram and email
+- `img/app-icon.png` — the app icon; `img/classic.jpg`, `img/immersive.jpg`, `img/banner.jpg` — screenshots
 - `sitemap.xml`, `robots.txt`, `manifest.webmanifest`, `img/og.png` — SEO and social preview
 
 Published with GitHub Pages from the `website` branch (root). Made by Prashant (@prakha194).
