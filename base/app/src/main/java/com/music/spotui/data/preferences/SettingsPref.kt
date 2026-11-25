@@ -115,11 +115,18 @@ object AppShufflePref {
  */
 object ConnectMirrorPref {
     private const val KEY = "connect_mirror"
+    private const val KEY_OFF_ONCE = "connect_mirror_off_once"
     var on by androidx.compose.runtime.mutableStateOf(initial(com.music.spotui.di.Graph.app))
         private set
 
     private fun initial(c: Context): Boolean {
         val p = prefs(c)
+        // Melzo: turned off once, for every install. Mirrored playback is what made a skipped
+        // track jump back to the previous one on some accounts; the setting stays, so anyone who
+        // wants the mirror back turns it on again.
+        if (!p.getBoolean(KEY_OFF_ONCE, false)) {
+            p.edit().putBoolean(KEY, false).putBoolean(KEY_OFF_ONCE, true).apply()
+        }
         if (p.contains(KEY)) return p.getBoolean(KEY, false)
         // Never set: an update of an older install had it on by default, a new install starts off.
         val updated = runCatching { c.packageManager.getPackageInfo(c.packageName, 0).let { it.lastUpdateTime > it.firstInstallTime } }
