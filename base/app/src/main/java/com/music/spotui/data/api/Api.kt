@@ -324,8 +324,8 @@ class Api constructor(
         }
     }
 
-    /** Your Library's liked entries: one, or both when both accounts are signed in. */
-    private fun likedEntries(): List<LibraryEntry> = listOf(likedEntry()) + bothLikedEntries()
+    /** Your Library's liked entry: one list, whichever accounts are signed in. */
+    private fun likedEntries(): List<LibraryEntry> = listOf(likedEntry())
 
     /** When both accounts are in place: one extra entry, for the liked list of the account not chosen. */
     private fun bothLikedEntries(): List<LibraryEntry> {
@@ -875,6 +875,43 @@ class Api constructor(
         )))
     }
 
+    /** A song's identity across the two accounts: title, first artist, and its length to ±3 s. */
+    private fun likeKey(s: SongsModel): String {
+        val title = s.title.lowercase()
+            .replace(Regex("\\([^)]*\\)|\\[[^]]*]"), " ")
+            .replace(Regex("-\\s*(remaster|remastered|live|edit|version).*"), " ")
+            .replace(Regex("[^a-z0-9 ]"), " ")
+            .replace(Regex("\\s+"), " ").trim()
+        val artist = s.singer.substringBefore(',').lowercase().trim()
+        return "$title|$artist|${s.durationMs / 3000}"
+    }
+
+    /**
+     * Both accounts' liked songs as one list: the same song once. Where a song is in both, the
+     * Spotify copy is kept — it plays on Spotify, without an extension. A song only YouTube Music
+     * has stays a YouTube row, and the extensions play it.
+     */
+    private suspend fun mergedLikes(): List<SongsModel>? {
+        val spotify = runCatching { allLiked { } }.getOrNull()
+        val youtube = runCatching {
+            if (!ytmSignedIn()) emptyList() else {
+                val first = com.music.spotui.di.YtmRuntime.account.library.likedTracks(0, 200)
+                PagedFetch.inOrder(
+                    first.items.map { songOf(it) }, minOf(first.total, 1000), 200,
+                    fetch = { o -> com.music.spotui.di.YtmRuntime.account.library.likedTracks(o, 200).items.map { songOf(it) } },
+                )
+            }
+        }.getOrDefault(emptyList())
+        if (spotify == null && youtube.isEmpty()) return null
+        val merged = LinkedHashMap<String, SongsModel>()
+        for (s in (spotify ?: emptyList()) + youtube) {
+            val k = likeKey(s)
+            val kept = merged[k]
+            if (kept == null || (kept.spotifyTrackId.isBlank() && s.spotifyTrackId.isNotBlank())) merged[k] = s
+        }
+        return merged.values.toList()
+    }
+
     /**
      * Liked Songs as a page: cached list shown instantly, then refreshed. A list read in full less
      * than [LIKED_FULL_MS] ago only has its newest page read again (the hearts of this account
@@ -893,6 +930,14 @@ class Api constructor(
             tracks = tracks,
             complete = complete,
         )
+        // Both accounts signed in: one list, merged. The second library entry is gone.
+        if (bothSignedIn()) {
+            runCatching { mergedLikes() }.getOrNull()?.let { all ->
+                LikedCache.tracks = all
+                emit(Response.Success(page(all, true)))
+                return@flow
+            }
+        }
         if (LikedCache.tracks == null) LikedCache.tracks = withContext(Dispatchers.IO) { ScreenCache.liked.read() }
         LikedCache.tracks?.let { emit(Response.Success(page(it, true))) } ?: emit(Response.Loading())
         if (!ready()) { if (LikedCache.tracks == null) emit(Response.Error(notSignedIn())); return@flow }
