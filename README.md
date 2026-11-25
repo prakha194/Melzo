@@ -176,7 +176,7 @@ Bugs and requests: [GitHub issues](https://github.com/prakha194/Melzo/issues).
 
 ## Credits
 
-**Myspoti** Melzo is based on [Myspoti](https://github.com/kota-zo/myspoti) and its contributors, under GPL-3.0.
+Based on [Myspoti](https://github.com/kota-zo/myspoti) and its contributors, under GPL-3.0.
 
 **BitChord.** The Immersive look and the equalizer come from [BitChord](https://github.com/kushagrasinghx/BitChord) by kushagrasinghx and contributors (GPL-3.0-or-later).
 
