@@ -1403,8 +1403,17 @@ object Extensions {
 
     fun trackInfo(trackId: String, title: String, artist: String, album: String, durationMs: Long, cover: String?): TrackInfo {
         val artists = artist.split(", ").map { it.trim() }.filter { it.isNotEmpty() }
+        // A YouTube Music song goes to extensions as itself. The id is a video id (11 characters);
+        // labelling it "spotify:track:" handed every source a Spotify address that does not exist,
+        // so a source that could have answered never could match — the "No source had it" on a
+        // YouTube liked song.
+        val uri = when {
+            trackId.isBlank() -> ""
+            app.myspoti.ytmusic.Ytm.isVideoId(trackId) -> "ytmusic:track:$trackId"
+            else -> "spotify:track:$trackId"
+        }
         return TrackInfo(
-            id = trackId, uri = if (trackId.isBlank()) "" else "spotify:track:$trackId", title = title,
+            id = trackId, uri = uri, title = title,
             artist = artists.firstOrNull().orEmpty(), artists = artists, album = album, durationMs = durationMs,
             cover = cover?.takeIf { it.startsWith("http") },
         )
