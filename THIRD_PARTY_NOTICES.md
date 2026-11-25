@@ -1,6 +1,6 @@
 # Third-party notices
 
-Myspoti is free software under the GNU General Public License v3.0 (see `LICENSE`).
+Melzo is free software under the GNU General Public License v3.0 (see `LICENSE`).
 It builds on the projects below; their licences are compatible with the GPL-3.0.
 
 ## Beat This! — MIT
