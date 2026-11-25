@@ -9,7 +9,7 @@ Melzo
 No ads added by the app, no tracking, nothing sent to the developer. A free Spotify account is enough.
 
 > [!NOTE]
-> Melzo is released under GPL-3.0 and maintained by Prashant. 😎 — see [Credits](#credits). Melzo is not affiliated with Spotify.
+> Melzo is released under GPL-3.0 and maintained by Prashant. 😎. Melzo is not affiliated with Spotify.
 
 🌐 **[Website: prakha194.github.io/Melzo](https://prakha194.github.io/Melzo/)** — screenshots, the three-step install guide, FAQ and the extension store.
 
