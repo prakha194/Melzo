@@ -35,7 +35,7 @@ object ExtensionStore {
      * The official repository: always read, shown only once it lists an extension (never
      * removable). Each extension in it is reviewed (one pull request per extension).
      */
-    const val OFFICIAL_REPO = "https://raw.githubusercontent.com/kota-zo/myspoti-extensions/main/index.json"
+    const val OFFICIAL_REPO = "https://raw.githubusercontent.com/prakha194/Melzo-Extension/main/index.json"
 
     /** One repository's index: [catalog] once read, [error] if it could not be. */
     data class Repo(val url: String, val catalog: Catalog? = null, val error: String? = null, val loading: Boolean = false)
