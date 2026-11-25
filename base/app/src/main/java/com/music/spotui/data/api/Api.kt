@@ -204,6 +204,29 @@ class Api constructor(
             playable = false,
             rowUid = t.uid.orEmpty(),
         )
+        // A YouTube Music song: played by the extensions, on its own video id. It used to take the
+        // catalog branch below, which resolves the song on Spotify first and gives up when Spotify
+        // has no such recording — the extension was never asked, and a YouTube liked song could not
+        // play at all. As a track of its own it goes to the extensions exactly like any other song.
+        if (t.uri.startsWith("ytmusic:track:")) {
+            val videoId = t.uri.substringAfterLast(':')
+            return SongsModel(
+                id = stableId("track:$videoId"),
+                title = t.name.take(128),
+                album = t.album?.name.orEmpty(),
+                singer = singer,
+                coverUri = cover(t.album?.images.orEmpty()),
+                url = SongPlayer.buildSpotifyPlayQuery(videoId, t.name, singer),
+                spotifyTrackId = videoId,
+                explicit = t.explicit,
+                durationMs = t.durationMs.toInt(),
+                albumId = t.album?.uri?.substringAfterLast(':').orEmpty(),
+                addedAt = t.addedAt.orEmpty(),
+                playable = true,
+                artistIds = t.artists.map { it.uri.substringAfterLast(':') },
+                rowUid = t.uid.orEmpty(),
+            )
+        }
         // A song of another provider (a search's, an album's of that provider): no Spotify id, so the actions that
         // need one are off; it plays once found on Spotify (SongPlayer.playSong).
         if (com.music.spotui.data.catalog.CatalogRuntime.isCatalogUri(t.uri)) return SongsModel(
