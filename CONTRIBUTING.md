@@ -1,4 +1,4 @@
-# Contributing to Myspoti
+# Contributing to Melzo
 
 Thanks for helping. Bug reports (with a diagnostic report from Settings), fixes and translations are all welcome.
 
