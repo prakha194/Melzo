@@ -301,6 +301,9 @@ class Api constructor(
         }
     }
 
+    /** Your Library's liked entries: one, or both when both accounts are signed in. */
+    private fun likedEntries(): List<LibraryEntry> = listOf(likedEntry()) + bothLikedEntries()
+
     /** When both accounts are in place: one extra entry, for the liked list of the account not chosen. */
     private fun bothLikedEntries(): List<LibraryEntry> {
         if (!bothSignedIn()) return emptyList()
@@ -1176,8 +1179,12 @@ class Api constructor(
     suspend fun getLibraryRoot(): Flow<Response<List<LibraryEntry>>> = flow {
         if (HomeCache.libraryRoot == null) HomeCache.libraryRoot = withContext(Dispatchers.IO) { ScreenCache.libraryRoot.read() }
         HomeCache.libraryRoot?.let { emit(Response.Success(it)) } ?: emit(Response.Loading())
-        if (!ready()) { if (HomeCache.libraryRoot == null) emit(Response.Error(notSignedIn())); return@flow }
-        runCatching { listOf(likedEntry()) + libraryLevel(null).mapNotNull(::entryOf) }.fold(
+        // A YouTube Music session alone is enough to have a library (its liked songs): the
+        // Spotify engine being unreachable must not hide it.
+        if (!ready() && !ytmSignedIn()) { if (HomeCache.libraryRoot == null) emit(Response.Error(notSignedIn())); return@flow }
+        runCatching {
+            likedEntries() + if (ready()) libraryLevel(null).mapNotNull(::entryOf) else emptyList()
+        }.fold(
             onSuccess = { HomeCache.libraryRoot = it; ScreenCache.libraryRoot.write(it); PagePrefetch.schedule(it); emit(Response.Success(it)) },
             onFailure = { Log.e("Api", "getLibraryRoot failed", it); if (HomeCache.libraryRoot == null) emit(Response.Error(it.message ?: "error")) },
         )
