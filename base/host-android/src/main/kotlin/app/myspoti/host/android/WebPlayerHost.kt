@@ -685,7 +685,7 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
     fun attachSignInView(root: ViewGroup, done: (Boolean) -> Unit) = main.post {
         val ctx = android.content.MutableContextWrapper(context.applicationContext)
         val w = WebView(ctx)
-        w.useProfile(w)
+        useProfile(w)
         w.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
         )
@@ -698,7 +698,7 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
             cacheMode = WebSettings.LOAD_DEFAULT
             setSupportMultipleWindows(false)
         }
-        w.cookies().apply {
+        cookies().apply {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(w, true)
             // From nothing: a flow left half finished is what the page answers with an error.
@@ -708,7 +708,7 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
         w.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 if (LoginLoad.isSpotifyAccounts(url) && !LoginLoad.isLoginUrl(url)) {
-                    w.cookies().flush()
+                    cookies().flush()
                     runCatching { root.removeView(view) }
                     runCatching { view.destroy() }
                     done(true)
