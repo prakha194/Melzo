@@ -229,7 +229,6 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
         purgeRemovedProfiles()
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
     /**
      * The WebView's own user agent, before the player's desktop fingerprint replaced it. Declared
      * before [view] on purpose: createView() stores it while building the view.
@@ -238,6 +237,7 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
 
     var view: WebView = createView()
 
+    @SuppressLint("SetJavaScriptEnabled")
     /**
      * Builds the page view. Called once at startup, and again after a renderer crash: a WebView
      * whose renderer died can never be reused, and Android kills the process if one is used after
