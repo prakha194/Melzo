@@ -230,6 +230,12 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
+    /**
+     * The WebView's own user agent, before the player's desktop fingerprint replaced it. Declared
+     * before [view] on purpose: createView() stores it while building the view.
+     */
+    @Volatile private var stockUserAgent: String? = null
+
     var view: WebView = createView()
 
     /**
@@ -245,6 +251,9 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
             javaScriptEnabled = true
             domStorageEnabled = true
             mediaPlaybackRequiresUserGesture = false
+            // Kept for the sign-in page: Spotify's login refuses the desktop Chrome the player
+            // needs, and answers "Oops! Something went wrong" to an email sign-in sent from it.
+            stockUserAgent = userAgentString
             userAgentString = fingerprint.userAgent
             cacheMode = WebSettings.LOAD_DEFAULT
             loadWithOverviewMode = true
@@ -378,7 +387,10 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
                 if (!isLoginPage(url) && _loginLoad.value != LoginLoad.NONE && _loginLoad.value != LoginLoad.FAILED) setLoginLoad(LoginLoad.NONE)
                 _url.value = url
                 _loginRequired.value = isLoginPage(url)
-                if (url.startsWith(PLAYER_URL)) { drmAsked = false; licenseAnswersLogged = 0; onPageStarting?.invoke(); armChannels(view, renew = true); relay.injectNow() }
+                if (url.startsWith(PLAYER_URL)) {
+                    useSignInUserAgent(false)
+                    drmAsked = false; licenseAnswersLogged = 0; onPageStarting?.invoke(); armChannels(view, renew = true); relay.injectNow()
+                }
                 if (PLAYER_ROOT.matches(url) && url != roots.getString(ROOT_KEY, null)) roots.edit().putString(ROOT_KEY, url).apply()
             }
 
@@ -436,6 +448,12 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
                     loginProbes = 0
                     main.removeCallbacks(loginProbe)
                     main.postDelayed(loginProbe, LoginLoad.FIRST_PROBE_MS)
+                }
+                if (_loginLoad.value != LoginLoad.NONE && LoginLoad.isSpotifyAccounts(url) && !isLoginPage(url)) {
+                    // Signed in on accounts.spotify.com (its status page): the cookie is issued, the
+                    // player page is asked for with the fingerprint it needs.
+                    useSignInUserAgent(false)
+                    view.loadUrl(playerRoot())
                 }
                 if (url.startsWith(PLAYER_URL)) {
                     // Again, same secret: the page start's call may have run before the new document existed.
@@ -646,6 +664,13 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
         main.postDelayed(retryPlayerPage, wait)
     }
 
+    /** The player page keeps its desktop fingerprint; the sign-in page gets the WebView's own. */
+    private fun useSignInUserAgent(on: Boolean) = main.post {
+        val s = runCatching { view.settings }.getOrNull() ?: return@post
+        val own = stockUserAgent ?: return@post
+        s.userAgentString = if (on) own else fingerprint.userAgent
+    }
+
     fun openLogin() = main.post {
         // A player retry or load timeout still pending would replace the sign-in page just asked for.
         main.removeCallbacks(retryPlayerPage)
@@ -802,6 +827,8 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
 
     /** The sign-in page was asked for: kept out of sight, with its clocks running, until it has content. */
     private fun beginLoginLoad() {
+        // The sign-in page is served to the WebView as itself (see [stockUserAgent]).
+        useSignInUserAgent(true)
         loginProbes = 0
         loginReloaded = false
         main.removeCallbacks(loginProbe)
@@ -1047,7 +1074,7 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
         /** A removed profile still held by the WebView just replaced: deleted again after this. */
         private const val PURGE_RETRY_MS = 10_000L
         private const val LOAD_RETRIES = 4
-        const val LOGIN_URL = "https://accounts.spotify.com/login?continue=https%3A%2F%2Fopen.spotify.com%2F"
+        const val LOGIN_URL = "https://accounts.spotify.com/en/login"
 
         /**
          * What the sign-in page shows, for [noteLoginPage]: path, title, first heading, the text of its
