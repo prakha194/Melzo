@@ -54,7 +54,7 @@ jobs:
             --no-daemon --stacktrace
 
       - name: Upload the APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: spoon-apk
           path: base/app/build/outputs/apk/release/*.apk
