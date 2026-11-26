@@ -47,8 +47,8 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew :app:assembleRelease \
-            -PappVersionName=1.0.19 \
-            -PappVersionCode=219 \
+            -PappVersionName=1.0.20 \
+            -PappVersionCode=220 \
             -Pabis=arm64-v8a,armeabi-v7a \
             -PupdateRepo=prakha194/Spoon \
             --no-daemon --stacktrace

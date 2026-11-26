@@ -257,6 +257,9 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
             cacheMode = WebSettings.LOAD_DEFAULT
             loadWithOverviewMode = true
             useWideViewPort = true
+            // The sign-in page checks its own captcha and keeps state in the database.
+            databaseEnabled = true
+            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         }
         // The WebView stamps every request the page makes with "X-Requested-With: <our package>".
         // No browser does that, and it is measured on the wire ([tools/cdp.py] --trace --headers):
@@ -675,7 +678,11 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
         main.removeCallbacks(retryPlayerPage)
         main.removeCallbacks(loadTimeout)
         beginLoginLoad()
-        view.loadUrl(LOGIN_URL)
+        // From nothing, every time: a sign-in left half finished (a code asked for, a step never
+        // completed) leaves cookies and storage behind, and Spotify's page answers "Oops! Something
+        // went wrong" to a flow it cannot match with its own state. The other clients wipe the jar
+        // when the sign-in screen opens, which is why their email login works and this one did not.
+        cleanSlate { view.loadUrl(LOGIN_URL) }
     }
 
     /** Signs out of Spotify in this WebView, then shows the login page. */
