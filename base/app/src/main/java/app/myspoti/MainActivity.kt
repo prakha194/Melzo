@@ -435,11 +435,22 @@ class MainActivity : AppCompatActivity() {
             com.music.spotui.ui.screens.AfterChoice.SPOTIFY_SIGN_IN) showLogin()
     }
 
-    /** Spotify's login page, full screen, until the Web Player comes back signed in. */
+    /**
+     * Spotify's login page, full screen, in a WebView of its own. The player's view carries a
+     * desktop Chrome fingerprint and client hints; Spotify's accounts page refuses that combination
+     * and answers "Oops! Something went wrong" to the email flow. This one keeps the WebView's own
+     * identity, and the cookie it earns is on the same profile the player reads.
+     */
     private fun showLogin() {
         showingLogin = true
-        MyspotiRuntime.host.attach(root, visible = true)
-        MyspotiRuntime.host.openLogin()
+        MyspotiRuntime.host.attachSignInView(root) { ok ->
+            hideLogin()
+            if (ok) {
+                // Signed in: the player page is loaded with the session the sign-in left.
+                MyspotiRuntime.host.attach(root, visible = false)
+                MyspotiRuntime.host.load()
+            }
+        }
     }
 
     private fun hideLogin() {

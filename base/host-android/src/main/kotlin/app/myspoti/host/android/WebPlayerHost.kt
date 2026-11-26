@@ -673,6 +673,54 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
         s.userAgentString = if (on) own else fingerprint.userAgent
     }
 
+    /**
+     * Spotify's sign-in page in a WebView of its own: the player's view carries a desktop Chrome
+     * fingerprint and client hints that the accounts page refuses — "a UA that claims to be Chrome
+     * while the client hints still say WebView" is exactly the combination it blocks, and it answers
+     * "Oops! Something went wrong" to the email flow. This one keeps the WebView's own identity and
+     * injects nothing. It runs on the player's profile, so the cookie lands where the player reads it.
+     *
+     * [done] once the sign-in page has been left for a page only a signed-in visitor reaches.
+     */
+    fun attachSignInView(root: ViewGroup, done: (Boolean) -> Unit) = main.post {
+        val ctx = android.content.MutableContextWrapper(context.applicationContext)
+        lateinit var w: WebView
+        w = WebView(ctx).apply {
+            useProfile(this)
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
+            )
+            overScrollMode = View.OVER_SCROLL_NEVER
+            settings.apply {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                databaseEnabled = true
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                cacheMode = WebSettings.LOAD_DEFAULT
+                setSupportMultipleWindows(false)
+            }
+            cookies().apply {
+                setAcceptCookie(true)
+                setAcceptThirdPartyCookies(w, true)
+                // From nothing: a flow left half finished is what the page answers with an error.
+                removeAllCookies(null)
+                flush()
+            }
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView, url: String) {
+                    if (LoginLoad.isSpotifyAccounts(url) && !LoginLoad.isLoginUrl(url)) {
+                        cookies().flush()
+                        runCatching { root.removeView(view) }
+                        runCatching { view.destroy() }
+                        done(true)
+                    }
+                }
+            }
+            loadUrl("https://accounts.spotify.com/en/login")
+        }
+        root.addView(w)
+    }
+
     fun openLogin() = main.post {
         // A player retry or load timeout still pending would replace the sign-in page just asked for.
         main.removeCallbacks(retryPlayerPage)
