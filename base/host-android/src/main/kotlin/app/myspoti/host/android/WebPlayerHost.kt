@@ -684,40 +684,38 @@ class WebPlayerHost(private val context: Context) : BridgeHost {
      */
     fun attachSignInView(root: ViewGroup, done: (Boolean) -> Unit) = main.post {
         val ctx = android.content.MutableContextWrapper(context.applicationContext)
-        lateinit var w: WebView
-        w = WebView(ctx).apply {
-            useProfile(this)
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
-            )
-            overScrollMode = View.OVER_SCROLL_NEVER
-            settings.apply {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                databaseEnabled = true
-                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                cacheMode = WebSettings.LOAD_DEFAULT
-                setSupportMultipleWindows(false)
-            }
-            cookies().apply {
-                setAcceptCookie(true)
-                setAcceptThirdPartyCookies(w, true)
-                // From nothing: a flow left half finished is what the page answers with an error.
-                removeAllCookies(null)
-                flush()
-            }
-            webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView, url: String) {
-                    if (LoginLoad.isSpotifyAccounts(url) && !LoginLoad.isLoginUrl(url)) {
-                        cookies().flush()
-                        runCatching { root.removeView(view) }
-                        runCatching { view.destroy() }
-                        done(true)
-                    }
+        val w = WebView(ctx)
+        w.useProfile(w)
+        w.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
+        )
+        w.overScrollMode = View.OVER_SCROLL_NEVER
+        w.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            databaseEnabled = true
+            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+            cacheMode = WebSettings.LOAD_DEFAULT
+            setSupportMultipleWindows(false)
+        }
+        w.cookies().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(w, true)
+            // From nothing: a flow left half finished is what the page answers with an error.
+            removeAllCookies(null)
+            flush()
+        }
+        w.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String) {
+                if (LoginLoad.isSpotifyAccounts(url) && !LoginLoad.isLoginUrl(url)) {
+                    w.cookies().flush()
+                    runCatching { root.removeView(view) }
+                    runCatching { view.destroy() }
+                    done(true)
                 }
             }
-            loadUrl("https://accounts.spotify.com/en/login")
         }
+        w.loadUrl("https://accounts.spotify.com/en/login")
         root.addView(w)
     }
 
